@@ -1,10 +1,10 @@
 module SplitApplyPlot
 
-using Tables: Tables
+using Tables: columns, getcolumn
 using StructArrays: uniquesorted, finduniquesorted, components, StructArray
 using AbstractPlotting
 
-export draw, Group, Mapping
+export draw
 
 include("utils.jl")
 include("grouping.jl")
