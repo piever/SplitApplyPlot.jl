@@ -1,4 +1,4 @@
-using SplitApplyPlot
+using SplitApplyPlot, CairoMakie
 
 df = (
     x=rand(100),
@@ -9,18 +9,8 @@ df = (
     e=rand(Bool, 100),
 )
 
+grp = (marker=:c, layout_x=:d, layout_y=:e)
+
 fig = Figure()
-grp = Group(marker=:c, layout_x=:d, layout_y=:e, axis=(title=:e,))
-m = Mapping(:x, :y, color=:z)
-
-draw(fig, df, grp, m) do ax, args, attrs
-    @show keys(attrs)
-    scatter!(ax, args...; attrs...)
-end
-
-
-fig
-
-ax = Axis(fig[1, 1])
-
-ax.title[] = false;
+draw(Scatter, fig, df, grp, :x, :y, color=:z)
+display(fig)
