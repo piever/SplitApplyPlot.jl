@@ -9,8 +9,10 @@ df = (
     e=rand(Bool, 100),
 )
 
-grp = (marker=:c, layout_x=:d, layout_y=:e)
+fig = Figure()
+splitapplyplot(Scatter, fig, df, (marker=:c, layout_x=:d, layout_y=:e), :x, :y, color=:z)
+display(fig)
 
 fig = Figure()
-draw(Scatter, fig, df, grp, :x, :y, color=:z)
+splitapplyplot(Scatter, fig, df, (marker=:c, layout_x=:d, layout_y=:e, title=:e), :x, :y, color=:z)
 display(fig)

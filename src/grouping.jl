@@ -10,7 +10,7 @@ function palettes()
     return defaults
 end
 
-function draw(f, fig, data, by::NamedTuple, positional...; named...)
+function splitapplyplot(f, fig, data, by::NamedTuple, positional...; named...)
 
     axis_dict = Dict{Tuple{Int, Int}, Axis}()
     
@@ -23,25 +23,40 @@ function draw(f, fig, data, by::NamedTuple, positional...; named...)
     iter = isempty(by) ? [((), Colon())] : finduniquesorted(StructArray(Tuple(by_cols)))
 
     foreach(iter) do (val, idxs)
-        discrete_attr_values = map(keys(by), uniquevalues, val) do k, unique, v
+        attrs = Dict{Symbol, Any}()
+        for (k, v) in pairs(getcolumns(cols, values(named)))
+            attrs[k] = view(v, idxs)
+        end
+        for (k, unique, v) in zip(keys(by), uniquevalues, val)
             scale = get(palette, k, Observable(nothing))[]
-            return apply_scale(scale, unique, v)
+            attrs[k] = apply_scale(scale, unique, v)
         end
-        discrete_attr = Dict(zip(keys(by), discrete_attr_values))
-        
-        layout = (pop!(discrete_attr, :layout_x, 1), pop!(discrete_attr, :layout_y, 1))
-        ax = get!(axis_dict, layout) do
-            return Axis(fig[layout...])
-        end
+        layout = (pop!(attrs, :layout_x, 1), pop!(attrs, :layout_y, 1))
         args = map(v -> view(v, idxs), getcolumns(cols, positional))
-        m_attrs = map(v -> view(v, idxs), getcolumns(cols, values(named)))
-        attrs = merge(m_attrs, discrete_attr)
-        f(ax, Attributes(attrs), args)
+
+        ax = get!(axis_dict, layout) do
+            axis = Axis(fig[layout...])
+            for prop in propertynames(axis)
+                val = get(attrs, prop, nothing)
+                !isnothing(val) && (getproperty(axis, prop)[] = val)
+            end
+            for (name, label, ticks) in zip(positional, [:xlabel, :ylabel], [:xticks, :yticks])
+                col = getcolumn(cols, name)
+                # FIXME: checkout proper fix in AbstractPlotting
+                if !iscontinuous(col)
+                    u = collect(uniquesorted(col))
+                    getproperty(axis, ticks)[] = (axes(u, 1), u)
+                end
+                getproperty(axis, label)[] = string(name)
+            end
+            return axis
+        end
+
+        f(ax, args...; attrs...)
     end
 end
 
-function draw(T::Type, fig, data, by::NamedTuple, positional...; named...)
-    return draw(fig, data, by::NamedTuple, positional...; named...) do ax, attrs, args
-        plot!(ax, T, attrs, args)
-    end
+function splitapplyplot(T::Type, fig, data, by::NamedTuple, positional...; named...)
+    f(ax, args...; attrs...) = plot!(T, ax, args...; attrs...)
+    return splitapplyplot(f, fig, data, by::NamedTuple, positional...; named...)
 end
