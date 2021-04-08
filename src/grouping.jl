@@ -31,8 +31,7 @@ function draw(f, fig, data, by::NamedTuple, positional...; named...)
         
         layout = (pop!(discrete_attr, :layout_x, 1), pop!(discrete_attr, :layout_y, 1))
         ax = get!(axis_dict, layout) do
-            axis = Axis(fig[layout...])
-            return axis
+            return Axis(fig[layout...])
         end
         args = map(v -> view(v, idxs), getcolumns(cols, positional))
         m_attrs = map(v -> view(v, idxs), getcolumns(cols, values(named)))
