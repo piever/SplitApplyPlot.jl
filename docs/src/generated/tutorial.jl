@@ -9,12 +9,11 @@ df = (
     e=rand(Bool, 100),
 )
 
-fig = Figure()
 grp = Group(marker=:c, layout_x=:d, layout_y=:e, axis=(title=:e,))
 m = Mapping(:x, :y, color=:z)
 
-draw(fig, df, grp, m) do ax, args, attrs
-    @show keys(attrs)
+fig = Figure()
+@time draw(fig, df, grp, m, axis=(xticklabelrotation=π/2,)) do ax, args, attrs
     scatter!(ax, args...; attrs...)
 end
 

@@ -39,7 +39,7 @@ function palettes()
     )
 end
 
-function draw(f, fig, data, grp::Group, m::Mapping)
+function draw(f, fig, data, grp::Group, m::Mapping; kwargs...)
 
     LayoutType = @NamedTuple{layout_x::Int, layout_y::Int}
     axis_dict = Dict{LayoutType, Axis}()
@@ -60,7 +60,12 @@ function draw(f, fig, data, grp::Group, m::Mapping)
             layout_x = get(discrete_attr, :layout_x, 1),
             layout_y = get(discrete_attr, :layout_y, 1)
         )
-        axis_attr = (axis = get(discrete_attr, :axis, NamedTuple()),)
+        axis_attr = (
+            axis = merge(
+                get(discrete_attr, :axis, NamedTuple()),
+                get(values(kwargs), :axis, NamedTuple()),
+            ),
+        )
         ax = get!(axis_dict, layout) do
             axis = Axis(fig[layout...])
             for (k, v) in pairs(axis_attr.axis)
@@ -69,12 +74,15 @@ function draw(f, fig, data, grp::Group, m::Mapping)
             return axis
         end
         args = m_cols.positional
-        attrs = merge(m_cols.named, remove_fields(discrete_attr, layout, axis_attr))
+        m_attrs = m_cols.named
+        g_attrs = remove_fields(discrete_attr, layout, axis_attr)
+        user_attrs = remove_fields(values(kwargs), axis_attr)
+        attrs = merge(m_attrs, g_attrs, user_attrs)
         f(ax, args, attrs)
     end
 
     for ax in values(axis_dict)
-        for (name, label, ticks, rot) in zip(m.positional, [:xlabel, :ylabel], [:xticks, :yticks], [:xticklabelrotation, :yticklabelrotation])
+        for (name, label, ticks) in zip(m.positional, [:xlabel, :ylabel], [:xticks, :yticks])
             col = Tables.getcolumn(cols, name)
             # FIXME: checkout proper fix in AbstractPlotting
             if !iscontinuous(col)
