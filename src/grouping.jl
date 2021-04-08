@@ -1,18 +1,4 @@
-struct Mapping{S, T}
-    keys::Vector{S}
-    values::Vector{T}
-end
-function mapping(args...; kwargs...)
-    k = vcat(collect(keys(args)), collect(keys(kwargs)))
-    v = vcat(collect(values(args)), collect(values(kwargs)))
-    return Mapping(k, v)
-end
-
-Base.map(f, m::Mapping) = Mapping(m.keys, map(f, m.values))
-Base.Tuple(m::Mapping) = Tuple(m.values)
-Base.Dict(m::Mapping) = Dict(zip(m.keys, m.values))
-
-function getcolumns(cols, m::Mapping)
+function getcolumns(cols, m::Union{Tuple, NamedTuple})
     return map(name -> getcolumn(cols, name), m)
 end
 
@@ -24,36 +10,39 @@ function palettes()
     return defaults
 end
 
-function draw(f, fig, data, by::Mapping, select::Mapping; kwargs...)
+function draw(f, fig, data, by::NamedTuple, positional...; named...)
 
     axis_dict = Dict{Tuple{Int, Int}, Axis}()
     
     cols = columns(data)
     by_cols = getcolumns(cols, by)
-    uniquevalues = map(collect∘uniquesorted, by_cols.values)
+    uniquevalues = map(collect∘uniquesorted, values(by_cols))
 
     palette = palettes()
 
-    iter = isempty(by.keys) ? [((), Colon())] : finduniquesorted(StructArray(Tuple(by_cols)))
+    iter = isempty(by) ? [((), Colon())] : finduniquesorted(StructArray(Tuple(by_cols)))
 
     foreach(iter) do (val, idxs)
-        selected_cols = map(v -> v[idxs], getcolumns(cols, select))
-        discrete_attr_values = map(by.keys, by.values, uniquevalues, val) do k, v, unique, vv
+        discrete_attr_values = map(keys(by), uniquevalues, val) do k, unique, v
             scale = get(palette, k, Observable(nothing))[]
-            return apply_scale(scale, unique, vv)
+            return apply_scale(scale, unique, v)
         end
-        discrete_attr = Dict(zip(by.keys, discrete_attr_values))
+        discrete_attr = Dict(zip(keys(by), discrete_attr_values))
         
         layout = (pop!(discrete_attr, :layout_x, 1), pop!(discrete_attr, :layout_y, 1))
         ax = get!(axis_dict, layout) do
             axis = Axis(fig[layout...])
             return axis
         end
-        args = selected_cols.values[isa.(selected_cols.keys, Integer)]
-        actual_keys = isa.(selected_cols.keys, Symbol)
-        m_attrs = Dict(zip(selected_cols.keys[actual_keys], selected_cols.values[actual_keys]))
-        g_attrs = discrete_attr
-        attrs = merge(m_attrs, g_attrs)
-        f(ax, args, attrs)
+        args = map(v -> view(v, idxs), getcolumns(cols, positional))
+        m_attrs = map(v -> view(v, idxs), getcolumns(cols, values(named)))
+        attrs = merge(m_attrs, discrete_attr)
+        f(ax, Attributes(attrs), args)
+    end
+end
+
+function draw(T::Type, fig, data, by::NamedTuple, positional...; named...)
+    return draw(fig, data, by::NamedTuple, positional...; named...) do ax, attrs, args
+        plot!(ax, T, attrs, args)
     end
 end

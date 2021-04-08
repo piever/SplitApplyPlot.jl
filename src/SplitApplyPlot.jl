@@ -5,7 +5,7 @@ using StructArrays: uniquesorted, finduniquesorted, components, StructArray
 using AbstractPlotting
 using OrderedCollections: LittleDict
 
-export draw, mapping
+export draw
 
 include("utils.jl")
 include("grouping.jl")
