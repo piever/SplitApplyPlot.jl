@@ -1,5 +1,12 @@
 module SplitApplyPlot
 
-# Write your package code here.
+using Tables: Tables
+using StructArrays: uniquesorted, finduniquesorted, components, StructArray
+using AbstractPlotting
+
+export draw, Group, Mapping
+
+include("utils.jl")
+include("grouping.jl")
 
 end
