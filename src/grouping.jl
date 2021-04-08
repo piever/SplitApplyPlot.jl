@@ -1,96 +1,59 @@
-struct Group{NT<:NamedTuple}
-    options::NT
-    function Group(; kwargs...)
-        nt = values(kwargs)
-        return new{typeof(nt)}(nt)
-    end
+struct Mapping{S, T}
+    keys::Vector{S}
+    values::Vector{T}
+end
+function mapping(args...; kwargs...)
+    k = vcat(collect(keys(args)), collect(keys(kwargs)))
+    v = vcat(collect(values(args)), collect(values(kwargs)))
+    return Mapping(k, v)
 end
 
-Base.map(f, g::Group) = Group(; map(f, g.options)...)
+Base.map(f, m::Mapping) = Mapping(m.keys, map(f, m.values))
+Base.Tuple(m::Mapping) = Tuple(m.values)
+Base.Dict(m::Mapping) = Dict(zip(m.keys, m.values))
 
-struct Mapping{T<:Tuple, NT<:NamedTuple}
-    positional::T
-    named::NT
-    function Mapping(args...; kwargs...)
-        t, nt = args, values(kwargs)
-        return new{typeof(t), typeof(nt)}(t, nt)
-    end
+function getcolumns(cols, m::Mapping)
+    return map(name -> getcolumn(cols, name), m)
 end
-
-Base.map(f, m::Mapping) = Mapping(map(f, m.positional)...; map(f, m.named)...)
-
-to_columns(cols, name::Union{Symbol, Integer}) = Tables.getcolumn(cols, name)
-function to_columns(cols, m::Union{Group, Mapping, NamedTuple})
-    return map(name -> to_columns(cols, name), m)
-end
-
-to_structarray(nt::NamedTuple) = StructArray(map(to_structarray, nt))
-to_structarray(v::AbstractVector) = v
 
 function palettes()
-    defaults = AbstractPlotting.current_default_theme()[:palette]
-    return (;
-        defaults...,
-        layout_x=Counter(),
-        layout_y=Counter(),
-        axis=(
-            title=string,
-        ),
-    )
+    defaults = Dict{Symbol, Any}(AbstractPlotting.current_default_theme()[:palette])
+    defaults[:layout_x] = Observable(Counter())
+    defaults[:layout_y] = Observable(Counter())
+    defaults[:title] = Observable(string)
+    return defaults
 end
 
-function draw(f, fig, data, grp::Group, m::Mapping; kwargs...)
+function draw(f, fig, data, by::Mapping, select::Mapping; kwargs...)
 
-    LayoutType = @NamedTuple{layout_x::Int, layout_y::Int}
-    axis_dict = Dict{LayoutType, Axis}()
+    axis_dict = Dict{Tuple{Int, Int}, Axis}()
     
-    cols = Tables.columns(data)
-    grp_cols = to_columns(cols, grp)
-    options = to_structarray(grp_cols.options)
-    uniquevalues = recurse_values(collect∘uniquesorted, grp_cols.options)
-    scales = recurse_extract(palettes(), uniquevalues)
+    cols = columns(data)
+    by_cols = getcolumns(cols, by)
+    uniquevalues = map(collect∘uniquesorted, by_cols.values)
 
-    trivial_iter = [(NamedTuple(), Colon())]
-    iter = isempty(components(options)) ? trivial_iter : finduniquesorted(options)
+    palette = palettes()
+
+    iter = isempty(by.keys) ? [((), Colon())] : finduniquesorted(StructArray(Tuple(by_cols)))
 
     foreach(iter) do (val, idxs)
-        m_cols = map(v -> v[idxs], to_columns(cols, m))
-        discrete_attr = recurse_values(apply_scale, scales, uniquevalues, val)
-        layout = (
-            layout_x = get(discrete_attr, :layout_x, 1),
-            layout_y = get(discrete_attr, :layout_y, 1)
-        )
-        axis_attr = (
-            axis = merge(
-                get(discrete_attr, :axis, NamedTuple()),
-                get(values(kwargs), :axis, NamedTuple()),
-            ),
-        )
+        selected_cols = map(v -> v[idxs], getcolumns(cols, select))
+        discrete_attr_values = map(by.keys, by.values, uniquevalues, val) do k, v, unique, vv
+            scale = get(palette, k, Observable(nothing))[]
+            return apply_scale(scale, unique, vv)
+        end
+        discrete_attr = Dict(zip(by.keys, discrete_attr_values))
+        
+        layout = (pop!(discrete_attr, :layout_x, 1), pop!(discrete_attr, :layout_y, 1))
         ax = get!(axis_dict, layout) do
             axis = Axis(fig[layout...])
-            for (k, v) in pairs(axis_attr.axis)
-                getproperty(axis, k)[] = v
-            end
             return axis
         end
-        args = m_cols.positional
-        m_attrs = m_cols.named
-        g_attrs = remove_fields(discrete_attr, layout, axis_attr)
-        user_attrs = remove_fields(values(kwargs), axis_attr)
-        attrs = merge(m_attrs, g_attrs, user_attrs)
+        args = selected_cols.values[isa.(selected_cols.keys, Integer)]
+        actual_keys = isa.(selected_cols.keys, Symbol)
+        m_attrs = Dict(zip(selected_cols.keys[actual_keys], selected_cols.values[actual_keys]))
+        g_attrs = discrete_attr
+        attrs = merge(m_attrs, g_attrs)
         f(ax, args, attrs)
-    end
-
-    for ax in values(axis_dict)
-        for (name, label, ticks) in zip(m.positional, [:xlabel, :ylabel], [:xticks, :yticks])
-            col = Tables.getcolumn(cols, name)
-            # FIXME: checkout proper fix in AbstractPlotting
-            if !iscontinuous(col)
-                u = collect(uniquesorted(col))
-                getproperty(ax, ticks)[] = (axes(u, 1), u)
-                getproperty(ax, rot)[] = π/3
-            end
-            getproperty(ax, label)[] = string(name)
-        end
     end
 end
