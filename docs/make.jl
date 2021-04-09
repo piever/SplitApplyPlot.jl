@@ -22,6 +22,7 @@ makedocs(;
     pages=Any[
         "index.md",
         "generated/tutorial.md",
+        "API.md",
     ],
 )
 
