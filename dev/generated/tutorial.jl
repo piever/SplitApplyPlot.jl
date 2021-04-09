@@ -9,10 +9,19 @@ df = (
     e=rand(Bool, 100),
 )
 
-fig = Figure()
-splitapplyplot(Scatter, fig, df, (marker=:c, layout_x=:d, layout_y=:e), :x, :y, color=:z)
-display(fig)
+draw(Scatter, df, (marker=:c, layout_x=:d, layout_y=:e), mapping(:x, :y, color=:z))
+
+draw(
+    Scatter,
+    df,
+    (marker=:c, layout_x=:d, layout_y=:e, title=:e),
+    mapping(:x, :y, color=:z)
+)
 
 fig = Figure()
-splitapplyplot(Scatter, fig, df, (marker=:c, layout_x=:d, layout_y=:e, title=:e), :x, :y, color=:z)
-display(fig)
+axes_mat = draw!(fig, df, (marker=:c, layout_x=:d, layout_y=:e), mapping(:x, :y, color=:z)) do ax, m
+    plot!(Scatter, ax, m)
+    ax.xticklabelrotation[] = π/2
+end
+hideinnerdecorations!(axes_mat)
+fig
