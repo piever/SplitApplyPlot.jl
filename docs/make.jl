@@ -1,5 +1,11 @@
 using SplitApplyPlot
 using Documenter
+using Literate, Glob
+
+# generate examples
+GENERATED = joinpath(@__DIR__, "src", "generated")
+SOURCE_FILES = Glob.glob("*.jl", GENERATED)
+foreach(fn -> Literate.markdown(fn, GENERATED), SOURCE_FILES)
 
 DocMeta.setdocmeta!(SplitApplyPlot, :DocTestSetup, :(using SplitApplyPlot); recursive=true)
 
@@ -13,11 +19,14 @@ makedocs(;
         canonical="https://piever.github.io/SplitApplyPlot.jl",
         assets=String[],
     ),
-    pages=[
-        "Home" => "index.md",
+    pages=Any[
+        "index.md",
+        "generated/tutorial.md",
+        "API.md",
     ],
 )
 
 deploydocs(;
     repo="github.com/piever/SplitApplyPlot.jl",
+    push_preview = true,
 )
