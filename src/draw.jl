@@ -104,7 +104,17 @@ end
     draw(f, args...; kwargs...)
 
 Create `fig::Figure` with keyword arguments `kwargs`, then draw on it using [`draw!`](@ref),
-i.e., `draw!(f, fig, args...)`. Return `fig`,
+i.e., `draw!(f, fig, args...)`. Return `fig`.
+
+# Examples
+
+```julia
+julia> using SplitApplyPlot, CairoMakie
+
+julia> data = (a=rand(100), b=rand(100), c=rand(100), d=rand(["a", "b"], 100));
+
+julia> draw(Scatter, data, (marker = :d,), mapping(:a, :b, color=:c))
+```
 """
 function draw(f, args...; kwargs...)
     fig = Figure(; kwargs...)
