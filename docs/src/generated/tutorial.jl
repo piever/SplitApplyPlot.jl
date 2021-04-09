@@ -21,7 +21,10 @@ draw(
     mapping(:x, :y, color=:z),
     resolution = (600, 600),
 )
+AbstractPlotting.save("scatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
+# ![](scatter.svg)
+#
 # Axis information can also be passed in the grouping (this interface might change)
 
 draw(
@@ -31,7 +34,10 @@ draw(
     mapping(:x, :y, color=:z),
     resolution = (600, 600),
 )
+AbstractPlotting.save("scatter_title.svg", AbstractPlotting.current_scene()); nothing #hide
 
+# ![](scatter_title.svg)
+#
 # A mutating approach is also possible for additional tweaking. The function `draw!`
 # takes a mutating function as first argument. It returns the matrix of axes for further
 # tweaking (it may return more things in the future).
@@ -42,3 +48,6 @@ mat = draw!(fig, df, (marker=:c, layout_x=:d, layout_y=:e), mapping(:x, :y, colo
 end
 hideinnerdecorations!(mat)
 fig
+AbstractPlotting.save("scatter_mutating.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](scatter_mutating.svg)
