@@ -27,3 +27,12 @@ Determine whether `v` should be treated as a continuous or categorical vector.
 iscontinuous(::AbstractVector) = false
 iscontinuous(::AbstractVector{<:Number}) = true
 iscontinuous(::AbstractVector{<:Bool}) = false
+
+function hideinnerdecorations!(axes_mat::Matrix)
+    foreach(axes_mat[1:end-1, :]) do ax
+        isa(ax, Axis) && hidexdecorations!(ax)
+    end
+    foreach(axes_mat[:, 2:end]) do ax
+        isa(ax, Axis) && hideydecorations!(ax)
+    end
+end
