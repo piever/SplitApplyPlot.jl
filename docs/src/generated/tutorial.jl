@@ -1,3 +1,7 @@
+# # Tutorial
+#
+# Example use of SplitApplyPlot.
+
 using SplitApplyPlot, CairoMakie
 
 df = (
