@@ -4,9 +4,10 @@ using Tables: columns, getcolumn
 using StructArrays: uniquesorted, finduniquesorted, components, StructArray
 using AbstractPlotting
 
-export splitapplyplot
+export draw, draw!, mapping, hideinnerdecorations!
 
 include("utils.jl")
-include("grouping.jl")
+include("mapping.jl")
+include("draw.jl")
 
 end
