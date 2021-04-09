@@ -10,7 +10,11 @@ function palettes()
     return defaults
 end
 
-function splitapplyplot(f, fig, data, by::NamedTuple, positional...; named...)
+draw!(f, fig, data, m::Mapping) = draw!(f, fig, data, NamedTuple(), m)
+
+function draw!(f, fig, data, by::NamedTuple, m::Mapping)
+
+    positional, named = Tuple(m), NamedTuple(m)
 
     axis_dict = Dict{Tuple{Int, Int}, Axis}()
     
@@ -24,7 +28,7 @@ function splitapplyplot(f, fig, data, by::NamedTuple, positional...; named...)
 
     foreach(iter) do (val, idxs)
         attrs = Dict{Symbol, Any}()
-        for (k, v) in pairs(getcolumns(cols, values(named)))
+        for (k, v) in pairs(getcolumns(cols, named))
             attrs[k] = view(v, idxs)
         end
         for (k, unique, v) in zip(keys(by), uniquevalues, val)
@@ -52,11 +56,20 @@ function splitapplyplot(f, fig, data, by::NamedTuple, positional...; named...)
             return axis
         end
 
-        f(ax, args...; attrs...)
+        f(ax, mapping(args...; attrs...))
     end
+    # TODO: decide exactly what to return here
+    M, N = maximum(first, keys(axis_dict)), maximum(last, keys(axis_dict))
+    return [get(axis_dict, Tuple(c), nothing) for c in CartesianIndices((M, N))]
 end
 
-function splitapplyplot(T::Type, fig, data, by::NamedTuple, positional...; named...)
-    f(ax, args...; attrs...) = plot!(T, ax, args...; attrs...)
-    return splitapplyplot(f, fig, data, by::NamedTuple, positional...; named...)
+function draw!(T::Type, fig, data, by::NamedTuple, m::Mapping)
+    f(ax, m) = plot!(T, ax, m)
+    return draw!(f, fig, data, by::NamedTuple, m)
+end
+
+function draw(f, args...; kwargs...)
+    fig = Figure(; kwargs...)
+    draw!(f, fig, args...)
+    return fig
 end
