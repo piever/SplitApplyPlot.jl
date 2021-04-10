@@ -6,8 +6,8 @@ end
 DiscreteScale(scale) = DiscreteScale(scale, Union{}[])
 
 function fit_to_data(scale::DiscreteScale, vs::AbstractVector...)
-    uniques = map(collect∘uniquesorted, vs)
-    unique = collect∘uniquesorted(vcat(uniques...))
+    uniques = map(uniquesort, vs)
+    unique = uniquesort(vcat(uniques...))
     return DiscreteScale(scale.scale, unique)
 end
 

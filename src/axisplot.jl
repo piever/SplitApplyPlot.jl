@@ -11,6 +11,10 @@ end
 
 Base.getindex(args::Arguments, i::Int) = args.v[i]
 Base.getindex(args::Arguments, sym::Symbol) = args.d[sym]
+Base.setindex!(args::Arguments, val, i::Int) = (args.v[i] = val)
+Base.setindex!(args::Arguments, val, sym::Symbol) = (args.d[sym] = val)
+Base.pop!(args::Arguments, i::Int, default) = pop!(args.v, i, default)
+Base.pop!(args::Arguments, sym::Symbol, default) = pop!(args.d, sym, default)
 
 function Base.map(f, a::Arguments, as::Arguments...)
     is = eachindex(a.v)
@@ -19,8 +23,8 @@ function Base.map(f, a::Arguments, as::Arguments...)
         vals = map(t -> t[i], (a, as...))
         return f(vals...)
     end
-    v = map(g, is)
-    d = Dict(k => g(k) for k in ks)
+    v = collect(Any, Iterators.map(g, is))
+    d = Dict{Symbol, Any}(k => g(k) for k in ks)
     return Arguments(v, d)
 end
 
