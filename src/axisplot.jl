@@ -16,6 +16,8 @@ Base.setindex!(args::Arguments, val, sym::Symbol) = (args.d[sym] = val)
 Base.pop!(args::Arguments, i::Int, default) = pop!(args.v, i, default)
 Base.pop!(args::Arguments, sym::Symbol, default) = pop!(args.d, sym, default)
 
+Base.copy(args::Arguments) = Arguments(copy(args.v), copy(args.d))
+
 function Base.map(f, a::Arguments, as::Arguments...)
     is = eachindex(a.v)
     ks = keys(a.d)
@@ -35,21 +37,25 @@ struct AxisPlot
     labels::Arguments
 end
 
-AbstractPlotting.Axis(ap::AxisPlot) = ap.axis
+Base.show(io::IO, ap::AxisPlot) = print(io, "AxisPlot {...}")
 
-apply(f, x) = f(x)
+AbstractPlotting.Axis(ap::AxisPlot) = ap.axis
 
 function AbstractPlotting.plot!(ap::AxisPlot)
     axis, tracelist, scales, labels = ap.axis, ap.tracelist, ap.scales, ap.labels
     for trace in tracelist
-        scaledtracelist = map(apply, scales, trace)
-        plot!(axis, scaledtracelist.v...; scaledtracelist.d...)
+        scaledtrace = map(|>, trace, scales)
+        plot!(axis, scaledtrace.v...; scaledtrace.d...)
     end
-    for (label, scale, axislabel, ticks) in zip(labels.v, scales.v, [:xlabel, :ylabel], [:xticks, :yticks])
+    for (i, (label, scale)) in enumerate(zip(labels.v, scales.v))
+        axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
         # FIXME: checkout proper fix in AbstractPlotting
         if scale isa DiscreteScale
             u = scale.uniquevalues
             getproperty(axis, ticks)[] = (axes(u, 1), u)
+        else
+            min, max = extrema(scale.extrema)
+            axis.limits[] = Base.setindex(axis.limits[], (min, max), i)
         end
         getproperty(axis, axislabel)[] = string(label)
     end

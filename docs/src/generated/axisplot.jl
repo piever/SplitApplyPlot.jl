@@ -1,6 +1,10 @@
 # # AxisPlots
 #
-# The key ingredient for data representations are `AxisPlot`s. An `AxisPlot` is
+# The key ingredient for data representations are `AxisPlot`s.
+#
+# ## The `AxisPlot` type
+#
+# An `AxisPlot` is
 # made of four components:
 # - axis,
 # - list of traces,
@@ -36,19 +40,19 @@ AbstractPlotting.save("axisplot.svg", AbstractPlotting.current_scene()); nothing
 # a simple way to generate them from data.
 
 using RDatasets
-diamonds = RDatasets.dataset("ggplot2", "diamonds")
+mpg = RDatasets.dataset("ggplot2", "mpg")
 resolution = (600, 600)
 fig = Figure(; resolution)
-axisplots(fig, diamonds, (color=:Clarity,), arguments(:Carat, :Depth))
+axisplots(fig, mpg, (color=:Cyl,), arguments(:Displ, :Cty))
 
 # `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
 resolution = (1200, 1200)
 fig = Figure(; resolution)
 ap = axisplots(
     fig,
-    diamonds,
-    (color=:Clarity, layout_x=:Cut, layout_y=:Color),
-    arguments(:Carat, :Depth)
+    mpg,
+    (color=:Cyl, layout_x=:Drv, layout_y=:Fl),
+    arguments(:Displ, :Cty)
 )
 
 # The result can then be plotted as follows:
@@ -58,4 +62,11 @@ AbstractPlotting.save("axisplot_grid.svg", AbstractPlotting.current_scene()); no
 
 # ![](axisplot_grid.svg)
 #
-# # Generating `AxisPlot` objects
+# The future can then be further cleaned up by working with the matrix of axes:
+
+hideinnerdecorations!(ap)
+fig
+AbstractPlotting.save("axisplot_grid_clean.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](axisplot_grid_clean.svg)
+

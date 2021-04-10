@@ -1,15 +1,9 @@
-# function palettes()
-#     abstractplotting_palette = AbstractPlotting.current_default_theme()[:palette]
-#     palette = arguments()
-#     for (key, val) in abstractplotting_palette
-#         palette[key] = to_value(val)
-#     end
-#     defaults[:layout_x] = Observable(Counter())
-#     defaults[:layout_y] = Observable(Counter())
-#     return defaults
-# end
+function palettes()
+    abstractplotting_palette = AbstractPlotting.current_default_theme()[:palette]
+    return Dict(k => to_value(v) for (k, v) in abstractplotting_palette)
+end
 
-function axisplots(fig, data, by::NamedTuple, select::Arguments, scales::Arguments=arguments())
+function axisplots(fig, data, by::NamedTuple, select::Arguments)
     positional, named = select.v, select.d
 
     axisplots = Dict{Tuple{Int, Int}, AxisPlot}()
@@ -17,6 +11,11 @@ function axisplots(fig, data, by::NamedTuple, select::Arguments, scales::Argumen
     cols = columns(data)
     by_cols = getcolumns(cols, by)
     uniquevalues = map(uniquesort, by_cols)
+    extremas = map(select) do s
+        min, max = extrema(getcolumn(cols, s))
+        return min..max
+    end
+    palette = palettes()
     iter = isempty(by) ? [((), Colon())] : finduniquesorted(StructArray(Tuple(by_cols)))
 
     foreach(iter) do (val, idxs)
@@ -38,8 +37,17 @@ function axisplots(fig, data, by::NamedTuple, select::Arguments, scales::Argumen
         
         axisplot = get!(axisplots, layout) do
             axis = Axis(fig[layout...])
-            scales = arguments()
-            labels = arguments()
+            scales = map(extremas) do extrema
+                return ContinuousScale(identity, extrema)
+            end
+            for (key, val) in pairs(uniquevalues)
+                scale = get(palette, key, Counter)
+                scales[key] = DiscreteScale(scale, val)
+            end
+            labels = map(select) do s
+                sym = s isa Symbol ? s : columnnames(cols)[s]
+                return string(sym)
+            end
             return AxisPlot(axis, Arguments[], scales, labels)
         end
 
