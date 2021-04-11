@@ -142,7 +142,7 @@ end
 #     return [get(axis_dict, Tuple(c), nothing) for c in CartesianIndices((M, N))]
 # end
 
-# function draw!(T::AbstractPlotting.PlotFunc, fig, data, by::NamedTuple, select::Arguments)
+# function draw!(T::PlotFunc, fig, data, by::NamedTuple, select::Arguments)
 #     f(ax, select) = plot!(T, ax, select)
 #     return draw!(f, fig, data, by::NamedTuple, select)
 # end

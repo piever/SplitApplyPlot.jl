@@ -30,9 +30,17 @@ function Base.map(f, a::Arguments, as::Arguments...)
     return Arguments(v, d)
 end
 
+struct Trace
+    plottype::PlotFunc
+    data::Arguments
+    attributes::Dict{Symbol, Any}
+end
+
+Trace(plottype::PlotFunc, data::Arguments) = Trace(plottype, data, Dict{Symbol, Any}())
+
 struct AxisPlot
     axis::Axis
-    tracelist::Vector{Arguments}
+    tracelist::Vector{Trace}
     scales::Arguments
     labels::Arguments
 end
@@ -44,8 +52,8 @@ AbstractPlotting.Axis(ap::AxisPlot) = ap.axis
 function AbstractPlotting.plot!(ap::AxisPlot)
     axis, tracelist, scales, labels = ap.axis, ap.tracelist, ap.scales, ap.labels
     for trace in tracelist
-        scaledtrace = map(|>, trace, scales)
-        plot!(axis, scaledtrace.v...; scaledtrace.d...)
+        scaledtrace = map(|>, trace.data, scales)
+        plot!(trace.plottype, axis, scaledtrace.v...; scaledtrace.d..., trace.attributes...)
     end
     for (i, (label, scale)) in enumerate(zip(labels.v, scales.v))
         axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
