@@ -39,34 +39,35 @@ AbstractPlotting.save("axisplot.svg", AbstractPlotting.current_scene()); nothing
 # Generating `AxisPlot` objects by hand is extremely laborious. SplitApplyPlot provides
 # a simple way to generate them from data.
 
-# using RDatasets
-# mpg = RDatasets.dataset("ggplot2", "mpg")
-# resolution = (600, 600)
-# fig = Figure(; resolution)
-# axisplots(fig, mpg, (color=:Cyl,), arguments(:Displ, :Cty))
+using RDatasets
+mpg = RDatasets.dataset("ggplot2", "mpg")
+resolution = (600, 600)
+fig = Figure(; resolution)
+axisplots(Scatter, fig, mpg, (color=:Cyl,), arguments(:Displ, :Cty))
 
-# # `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
-# resolution = (1200, 1200)
-# fig = Figure(; resolution)
-# ap = axisplots(
-#     fig,
-#     mpg,
-#     (color=:Cyl, layout_x=:Drv, layout_y=:Fl),
-#     arguments(:Displ, :Cty)
-# )
+# `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
+resolution = (1200, 1200)
+fig = Figure(; resolution)
+ap = axisplots(
+    Scatter,
+    fig,
+    mpg,
+    (color=:Cyl, layout_x=:Drv, layout_y=:Fl),
+    arguments(:Displ, :Cty)
+)
 
-# # The result can then be plotted as follows:
-# foreach(plot!, skipmissing(ap)) # some combination of facets may be missing
-# fig
-# AbstractPlotting.save("axisplot_grid.svg", AbstractPlotting.current_scene()); nothing #hide
+# The result can then be plotted as follows:
+foreach(plot!, skipmissing(ap)) # some combination of facets may be missing
+fig
+AbstractPlotting.save("axisplot_grid.svg", AbstractPlotting.current_scene()); nothing #hide
 
-# # ![](axisplot_grid.svg)
-# #
-# # The future can then be further cleaned up by working with the matrix of axes:
+# ![](axisplot_grid.svg)
+#
+# The future can then be further cleaned up by working with the matrix of axes:
 
-# hideinnerdecorations!(ap)
-# fig
-# AbstractPlotting.save("axisplot_grid_clean.svg", AbstractPlotting.current_scene()); nothing #hide
+hideinnerdecorations!(ap)
+fig
+AbstractPlotting.save("axisplot_grid_clean.svg", AbstractPlotting.current_scene()); nothing #hide
 
-# # ![](axisplot_grid_clean.svg)
+# ![](axisplot_grid_clean.svg)
 

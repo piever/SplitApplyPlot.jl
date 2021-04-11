@@ -1,33 +1,33 @@
 struct Arguments
-    v::Vector{Any}
-    d::Dict{Symbol, Any}
+    positional::Vector{Any}
+    named::Dict{Symbol, Any}
 end
 
 function arguments(args...; kwargs...)
-    v = collect(Any, args)
-    d = Dict{Symbol, Any}(kwargs)
-    return Arguments(v, d)
+    positional = collect(Any, args)
+    named = Dict{Symbol, Any}(kwargs)
+    return Arguments(positional, named)
 end
 
-Base.getindex(args::Arguments, i::Int) = args.v[i]
-Base.getindex(args::Arguments, sym::Symbol) = args.d[sym]
-Base.setindex!(args::Arguments, val, i::Int) = (args.v[i] = val)
-Base.setindex!(args::Arguments, val, sym::Symbol) = (args.d[sym] = val)
-Base.pop!(args::Arguments, i::Int, default) = pop!(args.v, i, default)
-Base.pop!(args::Arguments, sym::Symbol, default) = pop!(args.d, sym, default)
+Base.getindex(args::Arguments, i::Int) = args.positional[i]
+Base.getindex(args::Arguments, sym::Symbol) = args.named[sym]
+Base.setindex!(args::Arguments, val, i::Int) = (args.positional[i] = val)
+Base.setindex!(args::Arguments, val, sym::Symbol) = (args.named[sym] = val)
+Base.pop!(args::Arguments, i::Int, default) = pop!(args.positional, i, default)
+Base.pop!(args::Arguments, sym::Symbol, default) = pop!(args.named, sym, default)
 
-Base.copy(args::Arguments) = Arguments(copy(args.v), copy(args.d))
+Base.copy(args::Arguments) = Arguments(copy(args.positional), copy(args.named))
 
 function Base.map(f, a::Arguments, as::Arguments...)
-    is = eachindex(a.v)
-    ks = keys(a.d)
+    is = eachindex(a.positional)
+    ks = keys(a.named)
     function g(i)
         vals = map(t -> t[i], (a, as...))
         return f(vals...)
     end
-    v = collect(Any, Iterators.map(g, is))
-    d = Dict{Symbol, Any}(k => g(k) for k in ks)
-    return Arguments(v, d)
+    positional = collect(Any, Iterators.map(g, is))
+    named = Dict{Symbol, Any}(k => g(k) for k in ks)
+    return Arguments(positional, named)
 end
 
 struct Trace
@@ -53,9 +53,11 @@ function AbstractPlotting.plot!(ap::AxisPlot)
     axis, tracelist, scales, labels = ap.axis, ap.tracelist, ap.scales, ap.labels
     for trace in tracelist
         scaledtrace = map(|>, trace.data, scales)
-        plot!(trace.plottype, axis, scaledtrace.v...; scaledtrace.d..., trace.attributes...)
+        positional, named = scaledtrace.positional, scaledtrace.named
+        merge!(named, trace.attributes)
+        plot!(trace.plottype, axis, positional...; named...)
     end
-    for (i, (label, scale)) in enumerate(zip(labels.v, scales.v))
+    for (i, (label, scale)) in enumerate(zip(labels.positional, scales.positional))
         axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
         # FIXME: checkout proper fix in AbstractPlotting
         if scale isa DiscreteScale
