@@ -20,18 +20,14 @@ end
 
 Entry(plottype::PlotFunc; kwargs...) = Entry(; plottype, kwargs...)
 
-struct Entries
-    list::Vector{Entry}
+struct AxisEntries
+    axis::Union{Axis, Nothing}
+    entries::Vector{Entry}
     labels::Arguments
     summaries::Arguments
 end
 
-Entries() = Entries(Entry[], arguments(), arguments())
-
-struct AxisEntries
-    axis::Axis
-    entries::Entries
-end
+AxisEntries() = AxisEntries(nothing, Entry[], arguments(), arguments())
 
 AbstractPlotting.Axis(ae::AxisEntries) = ae.axis
 
@@ -43,27 +39,29 @@ join_summaries!(s1::Set, s2::Set) = union!(s1, s2)
 apply_summary(::Tuple, v) = v
 apply_summary(s::Set, el) = count(≤(el), s)
 
-function combine!(acc::Entries, entry::Entry)
-    push!(acc.list, entry)
-    mergewith!(acc.labels, entry.labels) do l1, l2
-        return isempty(l1) ? l1 : l2
+combine!(ae::AxisEntries, ax::Axis) = AxisEntries(ax, ae.entries, ae.labels, ae.summaries)
+
+function combine!(ae::AxisEntries, entry::Entry)
+    push!(ae.entries, entry)
+    mergewith!(ae.labels, entry.labels) do l1, l2
+        return isempty(l1) ? l2 : l1
     end
-    mergewith!(union!, acc.summaries, arguments(; map(Set{Any}, entry.group)...))
-    mergewith!(extend_extrema, acc.summaries, map(extrema, entry.select))
-    return acc
+    mergewith!(union!, ae.summaries, arguments(; map(Set{Any}, entry.group)...))
+    mergewith!(extend_extrema, ae.summaries, map(extrema, entry.select))
+    return ae
 end
 
 function add_entry!(entries_dict, entry)
     layout = (get(entry.group, :layout_y, 1), get(entry.group, :layout_x, 1))
-    entries = get!(Entries, entries_dict, layout) # look up entries list or initialize empty
+    entries = get!(AxisEntries, entries_dict, layout) # look up entries list or initialize empty
     combine!(entries, entry)
     return entries_dict
 end
 
 function axes_grid(fig, iterator)
-    init = Dict{NTuple{2, Any}, Entries}()
-    entries_dictionary = foldl(add_entry!, iterator; init)
-    summaries_iter = (entries.summaries for entries in values(entries_dictionary))
+    init = Dict{NTuple{2, Any}, AxisEntries}()
+    ae_dictionary = foldl(add_entry!, iterator; init)
+    summaries_iter = (ae.summaries for ae in values(ae_dictionary))
     summaries = foldl(summaries_iter, init=arguments()) do acc, v
         return mergewith!(join_summaries!, acc, v)
     end
@@ -74,29 +72,28 @@ function axes_grid(fig, iterator)
     layout_summaries = map(sym -> get(summaries, dym, Set{Any}(1)), (:layout_y, :layout_x))
     sz = map(length, layout_summaries)
     mat = Union{AxisEntries, Missing}[missing for _ in CartesianIndices(sz)]
-    for (datalayout, entries) in pairs(entries_dictionary)
+    for (datalayout, ae) in pairs(ae_dictionary)
         layout = map(apply_summary, layout_summaries, datalayout)
         axis = Axis(fig[layout...])
-        mat[layout...] = AxisEntries(axis, entries)
+        mat[layout...] = combine!(ae, axis)
     end
     return mat
 end
 
 function AbstractPlotting.plot!(ae::AxisEntries, palettes=default_palettes())
-    axis, entries = ae.axis, ae.entries
-    for entry in entries.list
+    axis, entries, labels, summaries = ae.axis, ae.entries, ae.labels, ae.summaries
+    for entry in entries
         plottype, group, select, attributes = entry.plottype, entry.group, entry.select, entry.attributes
         scaledtrace = copy(select) # initialize with correct number of positional values
         for cont in (select.positional, select.named, group), (k, v) in pairs(cont)
             k in (:layout_y, :layout_x) && continue
             iscontinuous = cont !== group
-            scaledtrace[k] = apply_palettes(k, v; palettes, entries.summaries, iscontinuous)
+            scaledtrace[k] = apply_palettes(k, v; palettes, summaries, iscontinuous)
         end
         positional, named = scaledtrace.positional, scaledtrace.named
         merge!(named, attributes)
         plot!(plottype, axis, positional...; named...)
     end
-    labels, summaries = entries.labels, entries.summaries
     for (i, (label, summary)) in enumerate(zip(labels.positional, summaries.positional))
         axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
         # FIXME: checkout proper fix in AbstractPlotting

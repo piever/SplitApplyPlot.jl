@@ -14,24 +14,22 @@ resolution = (600, 600)
 fig = Figure(; resolution)
 ae = AxisEntries(
     Axis(fig[1, 1]),
-    Entries(
-        [
-            Entry(
-                Scatter,
-                group = (marker="b",),
-                select = arguments(rand(10), rand(10), color=rand(10)),
-                attributes = Dict(:markersize => 10),
-            ),
-            Entry(
-                Scatter,
-                group = (marker="c",),
-                select = arguments(rand(10), rand(10), color=rand(10)),
-                attributes = Dict(:markersize => 10),
-            ),
-        ],
-        arguments("weight", "height", color="age", marker="name"),
-        arguments((0, 1), (0, 1), color=(0, 1), marker=Set(["a", "b", "c"])),
-    )
+    [
+        Entry(
+            Scatter,
+            group = (marker="b",),
+            select = arguments(rand(10), rand(10), color=rand(10)),
+            attributes = Dict(:markersize => 10),
+        ),
+        Entry(
+            Scatter,
+            group = (marker="c",),
+            select = arguments(rand(10), rand(10), color=rand(10)),
+            attributes = Dict(:markersize => 10),
+        ),
+    ],
+    arguments("weight", "height", color="age", marker="name"),
+    arguments((0, 1), (0, 1), color=(0, 1), marker=Set(["a", "b", "c"])),
 )
 plot!(ae)
 fig
