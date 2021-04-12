@@ -9,7 +9,6 @@ export draw, draw!, mapping, hideinnerdecorations!
 export arguments, axisplots, AxisPlot, Trace, DiscreteScale, ContinuousScale
 
 include("arguments.jl")
-include("axisplot.jl")
 include("entries.jl")
 include("utils.jl")
 

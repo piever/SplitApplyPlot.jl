@@ -21,11 +21,22 @@ struct Entries
     summaries::Arguments
 end
 
+struct AxisEntries
+    axis::Axis
+    entries::Entries
+end
+
 Entries() = Entries(Entry[], arguments(), arguments())
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
 
-function combine_entries!(acc::Entries, labelled_entry::LabelledEntry)
+join_summaries!(i1::Tuple, i2::Tuple) = extend_extrema(i1, i2)
+join_summaries!(s1::Set, s2::Set) = union!(s1, i2)
+
+apply_summary(s::Tuple, v) = v
+apply_summary(s::Set, el) = count(≤(el), s)
+
+function combine!(acc::Entries, labelled_entry::LabelledEntry)
     entry = labelled_entry.entry
     push!(acc.list, entry)
     mergewith!(acc.labels, labelled_entry.labels) do l1, l2
@@ -36,48 +47,32 @@ function combine_entries!(acc::Entries, labelled_entry::LabelledEntry)
     return acc
 end
 
-foldl(entries, init=Dict()) do acc, entry
-    layout = map(sym -> get(entry.group, sym, 1), (:layout_y, :layout_x))
-    buffer = get(acc, layout, nothing)
-end
-
 # Maybe add layout to Trace?
-function addtrace!(T::PlotFunc, trace_hashlist, group, select, labels; attributes...)
-    
-    # Initialize `trace` with columns from `select`
-    trace = copy(select)
-    # Add arguments from grouping
-    merge!(trace.named, pairs(group))
-    # Remove layout information
-    layout = map((:layout_y, :layout_x)) do sym
-        l = pop!(trace, sym, 1)
-        ls = get(uniquevalues, sym, [1])
-        return findfirst(==(l), ls)
-    end
-
-    
-        axisplot = get!(axisplots, layout) do
-            axis = Axis(fig[layout...])
-            scales = map(select) do _
-                return ContinuousScale(identity)
-            end
-            for (key, val) in pairs(group)
-                scale = get(palette, key, Counter)
-                scales[key] = DiscreteScale(scale)
-            end
-            return AxisPlot(axis, Trace[], scales, labels)
-        end
-
-        push!(axisplot.tracelist, Trace(T, trace, Dict(attributes)))
-    end
-    M, N = maximum(first, keys(axisplots)), maximum(last, keys(axisplots))
-    return Union{AxisPlot, Missing}[get(axisplots, Tuple(c), missing) for c in CartesianIndices((M, N))]
+function add_entry!(entries_dict, labelled_entry)
+    entry = labelled_entry.entry
+    layout = (get(entry.group, :layout_y, 1), get(entry.group, :layout_x, 1))
+    entries = get!(Entries, entries_dict, layout) # look up entries list or initialize empty
+    combine!(entries, labelled_entry)
+    return entries_dict
 end
 
-function fitscales!(axisplots::AbstractMatrix{<:Union{AxisPlot, Missing}})
-    datas = [trace.data for trace in ap.tracelist for ap in skipmissing(axisplots)]
-    for ap in skipmissing(axisplots)
-        fitscales!(ap.scales, datas) # FIXME: a lot of redundant computation here
+function axes_grid(fig, iterator)
+    init = Dict{NTuple{2, Any}, Entries}()
+    entries_dictionary = foldl(add_entry!, iterator; init)
+    summaries_iter = (entries.summaries for entries in values(entries_dictionary))
+    # Here we may want to control whether we link scales across axes
+    summaries = foldl(summaries_iter, init=arguments()) do acc, v
+        return mergewith!(join_summaries!, acc, v)
     end
-    return axisplots
+    layout_summaries = map(sym -> get(summaries, dym, Set{Any}(1)), (:layout_y, :layout_x))
+    M, N = map(length, layout_summaries)
+
+    mat = Union{AxisEntries, Missing}[missing for _ in CartesianIndices((M, N))]
+    for (datalayout, entries) in pairs(entries_dictionary)
+        layout = map(apply_summary, layout_summaries, datalayout)
+        axis = Axis(fig[layout...])
+        mat[layout...] = AxisEntries(axis, entries)
+    end
+    return mat
 end
+
