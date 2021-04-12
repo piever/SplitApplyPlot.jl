@@ -39,8 +39,6 @@ join_summaries!(s1::Set, s2::Set) = union!(s1, s2)
 apply_summary(::Tuple, v) = v
 apply_summary(s::Set, el) = count(≤(el), s)
 
-combine!(ae::AxisEntries, ax::Axis) = AxisEntries(ax, ae.entries, ae.labels, ae.summaries)
-
 function combine!(ae::AxisEntries, entry::Entry)
     push!(ae.entries, entry)
     mergewith!(ae.labels, entry.labels) do l1, l2
@@ -65,7 +63,8 @@ function axes_grid(fig, iterator)
     summaries = foldl(summaries_iter, init=arguments()) do acc, v
         return mergewith!(join_summaries!, acc, v)
     end
-    # Here we may want to control whether we link scales across axes, simple version is to link everything
+    # Here we may want to control whether we link scales across axes
+    # Simple version is to link everything
     foreach(summaries_iter) do el
         mergewith!((a, b) -> b, el, summaries)
     end
@@ -75,7 +74,7 @@ function axes_grid(fig, iterator)
     for (datalayout, ae) in pairs(ae_dictionary)
         layout = map(apply_summary, layout_summaries, datalayout)
         axis = Axis(fig[layout...])
-        mat[layout...] = combine!(ae, axis)
+        mat[layout...] = AxisEntries(axis, ae.entries, ae.labels, ae.summaries)
     end
     return mat
 end
