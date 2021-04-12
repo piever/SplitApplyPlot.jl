@@ -1,8 +1,7 @@
-struct Counter end
-
-cycle(v, i) = v[mod1(i, length(v))]
-
-cycle(::Counter, i) = i
+function cycle(v::AbstractVector, i::Int)
+    ax = axes(v, 1)
+    return v[first(ax) + mod(i - first(ax), length(ax))]
+end
 
 """
     iscontinuous(v::AbstractVector)
@@ -17,12 +16,12 @@ function getcolumns(cols, select)
     return map(name -> getcolumn(cols, name), select)
 end
 
-function hideinnerdecorations!(axes_mat::Matrix{<:Union{AxisPlot, Missing}})
+function hideinnerdecorations!(axes_mat::Matrix{<:Union{AxisEntries, Missing}})
     foreach(axes_mat[1:end-1, :]) do ax
-        isa(ax, AxisPlot) && hidexdecorations!(Axis(ax))
+        isa(ax, AxisEntries) && hidexdecorations!(Axis(ax))
     end
     foreach(axes_mat[:, 2:end]) do ax
-        isa(ax, AxisPlot) && hideydecorations!(Axis(ax))
+        isa(ax, AxisEntries) && hideydecorations!(Axis(ax))
     end
 end
 

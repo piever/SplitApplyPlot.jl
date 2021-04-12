@@ -1,6 +1,13 @@
-function palettes()
+function default_palettes()
     abstractplotting_palette = AbstractPlotting.current_default_theme()[:palette]
     return Dict(k => to_value(v) for (k, v) in abstractplotting_palette)
+end
+
+function apply_palettes(k, v; palettes, summaries, iscontinuous)
+    summary = summaries[k]
+    r = apply_summary(summary, v)
+    (iscontinuous || !haskey(palettes, k)) && return r
+    return cycle(palettes[k], r) # FIXME: support continuous palettes?
 end
 
 struct Entry
@@ -10,7 +17,10 @@ struct Entry
     attributes::Dict{Symbol, Any}
 end
 
-struct LabelledEntry
+Entry(plottype::PlotFunc, group::NamedTuple, select::Arguments) =
+    Entry(plottype, group, select, Dict{Symbol, Any}())
+
+struct LabeledEntry
     entry::Entry
     labels::Arguments
 end
@@ -26,23 +36,25 @@ struct AxisEntries
     entries::Entries
 end
 
+AbstractPlotting.Axis(ae::AxisEntries) = ae.axis
+
 Entries() = Entries(Entry[], arguments(), arguments())
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
 
 join_summaries!(i1::Tuple, i2::Tuple) = extend_extrema(i1, i2)
-join_summaries!(s1::Set, s2::Set) = union!(s1, i2)
+join_summaries!(s1::Set, s2::Set) = union!(s1, s2)
 
-apply_summary(s::Tuple, v) = v
+apply_summary(::Tuple, v) = v
 apply_summary(s::Set, el) = count(≤(el), s)
 
-function combine!(acc::Entries, labelled_entry::LabelledEntry)
+function combine!(acc::Entries, labelled_entry::LabeledEntry)
     entry = labelled_entry.entry
     push!(acc.list, entry)
     mergewith!(acc.labels, labelled_entry.labels) do l1, l2
         return isempty(l1) ? l1 : l2
     end
-    mergewith!(union!, acc.summaries, Arguments(; map(Set{Any}, entry.group)...))
+    mergewith!(union!, acc.summaries, arguments(; map(Set{Any}, entry.group)...))
     mergewith!(extend_extrema, acc.summaries, map(extrema, entry.select))
     return acc
 end
@@ -60,14 +72,16 @@ function axes_grid(fig, iterator)
     init = Dict{NTuple{2, Any}, Entries}()
     entries_dictionary = foldl(add_entry!, iterator; init)
     summaries_iter = (entries.summaries for entries in values(entries_dictionary))
-    # Here we may want to control whether we link scales across axes
     summaries = foldl(summaries_iter, init=arguments()) do acc, v
         return mergewith!(join_summaries!, acc, v)
     end
+    # Here we may want to control whether we link scales across axes, simple version is to link everything
+    foreach(summaries_iter) do el
+        mergewith!((a, b) -> b, el, summaries)
+    end
     layout_summaries = map(sym -> get(summaries, dym, Set{Any}(1)), (:layout_y, :layout_x))
-    M, N = map(length, layout_summaries)
-
-    mat = Union{AxisEntries, Missing}[missing for _ in CartesianIndices((M, N))]
+    sz = map(length, layout_summaries)
+    mat = Union{AxisEntries, Missing}[missing for _ in CartesianIndices(sz)]
     for (datalayout, entries) in pairs(entries_dictionary)
         layout = map(apply_summary, layout_summaries, datalayout)
         axis = Axis(fig[layout...])
@@ -76,3 +90,32 @@ function axes_grid(fig, iterator)
     return mat
 end
 
+function AbstractPlotting.plot!(ae::AxisEntries, palettes=default_palettes())
+    axis, entries = ae.axis, ae.entries
+    for entry in entries.list
+        plottype, group, select, attributes = entry.plottype, entry.group, entry.select, entry.attributes
+        scaledtrace = copy(select) # initialize with correct number of positional values
+        for cont in (select.positional, select.named, group), (k, v) in pairs(cont)
+            k in (:layout_y, :layout_x) && continue
+            iscontinuous = cont !== group
+            scaledtrace[k] = apply_palettes(k, v; palettes, entries.summaries, iscontinuous)
+        end
+        positional, named = scaledtrace.positional, scaledtrace.named
+        merge!(named, attributes)
+        plot!(plottype, axis, positional...; named...)
+    end
+    labels, summaries = entries.labels, entries.summaries
+    for (i, (label, summary)) in enumerate(zip(labels.positional, summaries.positional))
+        axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
+        # FIXME: checkout proper fix in AbstractPlotting
+        if summary isa Set
+            u = sort(collect(summary))
+            getproperty(axis, ticks)[] = (axes(u, 1), u)
+        else
+            @assert summary isa NTuple{2, Real}
+            axis.limits[] = Base.setindex(axis.limits[], summary, i)
+        end
+        getproperty(axis, axislabel)[] = string(label)
+    end
+    return axis
+end

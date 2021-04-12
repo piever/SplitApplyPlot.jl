@@ -5,8 +5,8 @@ using StructArrays: uniquesorted, finduniquesorted, components, StructArray
 using AbstractPlotting
 using AbstractPlotting: PlotFunc
 
-export draw, draw!, mapping, hideinnerdecorations!
-export arguments, axisplots, AxisPlot, Trace, DiscreteScale, ContinuousScale
+export hideinnerdecorations!
+export arguments, Entry, LabeledEntry, Entries, AxisEntries, axes_grid
 
 include("arguments.jl")
 include("entries.jl")

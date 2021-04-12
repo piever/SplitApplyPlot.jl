@@ -21,7 +21,7 @@ makedocs(;
     ),
     pages=Any[
         "index.md",
-        "generated/axisplot.md",
+        "generated/entries.md",
         "API.md",
     ],
 )
