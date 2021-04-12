@@ -4,15 +4,13 @@ using Tables: columns, getcolumn
 using StructArrays: uniquesorted, finduniquesorted, components, StructArray
 using AbstractPlotting
 using AbstractPlotting: PlotFunc
-using IntervalSets
 
 export draw, draw!, mapping, hideinnerdecorations!
 export arguments, axisplots, AxisPlot, Trace, DiscreteScale, ContinuousScale
-export ..
 
+include("arguments.jl")
 include("axisplot.jl")
-include("scales.jl")
+include("entries.jl")
 include("utils.jl")
-include("draw.jl")
 
 end
