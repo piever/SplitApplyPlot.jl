@@ -6,7 +6,7 @@ using AbstractPlotting
 using AbstractPlotting: PlotFunc
 
 export hideinnerdecorations!
-export arguments, Entry, LabeledEntry, Entries, AxisEntries, axes_grid
+export arguments, Entry, Entries, AxisEntries, axes_grid
 
 include("arguments.jl")
 include("entries.jl")

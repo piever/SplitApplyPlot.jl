@@ -18,15 +18,15 @@ ae = AxisEntries(
         [
             Entry(
                 Scatter,
-                (marker="b",),
-                arguments(rand(10), rand(10), color=rand(10)),
-                Dict(:markersize => 10),
+                group = (marker="b",),
+                select = arguments(rand(10), rand(10), color=rand(10)),
+                attributes = Dict(:markersize => 10),
             ),
             Entry(
                 Scatter,
-                (marker="c",),
-                arguments(rand(10), rand(10), color=rand(10)),
-                Dict(:markersize => 10),
+                group = (marker="c",),
+                select = arguments(rand(10), rand(10), color=rand(10)),
+                attributes = Dict(:markersize => 10),
             ),
         ],
         arguments("weight", "height", color="age", marker="name"),

@@ -10,20 +10,15 @@ function apply_palettes(k, v; palettes, summaries, iscontinuous)
     return cycle(palettes[k], r) # FIXME: support continuous palettes?
 end
 
-struct Entry
-    plottype::PlotFunc
-    group::NamedTuple
-    select::Arguments
-    attributes::Dict{Symbol, Any}
+Base.@kwdef struct Entry
+    plottype::PlotFunc=Any
+    group::NamedTuple=NamedTuple()
+    select::Arguments=arguments()
+    labels::Arguments=arguments()
+    attributes::Dict{Symbol, Any}=Dict{Symbol, Any}()
 end
 
-Entry(plottype::PlotFunc, group::NamedTuple, select::Arguments) =
-    Entry(plottype, group, select, Dict{Symbol, Any}())
-
-struct LabeledEntry
-    entry::Entry
-    labels::Arguments
-end
+Entry(plottype::PlotFunc; kwargs...) = Entry(; plottype, kwargs...)
 
 struct Entries
     list::Vector{Entry}
@@ -31,14 +26,14 @@ struct Entries
     summaries::Arguments
 end
 
+Entries() = Entries(Entry[], arguments(), arguments())
+
 struct AxisEntries
     axis::Axis
     entries::Entries
 end
 
 AbstractPlotting.Axis(ae::AxisEntries) = ae.axis
-
-Entries() = Entries(Entry[], arguments(), arguments())
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
 
@@ -48,10 +43,9 @@ join_summaries!(s1::Set, s2::Set) = union!(s1, s2)
 apply_summary(::Tuple, v) = v
 apply_summary(s::Set, el) = count(≤(el), s)
 
-function combine!(acc::Entries, labelled_entry::LabeledEntry)
-    entry = labelled_entry.entry
+function combine!(acc::Entries, entry::Entry)
     push!(acc.list, entry)
-    mergewith!(acc.labels, labelled_entry.labels) do l1, l2
+    mergewith!(acc.labels, entry.labels) do l1, l2
         return isempty(l1) ? l1 : l2
     end
     mergewith!(union!, acc.summaries, arguments(; map(Set{Any}, entry.group)...))
@@ -59,12 +53,10 @@ function combine!(acc::Entries, labelled_entry::LabeledEntry)
     return acc
 end
 
-# Maybe add layout to Trace?
-function add_entry!(entries_dict, labelled_entry)
-    entry = labelled_entry.entry
+function add_entry!(entries_dict, entry)
     layout = (get(entry.group, :layout_y, 1), get(entry.group, :layout_x, 1))
     entries = get!(Entries, entries_dict, layout) # look up entries list or initialize empty
-    combine!(entries, labelled_entry)
+    combine!(entries, entry)
     return entries_dict
 end
 
