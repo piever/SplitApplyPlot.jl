@@ -1,23 +1,7 @@
-struct Counter end
-
-function cycle(scale, i)
-    scale′ = to_value(scale)
-    return scale′[mod1(i, length(scale′))]
+function cycle(v::AbstractVector, i::Int)
+    ax = axes(v, 1)
+    return v[first(ax) + mod(i - first(ax), length(ax))]
 end
-
-cycle(::Counter, i) = i
-
-"""
-    apply_scale(scale, uniquevalues, value)
-
-Return the value in `scale` corresponding to the index of `value` in `uniquevalues`.
-Cycle through `scale` if it has less entries than `uniquevalues`.
-"""
-apply_scale(scale, uniquevalues, value) = cycle(scale, findfirst(==(value), uniquevalues))
-
-apply_scale(f::Base.Callable, _, value) = f(value)
-
-apply_scale(::Nothing, uniquevalues, value) = apply_scale(identity, uniquevalues, value)
 
 """
     iscontinuous(v::AbstractVector)
@@ -28,11 +12,40 @@ iscontinuous(::AbstractVector) = false
 iscontinuous(::AbstractVector{<:Number}) = true
 iscontinuous(::AbstractVector{<:Bool}) = false
 
-function hideinnerdecorations!(axes_mat::Matrix)
-    foreach(axes_mat[1:end-1, :]) do ax
-        isa(ax, Axis) && hidexdecorations!(ax)
-    end
-    foreach(axes_mat[:, 2:end]) do ax
-        isa(ax, Axis) && hideydecorations!(ax)
+function getcolumns(cols, select)
+    return map(name -> getcolumn(cols, name), select)
+end
+
+for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
+    @eval function $sym(ae::AxisEntries; kwargs...)
+        axis = Axis(ae)
+        isnothing(axis) || $sym(axis; kwargs...)
     end
 end
+
+for sym in [:linkxaxes!, :linkyaxes!, :linkaxes!]
+    @eval function $sym(ae::AxisEntries, aes::AxisEntries...)
+        axs = filter(!isnothing, map(Axis, (ae, aes...)))
+        $sym(axs...)
+    end
+end
+
+function hideinnerdecorations!(aes::Matrix{AxisEntries})
+    options = (label=true, ticks=true, minorticks=true, grid=false, minorgrid=false)
+    foreach(ae -> hidexdecorations!(ae; options...), aes[1:end-1, :])
+    foreach(ae -> hideydecorations!(ae; options...), aes[:, 2:end])
+end
+
+function deleteemptyaxes!(aes::Matrix{AxisEntries})
+    for (i, ae) in enumerate(aes)
+        if isempty(ae.entries)
+            axis = Axis(ae)
+            if !isnothing(axis)
+                delete!(axis)
+                aes[i] = AxisEntries(nothing, ae.entries, ae.labels, ae.scales)
+            end
+        end
+    end
+end
+
+uniquesort(v) = collect(uniquesorted(v))
