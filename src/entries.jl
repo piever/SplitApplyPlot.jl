@@ -58,11 +58,11 @@ function AbstractPlotting.plot!(ae::AxisEntries)
     end
     for (i, (label, scale)) in enumerate(zip(labels.positional, scales.positional))
         axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
-        if scale isa AbstractDict
+        if isadiscretescale(scale)
             u = collect(keys(scale))
             getproperty(axis, ticks)[] = (axes(u, 1), u)
         else
-            @assert first(scale) isa NTuple{2, Real}
+            @assert isacontinuousscale(scale)
             axis.limits[] = Base.setindex(axis.limits[], first(scale), i)
             # TODO: also set axis scale
         end

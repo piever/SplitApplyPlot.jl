@@ -1,17 +1,17 @@
-function default_palettes()
-    abstractplotting_palette = AbstractPlotting.current_default_theme()[:palette]
-    return Dict(k => to_value(v) for (k, v) in abstractplotting_palette)
+function column_scale_label(cols, x::Pair{<:Any, <:Pair})
+    columnname, scale_label = x
+    scale, label = scale_label
+    return getcolumn(cols, columnname), scale, string(label)
 end
 
-function apply_palettes(k, v; palettes, summaries, iscontinuous)
-    summary = summaries[k]
-    r = apply_summary(summary, v)
-    (iscontinuous || !haskey(palettes, k)) && return r
-    return cycle(palettes[k], r)
-end
+column_scale_label(cols, x) = column_scale_label(cols, x => automatic => x)
 
-function entries(plottype::PlotFunc, data, group, select; attributes...)
-    # Get one or more labeled entries from data
-    # Idea: maybe put together 
-
+function splitapplyplot(f, fig, data, args...; kwargs...)
+    cols = columns(data)
+    csl = map(arguments(args...; kwargs...)) do x
+        return column_scale_label(cols, x)
+    end
+    columns, scales′, labels = ntuple(map(t -> t[i], csl), 3)
+    scales = default_scales(columns, scales′)
+    grouping_keys = [k for (k, v) in scales.named if isacontinuousscale(v)]
 end
