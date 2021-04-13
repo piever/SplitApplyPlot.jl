@@ -16,13 +16,34 @@ function getcolumns(cols, select)
     return map(name -> getcolumn(cols, name), select)
 end
 
-function hideinnerdecorations!(axes_mat::Matrix{<:Union{AxisEntries, Missing}})
-    foreach(axes_mat[1:end-1, :]) do ax
-        isa(ax, AxisEntries) && hidexdecorations!(Axis(ax))
+for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
+    @eval function $sym(ae::AxisEntries)
+        axis = Axis(ae)
+        isnothing(axis) || $sym(axis)
     end
-    foreach(axes_mat[:, 2:end]) do ax
-        isa(ax, AxisEntries) && hideydecorations!(Axis(ax))
+end
+
+for sym in [:linkxaxes!, :linkyaxes!, :linkaxes!]
+    @eval function $sym(ae::AxisEntries, aes::AxisEntries...)
+        axs = filter(!isnothing, map(Axis, (ae, aes...)))
+        $sym(axs...)
     end
+end
+
+function hideinnerdecorations!(aes::Matrix{AxisEntries})
+    foreach(hidexdecorations!, aes[1:end-1, :])
+    foreach(hideydecorations!, aes[:, 2:end])
+end
+
+function fillmissingaxes!(aes::Matrix{AxisEntries})
+    c = findfirst(has_axis, aes)
+    fig = Axis(aes[c]).parent
+    for c in CartesianIndices(aes)
+        i, j = c[1], c[2]
+        ae = aes[i, j]
+        has_axis(ae) || (aes[i, j] = merge(ae, Axis(fig[i, j])))
+    end
+    return aes
 end
 
 uniquesort(v) = collect(uniquesorted(v))

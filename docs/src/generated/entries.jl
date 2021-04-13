@@ -18,12 +18,12 @@ ae = AxisEntries(
         Entry(
             Scatter,
             arguments(rand(10), rand(10), color=rand(10), marker=fill("b", 10));
-            markersize = 10
+            markersize = 15
         ),
         Entry(
             Scatter,
             arguments(rand(10), rand(10), color=rand(10), marker=fill("c", 10));
-            attributes = Dict(:markersize => 10),
+            markersize = 15
         ),
     ],
     arguments("weight", "height", color="age", marker="name"), #labels
@@ -35,7 +35,7 @@ ae = AxisEntries(
     ),
 )
 plot!(ae)
-fig
+display(fig)
 AbstractPlotting.save("axisentries.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](axisentries.svg)
@@ -49,31 +49,50 @@ using RDatasets
 mpg = RDatasets.dataset("ggplot2", "mpg")
 resolution = (600, 600)
 fig = Figure(; resolution)
-AxisEntriess(Scatter, fig, mpg, (color=:Cyl,), arguments(:Displ, :Cty))
+ag = splitapplyplot!(
+    mappings -> Entry(Scatter, mappings),
+    fig,
+    mpg,
+    :Displ => automatic => "Displacement",
+    :Cty => automatic => "City miles",
+    color=:Cyl => categoricalscale => "Cylinders",
+)
+
+# This operation returns a grid of `AxisEntries` and plots them to the original figure:
+
+display(fig)
+AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
+
+# ![](splitapplyplot.svg)
 
 # `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
 resolution = (1200, 1200)
 fig = Figure(; resolution)
-ap = AxisEntriess(
-    Scatter,
+ag = splitapplyplot!(
+    mappings -> Entry(Scatter, mappings),
     fig,
     mpg,
-    (color=:Cyl, layout_x=:Drv, layout_y=:Fl),
-    arguments(:Displ, :Cty)
+    :Displ => automatic => "Displacement",
+    :Cty => automatic => "City miles",
+    color=:Cyl => categoricalscale => "Cylinders",
+    layout_x=:Drv => categoricalscale => "Drive train",
+    layout_y=:Fl => categoricalscale => "Fuel type",
 )
 
-# The result can then be plotted as follows:
-foreach(plot!, skipmissing(ap)) # some combination of facets may be missing
-fig
-AbstractPlotting.save("axisentries_grid.svg", AbstractPlotting.current_scene()); nothing #hide
+# The figure looks as follows:
 
-# ![](axisentries_grid.svg)
+display(fig)
+AbstractPlotting.save("splitapplyplot_grid.svg", fig); nothing #hide
+
+# ![](splitapplyplot_grid.svg)
 #
-# The future can then be further cleaned up by working with the matrix of axes:
+# The figure can then be further cleaned up by working with the matrix of axes:
 
-hideinnerdecorations!(ap)
-fig
-AbstractPlotting.save("axisentries_grid_clean.svg", AbstractPlotting.current_scene()); nothing #hide
+fillmissingaxes!(ag)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)
+AbstractPlotting.save("splitapplyplot_grid_clean.svg", fig); nothing #hide
 
-# ![](axisentries_grid_clean.svg)
+# ![](splitapplyplot_grid_clean.svg)
 

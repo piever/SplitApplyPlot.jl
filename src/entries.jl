@@ -22,17 +22,13 @@ struct AxisEntries
     scales::Arguments
 end
 
-AxisEntries(axis::Union{Axis, Nothing}=nothing) = AxisEntries(axis, Entry[], arguments(), arguments())
+AxisEntries(axis::Union{Axis, Nothing}=nothing, entries::AbstractVector{Entry}=Entry[]) =
+    AxisEntries(axis, entries, arguments(), arguments())
+AxisEntries(axis::Union{Axis, Nothing}, entry::Entry) = AxisEntries(axis, [entry])
+AxisEntries(entries::AbstractVector{Entry}) = AxisEntries(nothing, entries)
+
 AbstractPlotting.Axis(ae::AxisEntries) = ae.axis
-
-extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
-
-# should this be done in place for efficiency?
-merge_scales(sc1::AbstractDict, sc2::AbstractDict) = merge(sc1, sc2)
-merge_scales((i1, f1)::Pair, (i2, f2)::Pair) = extend_extrema(i1, i2) => f2
-
-rescale(value, scale) = value
-rescale(value, scale::AbstractDict) = [scale[val] for val in value]
+has_axis(ae::AxisEntries) = !isnothing(Axis(ae))
 
 function Base.merge!(ae1::AxisEntries, ae2::AxisEntries)
     axis = isnothing(ae2.axis) ? ae1.axis : ae2.axis
@@ -42,11 +38,11 @@ function Base.merge!(ae1::AxisEntries, ae2::AxisEntries)
     return AxisEntries(axis, entries, labels, scales)
 end
 
-Base.merge!(ae1::AxisEntries, axis::Axis) = merge!(ae1, AxisEntries(axis))
-
 Base.merge(ae::AxisEntries, aes::AxisEntries...) = foldl(merge!, (ae, aes...), init=AxisEntries())
+Base.merge(ae::AxisEntries, axis::Axis) = merge(ae, AxisEntries(axis))
 
 function AbstractPlotting.plot!(ae::AxisEntries)
+    has_axis(ae) || return
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
     @assert !isnothing(axis)
     for entry in entries

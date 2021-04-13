@@ -28,10 +28,19 @@ struct ContinuousScale end
 const continuousscale = ContinuousScale()
 
 isacontinuousscale(::Pair{<:NTuple{2, Any}, <:Function}) = true
-isacontinuousscale(::Any) = true
+isacontinuousscale(::Any) = false
 
 isadiscretescale(::AbstractDict) = true
 isadiscretescale(::Any) = false
+
+extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
+
+# should this be done in place for efficiency?
+merge_scales(sc1::AbstractDict, sc2::AbstractDict) = merge(sc1, sc2)
+merge_scales((i1, f1)::Pair, (i2, f2)::Pair) = extend_extrema(i1, i2) => f2
+
+rescale(value, scale) = value
+rescale(value, scale::AbstractDict) = [scale[val] for val in value]
 
 # Logic to infer good scales
 function default_scales(mappings, scales)
@@ -47,7 +56,7 @@ function default_scales(mappings, scales)
         else
             # unspecified categorical scale
             keys = scale isa AbstractVector ? scale : uniquesort(v)
-            values = palette === automatic ? eachindex(keys) : palette
+            values = palette === automatic ? eachindex(keys) : cycle.(Ref(palette), eachindex(keys))
             return LittleDict(keys, values)
         end
     end

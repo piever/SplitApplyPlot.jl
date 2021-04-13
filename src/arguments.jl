@@ -9,10 +9,15 @@ function arguments(args...; kwargs...)
     return Arguments(positional, named)
 end
 
+Base.get(args::Arguments, i::Int, default) = get(args.positional, i, default)
+Base.get(args::Arguments, sym::Symbol, default) = get(args.named, sym, default)
+
 Base.getindex(args::Arguments, i::Int) = args.positional[i]
 Base.getindex(args::Arguments, sym::Symbol) = args.named[sym]
+
 Base.setindex!(args::Arguments, val, i::Int) = (args.positional[i] = val)
 Base.setindex!(args::Arguments, val, sym::Symbol) = (args.named[sym] = val)
+
 Base.pop!(args::Arguments, i::Int, default) = pop!(args.positional, i, default)
 Base.pop!(args::Arguments, sym::Symbol, default) = pop!(args.named, sym, default)
 
