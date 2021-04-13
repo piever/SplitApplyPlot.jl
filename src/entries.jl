@@ -22,8 +22,13 @@ struct AxisEntries
     scales::Arguments
 end
 
-AxisEntries(axis::Union{Axis, Nothing}=nothing, entries::AbstractVector{Entry}=Entry[]) =
-    AxisEntries(axis, entries, arguments(), arguments())
+to_entries(entries::AbstractVector{Entry}) = entries
+to_entries(entry::Entry) = [entry]
+
+function AxisEntries(axis::Union{Axis, Nothing}=nothing,
+                     entries::Union{AbstractVector{Entry}, Entry}=Entry[])
+    return AxisEntries(axis, to_entries(entries), arguments(), arguments())
+end
 AxisEntries(axis::Union{Axis, Nothing}, entry::Entry) = AxisEntries(axis, [entry])
 AxisEntries(entries::AbstractVector{Entry}) = AxisEntries(nothing, entries)
 
@@ -44,7 +49,6 @@ Base.merge(ae::AxisEntries, axis::Axis) = merge(ae, AxisEntries(axis))
 function AbstractPlotting.plot!(ae::AxisEntries)
     has_axis(ae) || return
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
-    @assert !isnothing(axis)
     for entry in entries
         plottype, mappings, attributes = entry.plottype, entry.mappings, entry.attributes
         trace = map(rescale, mappings, scales)
@@ -57,10 +61,6 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         if isadiscretescale(scale)
             u = collect(keys(scale))
             getproperty(axis, ticks)[] = (axes(u, 1), u)
-        else
-            @assert isacontinuousscale(scale)
-            axis.limits[] = Base.setindex(axis.limits[], first(scale), i)
-            # TODO: also set axis scale
         end
         getproperty(axis, axislabel)[] = string(label)
     end

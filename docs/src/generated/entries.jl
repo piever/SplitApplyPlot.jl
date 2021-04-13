@@ -88,7 +88,6 @@ AbstractPlotting.save("splitapplyplot_grid.svg", fig); nothing #hide
 #
 # The figure can then be further cleaned up by working with the matrix of axes:
 
-fillmissingaxes!(ag)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
 display(fig)

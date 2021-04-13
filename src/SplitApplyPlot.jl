@@ -1,7 +1,7 @@
 module SplitApplyPlot
 
 using Tables: columns, getcolumn
-using StructArrays: uniquesorted, finduniquesorted, components, GroupPerm, StructArray
+using StructArrays: uniquesorted, finduniquesorted, components, StructArray
 using OrderedCollections: LittleDict
 using Colors: RGB
 using AbstractPlotting
@@ -13,8 +13,9 @@ import AbstractPlotting.MakieLayout: hidexdecorations!,
                                      linkxaxes!,
                                      linkyaxes!
 using PooledArrays: PooledArray
+using DataAPI: refarray
 
-export hideinnerdecorations!, fillmissingaxes!
+export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, AxisEntries
 export splitapplyplot!
 export categoricalscale, continuousscale, automatic

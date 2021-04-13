@@ -17,9 +17,9 @@ function getcolumns(cols, select)
 end
 
 for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
-    @eval function $sym(ae::AxisEntries)
+    @eval function $sym(ae::AxisEntries; kwargs...)
         axis = Axis(ae)
-        isnothing(axis) || $sym(axis)
+        isnothing(axis) || $sym(axis; kwargs...)
     end
 end
 
@@ -31,19 +31,21 @@ for sym in [:linkxaxes!, :linkyaxes!, :linkaxes!]
 end
 
 function hideinnerdecorations!(aes::Matrix{AxisEntries})
-    foreach(hidexdecorations!, aes[1:end-1, :])
-    foreach(hideydecorations!, aes[:, 2:end])
+    options = (label=true, ticks=true, minorticks=true, grid=false, minorgrid=false)
+    foreach(ae -> hidexdecorations!(ae; options...), aes[1:end-1, :])
+    foreach(ae -> hideydecorations!(ae; options...), aes[:, 2:end])
 end
 
-function fillmissingaxes!(aes::Matrix{AxisEntries})
-    c = findfirst(has_axis, aes)
-    fig = Axis(aes[c]).parent
-    for c in CartesianIndices(aes)
-        i, j = c[1], c[2]
-        ae = aes[i, j]
-        has_axis(ae) || (aes[i, j] = merge(ae, Axis(fig[i, j])))
+function deleteemptyaxes!(aes::Matrix{AxisEntries})
+    for (i, ae) in enumerate(aes)
+        if isempty(ae.entries)
+            axis = Axis(ae)
+            if !isnothing(axis)
+                delete!(axis)
+                aes[i] = AxisEntries(nothing, ae.entries, ae.labels, ae.scales)
+            end
+        end
     end
-    return aes
 end
 
 uniquesort(v) = collect(uniquesorted(v))
