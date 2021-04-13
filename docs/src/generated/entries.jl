@@ -17,19 +17,22 @@ ae = AxisEntries(
     [
         Entry(
             Scatter,
-            group = (marker="b",),
-            select = arguments(rand(10), rand(10), color=rand(10)),
-            attributes = Dict(:markersize => 10),
+            arguments(rand(10), rand(10), color=rand(10), marker=fill("b", 10));
+            markersize = 10
         ),
         Entry(
             Scatter,
-            group = (marker="c",),
-            select = arguments(rand(10), rand(10), color=rand(10)),
+            arguments(rand(10), rand(10), color=rand(10), marker=fill("c", 10));
             attributes = Dict(:markersize => 10),
         ),
     ],
-    arguments("weight", "height", color="age", marker="name"),
-    arguments((0, 1), (0, 1), color=(0, 1), marker=Set(["a", "b", "c"])),
+    arguments("weight", "height", color="age", marker="name"), #labels
+    arguments(
+        (0, 1) => identity,
+        (0, 1) => identity,
+        color=(0, 1) => identity,
+        marker=LittleDict("a" => :circle, "b" => :utriangle, "c" => :dtriangle), #scales
+    ),
 )
 plot!(ae)
 fig
