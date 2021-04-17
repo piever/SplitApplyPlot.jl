@@ -43,9 +43,6 @@ function Base.merge!(ae1::AxisEntries, ae2::AxisEntries)
     return AxisEntries(axis, entries, labels, scales)
 end
 
-Base.merge(ae::AxisEntries, aes::AxisEntries...) = foldl(merge!, (ae, aes...), init=AxisEntries())
-Base.merge(ae::AxisEntries, axis::Axis) = merge(ae, AxisEntries(axis))
-
 function prefix(i::Int, sym::Symbol)
     var = (:x, :y, :z)[i]
     return Symbol(var, sym)
