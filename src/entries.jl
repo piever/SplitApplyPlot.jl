@@ -46,6 +46,11 @@ end
 Base.merge(ae::AxisEntries, aes::AxisEntries...) = foldl(merge!, (ae, aes...), init=AxisEntries())
 Base.merge(ae::AxisEntries, axis::Axis) = merge(ae, AxisEntries(axis))
 
+function prefix(i::Int, sym::Symbol)
+    var = (:x, :y, :z)[i]
+    return Symbol(var, sym)
+end
+
 function AbstractPlotting.plot!(ae::AxisEntries)
     has_axis(ae) || return
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
@@ -56,13 +61,18 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         merge!(named, attributes)
         plot!(plottype, axis, positional...; named...)
     end
+    # TODO: support log colorscale
     for (i, (label, scale)) in enumerate(zip(labels.positional, scales.positional))
-        axislabel, ticks = i == 1 ? (:xlabel, :xticks) : (:ylabel, :yticks)
+        axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
         if isadiscretescale(scale)
             u = collect(keys(scale))
             getproperty(axis, ticks)[] = (axes(u, 1), u)
+        else
+            @assert isacontinuousscale(scale)
+            if hasproperty(axis, axisscale) # support older AbstractPlotting
+                getproperty(axis, axisscale)[] = scale
+            end
         end
-        getproperty(axis, axislabel)[] = string(label)
     end
     return axis
 end

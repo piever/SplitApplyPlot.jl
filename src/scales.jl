@@ -27,19 +27,20 @@ const categoricalscale = CategoricalScale()
 struct ContinuousScale end
 const continuousscale = ContinuousScale()
 
-isacontinuousscale(::Pair{<:NTuple{2, Any}, <:Function}) = true
+isacontinuousscale(::Function) = true
 isacontinuousscale(::Any) = false
 
 isadiscretescale(::AbstractDict) = true
 isadiscretescale(::Any) = false
 
-extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
-
 # should this be done in place for efficiency?
 merge_scales(sc1::AbstractDict, sc2::AbstractDict) = merge(sc1, sc2)
-merge_scales((i1, f1)::Pair, (i2, f2)::Pair) = extend_extrema(i1, i2) => f2
+function merge_scales(f1::Function, f2::Function)
+    @assert f1 === f2
+    return f1
+end
 
-rescale(value, scale) = value
+rescale(value, scale::Function) = value # AbstractPlotting will take care of the rescaling
 rescale(value, scale::AbstractDict) = [scale[val] for val in value]
 
 # Logic to infer good scales
@@ -49,10 +50,9 @@ function default_scales(mappings, scales)
         if isadiscretescale(scale) || isacontinuousscale(scale)
             # fully specified scale
             return scale
-        elseif iscontinuous(v) && (scale in (automatic, continuousscale) || scale isa Function)
+        elseif iscontinuous(v) && scale in (automatic, continuousscale)
             # unspecified continuous scale
-            f = scale isa Function ? scale : identity
-            return extrema(v) => f
+            return identity
         else
             # unspecified categorical scale
             keys = scale isa AbstractVector ? scale : uniquesort(v)
