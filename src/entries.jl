@@ -73,6 +73,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
                 getproperty(axis, axisscale)[] = scale
             end
         end
+        getproperty(axis, axislabel)[] = string(label)
     end
     return axis
 end
