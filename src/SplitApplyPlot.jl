@@ -16,7 +16,7 @@ using PooledArrays: PooledArray
 using DataAPI: refarray
 
 export hideinnerdecorations!, deleteemptyaxes!
-export arguments, Entry, AxisEntries
+export arguments, Entry, Entries, AxisEntries
 export splitapplyplot!
 export categoricalscale, continuousscale, automatic
 export LittleDict

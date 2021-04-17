@@ -96,4 +96,3 @@ display(fig)
 AbstractPlotting.save("splitapplyplot_grid_clean.svg", fig); nothing #hide
 
 # ![](splitapplyplot_grid_clean.svg)
-
