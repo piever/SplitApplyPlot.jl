@@ -12,25 +12,27 @@
 using SplitApplyPlot, CairoMakie
 resolution = (600, 600)
 fig = Figure(; resolution)
+N = 11
+rg = range(1, 2, length=N)
 ae = AxisEntries(
     Axis(fig[1, 1]),
     [
         Entry(
             Scatter,
-            arguments(rand(10), rand(10), color=rand(10), marker=fill("b", 10));
+            arguments(rg, cosh.(rg), color=1:N, marker=fill("b", N));
             markersize = 15
         ),
         Entry(
             Scatter,
-            arguments(rand(10), rand(10), color=rand(10), marker=fill("c", 10));
+            arguments(rg, sinh.(rg), color=1:N, marker=fill("c", N));
             markersize = 15
         ),
     ],
     arguments("weight", "height", color="age", marker="name"), #labels
     arguments(
-        (0, 1) => identity,
-        (0, 1) => identity,
-        color=(0, 1) => identity,
+        identity,
+        log10,
+        color=identity,
         marker=LittleDict("a" => :circle, "b" => :utriangle, "c" => :dtriangle), #scales
     ),
 )
