@@ -52,7 +52,7 @@ mpg = RDatasets.dataset("ggplot2", "mpg")
 resolution = (600, 600)
 fig = Figure(; resolution)
 ag = splitapplyplot!(
-    mappings -> Entry(Scatter, mappings),
+    Scatter,
     fig,
     mpg,
     :Displ => automatic => "Displacement",
@@ -71,7 +71,7 @@ AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
 resolution = (1200, 1200)
 fig = Figure(; resolution)
 ag = splitapplyplot!(
-    mappings -> Entry(Scatter, mappings),
+    Scatter,
     fig,
     mpg,
     :Displ => automatic => "Displacement",

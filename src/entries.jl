@@ -29,7 +29,7 @@ function Base.merge!(e1::Entries, e2::Entries)
     return Entries(entries, labels, scales)
 end
 
-function compute_axes_grid(e::Entries)
+function compute_axes_grid(fig, e::Entries)
     dict = Dict{NTuple{2, Any}, AxisEntries}()
     layout_scales = (
         layout_y=get(e.scales, :layout_y, LittleDict(1 => 1)),
@@ -39,12 +39,12 @@ function compute_axes_grid(e::Entries)
     axes_grid = map(CartesianIndices(Tuple(grid_size))) do c
         i, j = Tuple(c)
         axis = Axis(fig[i, j])
-        return AxisEntries(axis, Entry[], labels, scales)
+        return AxisEntries(axis, Entry[], e.labels, e.scales)
     end
     for entry in e.entries
         layout = map((:layout_y, :layout_x)) do sym
             scale = layout_scales[sym]
-            col = get(entry.arguments, sym, nothing)
+            col = get(entry.mappings, sym, nothing)
             # without layout info, plot on all axes
             return isnothing(col) ? (1:grid_size[sym]) : rescale(col, scale)[1]
         end
@@ -53,7 +53,7 @@ function compute_axes_grid(e::Entries)
             push!(ae.entries, entry)
         end
     end
-    return axis_grid
+    return axes_grid
 end
 
 """
@@ -71,23 +71,8 @@ struct AxisEntries
     scales::Arguments
 end
 
-function AxisEntries(axis::Union{Axis, Nothing}=nothing,
-                     entries::Union{AbstractVector{Entry}, Entry}=Entry[])
-    return AxisEntries(axis, to_entries(entries), arguments(), arguments())
-end
-AxisEntries(axis::Union{Axis, Nothing}, entry::Entry) = AxisEntries(axis, [entry])
-AxisEntries(entries::AbstractVector{Entry}) = AxisEntries(nothing, entries)
-
 AbstractPlotting.Axis(ae::AxisEntries) = ae.axis
 Entries(ae::AxisEntries) = Entries(ae.entries, ae.labels, ae.scales)
-
-function Base.merge!(ae1::AxisEntries, ae2::AxisEntries)
-    axis = isnothing(ae2.axis) ? ae1.axis : ae2.axis
-    entries = append!(ae1.entries, ae2.entries)
-    labels = mergewith!((a, b) -> isempty(b) ? a : b, ae1.labels, ae2.labels)
-    scales = mergewith!(merge_scales, ae1.scales, ae2.scales)
-    return AxisEntries(axis, entries, labels, scales)
-end
 
 function prefix(i::Int, sym::Symbol)
     var = (:x, :y, :z)[i]
@@ -95,7 +80,6 @@ function prefix(i::Int, sym::Symbol)
 end
 
 function AbstractPlotting.plot!(ae::AxisEntries)
-    has_axis(ae) || return
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
     for entry in entries
         plottype, mappings, attributes = entry.plottype, entry.mappings, entry.attributes
