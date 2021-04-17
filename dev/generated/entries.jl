@@ -28,7 +28,7 @@ ae = AxisEntries(
             markersize = 15
         ),
     ],
-    arguments("weight", "height", color="age", marker="name"), #labels
+    arguments("x", "y", color="identity", marker="function"), #labels
     arguments(
         identity,
         log10,
