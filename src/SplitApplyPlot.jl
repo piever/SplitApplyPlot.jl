@@ -23,7 +23,7 @@ export LittleDict
 
 include("arguments.jl")
 include("scales.jl")
-include("axisentries.jl")
+include("entries.jl")
 include("data.jl")
 include("utils.jl")
 
