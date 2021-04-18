@@ -10,8 +10,13 @@ function indices_iterator(cols)
     return (sortperm(gp)[rg] for rg in gp)
 end
 
+function isgrouping((k, v),)
+    unsplittable_attrs = (:dodge, :stack)
+    return k ∉ unsplittable_attrs && isadiscretescale(v)
+end
+
 # TODO: decide more carefully when to split
-function split_entries(e::Entries, isgrouping=isadiscretescale∘last)
+function split_entries(e::Entries, isgrouping=isgrouping)
     entries, labels, scales = e.entries, e.labels, e.scales
     flattened_entries = Entry[]
     for entry in entries

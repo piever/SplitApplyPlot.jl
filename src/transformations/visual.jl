@@ -11,11 +11,4 @@ function (v::Visual)(e::Entry)
     return Entry(plottype, mappings, attributes)
 end
 
-function (v::Visual)(e::Entries)
-    entries = Entries(map(v, e.entries), e.labels, e.scales)
-    function isgrouping((k, v),)
-        unsplittable_attrs = (:dodge, :stack)
-        return k ∉ unsplittable_attrs && isadiscretescale(v)
-    end
-    return split_entries(entries, isgrouping)
-end
+(v::Visual)(e::Entries) = Entries(map(v, e.entries), e.labels, e.scales)

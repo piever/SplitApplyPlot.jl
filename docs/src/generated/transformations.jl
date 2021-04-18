@@ -10,3 +10,4 @@ ag = splitapplyplot!(
     :Cty => automatic => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
 )
+display(fig)
