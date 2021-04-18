@@ -1,3 +1,13 @@
+function column_scale_label(cols, x::Pair{<:Any, <:Union{AbstractString, Symbol}})
+    columnname, label = x
+    return column_scale_label(cols, columnname => automatic => label)
+end
+
+function column_scale_label(cols, x::Pair{<:Any, <:Any})
+    columnname, scale = x
+    return column_scale_label(cols, columnname => scale => columnname)
+end
+
 function column_scale_label(cols, x::Pair{<:Any, <:Pair})
     columnname, scale_label = x
     scale, label = scale_label
@@ -5,9 +15,6 @@ function column_scale_label(cols, x::Pair{<:Any, <:Pair})
 end
 
 column_scale_label(cols, x) = column_scale_label(cols, x => automatic => x)
-
-to_transformation(plottype::PlotFunc) = Visual(plottype)
-to_transformation(f) = f
 
 function (e::Entries)(f, data, args...; kwargs...)
     cols = columns(data)
@@ -19,8 +26,7 @@ function (e::Entries)(f, data, args...; kwargs...)
 
     entry = Entry(Any, mappings)
     input_entries = Entries([entry], labels, scales)
-    transformation = to_transformation(f)
-    entries = transformation(input_entries)
+    entries = f(input_entries)
     merge!(e, entries)
     return e
 end
@@ -29,10 +35,4 @@ function AbstractPlotting.plot!(fig, entries::Entries)
     axes_grid = compute_axes_grid(fig, split_entries(entries))
     foreach(plot!, axes_grid)
     return axes_grid
-end
-
-function splitapplyplot!(f, fig, data, args...; kwargs...)
-    e = Entries()
-    e(f, data, args...; kwargs...)
-    return plot!(fig, e)
 end

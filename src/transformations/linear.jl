@@ -4,7 +4,7 @@ end
 
 Linear(; kwargs...) = Linear(Dict{Symbol, Any}(kwargs))
 
-# FIXME: factor out the groupign mechanism
+# FIXME: factor out the grouping mechanism
 function (l::Linear)(e::Entries)
     entries, labels, scales = e.entries, e.labels, e.scales
     new_entries = Entry[]

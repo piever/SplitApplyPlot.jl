@@ -17,7 +17,6 @@ using DataAPI: refarray
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
-export splitapplyplot!
 export categoricalscale, continuousscale, automatic
 export Linear, Visual
 export linear, visual, data, mapping
