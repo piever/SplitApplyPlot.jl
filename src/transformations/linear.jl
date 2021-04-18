@@ -29,3 +29,5 @@ function (l::Linear)(e::Entries)
     end
     return Entries(new_entries, labels, scales)
 end
+
+linear(; kwargs...) = Spec(Linear(; kwargs...))
