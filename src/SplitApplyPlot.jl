@@ -1,7 +1,7 @@
 module SplitApplyPlot
 
 using Tables: columns, getcolumn
-using StructArrays: uniquesorted, finduniquesorted, components, StructArray
+using StructArrays: uniquesorted, finduniquesorted, components, GroupPerm, StructArray
 using OrderedCollections: LittleDict
 using Colors: RGB
 using AbstractPlotting
@@ -19,6 +19,7 @@ export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
 export splitapplyplot!
 export categoricalscale, continuousscale, automatic
+export Linear, Visual
 export LittleDict
 
 include("arguments.jl")
@@ -28,5 +29,6 @@ include("data.jl")
 include("utils.jl")
 include("transformations/grouping.jl")
 include("transformations/visual.jl")
+include("transformations/linear.jl")
 
 end
