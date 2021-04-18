@@ -26,5 +26,7 @@ include("scales.jl")
 include("entries.jl")
 include("data.jl")
 include("utils.jl")
+include("transformations/grouping.jl")
+include("transformations/visual.jl")
 
 end
