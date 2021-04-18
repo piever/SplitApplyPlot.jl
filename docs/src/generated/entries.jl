@@ -1,4 +1,4 @@
-# # AxisEntries
+# # Entries
 #
 # The key ingredient for data representations are `AxisEntries`.
 #
@@ -42,23 +42,31 @@ AbstractPlotting.save("axisentries.svg", AbstractPlotting.current_scene()); noth
 
 # ![](axisentries.svg)
 #
-# # Generating `AxisEntries` objects
+# ## Transforming and accumulating `Entries`
 #
 # Generating `AxisEntries` objects by hand is extremely laborious. SplitApplyPlot provides
 # a simple way to generate them from data.
 
 using RDatasets
 mpg = RDatasets.dataset("ggplot2", "mpg")
-resolution = (600, 600)
-fig = Figure(; resolution)
-ag = splitapplyplot!(
-    Scatter,
-    fig,
+entries = Entries()
+entries(
+    Visual(Scatter),
     mpg,
-    :Displ => automatic => "Displacement",
-    :Cty => automatic => "City miles",
+    :Displ => "Displacement",
+    :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
 )
+entries(
+    Visual(linewidth=5) ∘ Linear(),
+    mpg,
+    :Displ => "Displacement",
+    :Cty => "City miles",
+    color=:Cyl => categoricalscale => "Cylinders",
+)
+resolution = (600, 600)
+fig = Figure(; resolution)
+ag = plot!(fig, entries)
 
 # This operation returns a grid of `AxisEntries` and plots them to the original figure:
 
@@ -70,16 +78,26 @@ AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
 # `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
 resolution = (1200, 1200)
 fig = Figure(; resolution)
-ag = splitapplyplot!(
-    Scatter,
-    fig,
+entries
+entries(
+    Visual(Scatter),
     mpg,
-    :Displ => automatic => "Displacement",
-    :Cty => automatic => "City miles",
+    :Displ => "Displacement",
+    :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
     layout_x=:Drv => categoricalscale => "Drive train",
     layout_y=:Fl => categoricalscale => "Fuel type",
 )
+entries(
+    Visual(linewidth=5) ∘ Linear(),
+    mpg,
+    :Displ => "Displacement",
+    :Cty => "City miles",
+    color=:Cyl => categoricalscale => "Cylinders",
+    layout_x=:Drv => categoricalscale => "Drive train",
+    layout_y=:Fl => categoricalscale => "Fuel type",
+)
+ag = plot!(fig, entries)
 
 # The figure looks as follows:
 
@@ -96,3 +114,7 @@ display(fig)
 AbstractPlotting.save("splitapplyplot_grid_clean.svg", fig); nothing #hide
 
 # ![](splitapplyplot_grid_clean.svg)
+#
+# As there is a lot of repetition within the entries that are added to the plot,
+# the standard interface to generate these entries is an algebra that allows us
+# to factor out the common part.

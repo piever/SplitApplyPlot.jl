@@ -17,9 +17,9 @@ using DataAPI: refarray
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
-export splitapplyplot!
 export categoricalscale, continuousscale, automatic
 export Linear, Visual
+export linear, visual, data, mapping
 export LittleDict
 
 include("arguments.jl")
@@ -27,6 +27,8 @@ include("scales.jl")
 include("entries.jl")
 include("data.jl")
 include("utils.jl")
+include("algebra/spec.jl")
+include("algebra/speclist.jl")
 include("transformations/grouping.jl")
 include("transformations/visual.jl")
 include("transformations/linear.jl")
