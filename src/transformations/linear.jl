@@ -4,6 +4,7 @@ end
 
 Linear(; kwargs...) = Linear(Dict{Symbol, Any}(kwargs))
 
+# FIXME: factor out the groupign mechanism
 function (l::Linear)(e::Entries)
     entries, labels, scales = e.entries, e.labels, e.scales
     new_entries = Entry[]
@@ -18,8 +19,9 @@ function (l::Linear)(e::Entries)
             a, b = x̂ \ y
             length = 100
             rg = range(extrema(x)...; length)
-            i1 = first(idxs)
-            named = map(v -> fill(v[i1], length), grouping_cols)
+            named = map(grouping_cols) do v
+                return idxs isa Colon ? v : fill(v[first(idxs)], length)
+            end
             new_mappings = arguments(rg, a .* rg .+ b; named...)
             return isnothing(acc) ? map(collect, new_mappings) : map(append!, acc, new_mappings)
         end

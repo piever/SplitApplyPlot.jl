@@ -21,7 +21,8 @@ makedocs(;
     ),
     pages=Any[
         "index.md",
-        "generated/entries.md",
+        "generated/axisentries.md",
+        "generated/entries_transformations.md",
         "API.md",
     ],
 )
