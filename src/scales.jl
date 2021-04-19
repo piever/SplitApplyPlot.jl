@@ -21,7 +21,20 @@ function default_palettes()
     )
 end
 
-struct CategoricalScale end
+Base.@kwdef struct CategoricalScale
+    uniquevalues=automatic
+    palette=automatic
+    labels=automatic
+end
+
+function CategoricalScale(d::AbstractDict)
+    uniquevalues, palette = collect(keys(d)), collect(values(d))
+    return CategoricalScale(; uniquevalues, palette)
+end
+
+CategoricalScale(uniquevalues, palette) = CategoricalScale(; uniquevalues, palette)
+CategoricalScale(v::AbstractVector) = CategoricalScale(uniquevalues=v)
+
 const categoricalscale = CategoricalScale()
 
 struct ContinuousScale end
@@ -30,34 +43,48 @@ const continuousscale = ContinuousScale()
 isacontinuousscale(::Function) = true
 isacontinuousscale(::Any) = false
 
-isadiscretescale(::AbstractDict) = true
-isadiscretescale(::Any) = false
+isacategoricalscale(::CategoricalScale) = true
+isacategoricalscale(::Any) = false
+
+Base.length(c::CategoricalScale) = length(c.uniquevalues)
 
 # should this be done in place for efficiency?
-merge_scales(sc1::AbstractDict, sc2::AbstractDict) = merge(sc1, sc2)
+function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale) 
+    uniquevalues = union(sc1.uniquevalues, sc2.uniquevalues)
+    # FIXME: check that palettes are consistent?
+    palette = sc2.palette === automatic ? sc1.palette : sc2.palette
+    return CategoricalScale(uniquevalues, palette)
+end
+
 function merge_scales(f1::Function, f2::Function)
     @assert f1 === f2
     return f1
 end
 
-rescale(value, scale::Function) = value # AbstractPlotting will take care of the rescaling
-rescale(value, scale::AbstractDict) = [scale[val] for val in value]
+rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
+function rescale(values, scale::CategoricalScale)
+    uniquevalues, palette = scale.uniquevalues, scale.palette
+    idxs = indexin(values, uniquevalues)
+    return palette === automatic ? something.(idxs) : cycle.(Ref(palette), idxs)
+end
 
 # Logic to infer good scales
 function default_scales(mappings, scales)
     palettes = mergewith!((_, b) -> b, map(_ -> automatic, mappings), default_palettes())
     return map(mappings, scales, palettes) do v, scale, palette
-        if isadiscretescale(scale) || isacontinuousscale(scale)
-            # fully specified scale
-            return scale
+        @assert isacontinuousscale(scale) || isacategoricalscale(scale) || scale === automatic
+        if isacontinuousscale(scale)
+            # fully specified continuous scale
+            scale
         elseif iscontinuous(v) && scale in (automatic, continuousscale)
             # unspecified continuous scale
-            return identity
+            identity
         else
-            # unspecified categorical scale
-            keys = scale isa AbstractVector ? scale : uniquesort(v)
-            values = palette === automatic ? eachindex(keys) : cycle.(Ref(palette), eachindex(keys))
-            return LittleDict(keys, values)
+            cs = scale === automatic ? categoricalscale : scale
+            uv = cs.uniquevalues === automatic ? uniquesort(v) : cs.uniquevalues
+            labels = cs.labels === automatic ? string.(uv) : cs.labels
+            p = cs.palette === automatic ? palette : cs.palette
+            CategoricalScale(uv, p, labels)
         end
     end
 end

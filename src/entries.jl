@@ -32,8 +32,8 @@ end
 function compute_axes_grid(fig, e::Entries)
     dict = Dict{NTuple{2, Any}, AxisEntries}()
     layout_scales = (
-        layout_y=get(e.scales, :layout_y, LittleDict(1 => 1)),
-        layout_x=get(e.scales, :layout_x, LittleDict(1 => 1)),
+        layout_y=get(e.scales, :layout_y, CategoricalScale(uniquevalues=[1])),
+        layout_x=get(e.scales, :layout_x, CategoricalScale(uniquevalues=[1])),
     )
     grid_size = map(length, layout_scales)
     axes_grid = map(CartesianIndices(Tuple(grid_size))) do c
@@ -60,9 +60,9 @@ end
     AxisEntries(axis::Union{Axis, Nothing}, entries::Vector{Entry}, labels, scales)
 
 Define all ingredients to make plots on an axis.
-Each scale can be either an ordered dictionary (for discrete collections), such as
-`LittleDict("a" => "red", "b" => "blue")`, or a pair giving an interval and a function,
-such as `(0, 10) => log10`. Other scales may be supported in the future.
+Each scale can be either a `CategoricalScale` (for discrete collections), such as
+`CategoricalScale(["a", "b"], ["red", "blue"])`, or a function,
+such as `log10`. Other scales may be supported in the future.
 """
 struct AxisEntries
     axis::Axis
@@ -91,10 +91,12 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale
-    for (i, (label, scale)) in enumerate(zip(labels.positional, scales.positional))
+    for i in 1:2
+        label, scale = get(labels, i, nothing), get(scales, i, nothing)
+        any(isnothing, (label, scale)) && continue
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
-        if isadiscretescale(scale)
-            u = collect(keys(scale))
+        if isacategoricalscale(scale)
+            u = scale.labels
             getproperty(axis, ticks)[] = (axes(u, 1), u)
         else
             @assert isacontinuousscale(scale)

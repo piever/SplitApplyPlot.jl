@@ -33,7 +33,7 @@ ae = AxisEntries(
         identity,
         log10,
         color=identity,
-        marker=LittleDict("a" => :circle, "b" => :utriangle, "c" => :dtriangle), #scales
+        marker=CategoricalScale(["a", "b", "c"], [:circle, :utriangle, :dtriangle]), #scales
     ),
 )
 plot!(ae)
@@ -78,7 +78,7 @@ AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
 # `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
 resolution = (1200, 1200)
 fig = Figure(; resolution)
-entries
+entries = Entries()
 entries(
     Visual(Scatter),
     mpg,
@@ -94,8 +94,6 @@ entries(
     :Displ => "Displacement",
     :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
-    layout_x=:Drv => categoricalscale => "Drive train",
-    layout_y=:Fl => categoricalscale => "Fuel type",
 )
 ag = plot!(fig, entries)
 

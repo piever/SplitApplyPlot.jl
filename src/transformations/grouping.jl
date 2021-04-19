@@ -12,7 +12,7 @@ end
 
 function isgrouping((k, v),)
     unsplittable_attrs = (:dodge, :stack)
-    return k ∉ unsplittable_attrs && isadiscretescale(v)
+    return k ∉ unsplittable_attrs && isacategoricalscale(v)
 end
 
 # TODO: decide more carefully when to split
