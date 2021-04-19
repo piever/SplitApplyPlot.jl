@@ -91,7 +91,9 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale
-    for (i, (label, scale)) in enumerate(zip(labels.positional, scales.positional))
+    for i in 1:2
+        label, scale = get(labels, i, nothing), get(scales, i, nothing)
+        any(isnothing, (label, scale)) && continue
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
         if isacategoricalscale(scale)
             u = scale.labels
