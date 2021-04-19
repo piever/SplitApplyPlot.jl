@@ -177,7 +177,7 @@ AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing 
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
 fig = Figure()
-xscale = CategoricalScale(labels=["label1", "label2", "label3"]) # FIXIME: keyword constructors for `CategoricalScale`
+xscale = CategoricalScale(labels=["label1", "label2", "label3"])
 specs = data(df) *
     mapping(
         :x => xscale,
@@ -193,7 +193,6 @@ AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing 
 fig = Figure()
 xscale = CategoricalScale(
     uniquevalues=["b", "a", "c"],
-    labels=["label1", "label2", "label3"]
 )
 specs = data(df) *
     mapping(
@@ -210,7 +209,7 @@ AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing 
 
 fig = Figure()
 x = 1:100
-y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly
+y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly and ylims are "off"
 df = (; x, y)
 specs = data(df) *
     mapping(
