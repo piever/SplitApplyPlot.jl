@@ -139,3 +139,49 @@ specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5)
     visual(orientation=:vertical)
 "Not yet supported" # hide
 
+# ## Labeling
+#
+# By default categorical ticks, as well as names from legend entries, are taken from the 
+# value of the variable converted to a string. Scales can be equipped with labels to
+# overwrite that
+
+df = (x=rand(["a", "b", "c"], 100), y=rand(100))
+fig = Figure()
+specs = data(df) * mapping(:x, :y) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](boxplot.svg)
+#
+
+df = (x=rand(["a", "b", "c"], 100), y=rand(100))
+fig = Figure()
+xscale = CategoricalScale(labels=["label1", "label2", "label3"]) # FIXIME: keyword constructors for `CategoricalScale`
+specs = data(df) *
+    mapping(
+        :x => xscale,
+        :y
+    ) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](relabel.svg)
+#
+# The order can also be changed by tweaking the scale
+fig = Figure()
+xscale = CategoricalScale(
+    uniquevalues=["b", "a", "c"],
+    labels=["label1", "label2", "label3"]
+)
+specs = data(df) *
+    mapping(
+        :x => xscale,
+        :y
+    ) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](reorder.svg)

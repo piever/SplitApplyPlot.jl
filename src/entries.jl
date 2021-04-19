@@ -32,8 +32,8 @@ end
 function compute_axes_grid(fig, e::Entries)
     dict = Dict{NTuple{2, Any}, AxisEntries}()
     layout_scales = (
-        layout_y=get(e.scales, :layout_y, CategoricalScale([1], automatic)),
-        layout_x=get(e.scales, :layout_x, CategoricalScale([1], automatic)),
+        layout_y=get(e.scales, :layout_y, CategoricalScale(uniquevalues=[1])),
+        layout_x=get(e.scales, :layout_x, CategoricalScale(uniquevalues=[1])),
     )
     grid_size = map(length, layout_scales)
     axes_grid = map(CartesianIndices(Tuple(grid_size))) do c
@@ -94,7 +94,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
     for (i, (label, scale)) in enumerate(zip(labels.positional, scales.positional))
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
         if isacategoricalscale(scale)
-            u = collect(keys(scale))
+            u = scale.labels
             getproperty(axis, ticks)[] = (axes(u, 1), u)
         else
             @assert isacontinuousscale(scale)

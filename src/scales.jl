@@ -21,15 +21,21 @@ function default_palettes()
     )
 end
 
-struct CategoricalScale
-    uniquevalues
-    palette
+Base.@kwdef struct CategoricalScale
+    uniquevalues=automatic
+    palette=automatic
+    labels=automatic
 end
 
-CategoricalScale(d::AbstractDict) = CategoricalScale(collect(keys(d)), collect(values(d)))
-CategoricalScale(v::AbstractVector) = CategoricalScale(v, automatic)
+function CategoricalScale(d::AbstractDict)
+    uniquevalues, palette = collect(keys(d)), collect(values(d))
+    return CategoricalScale(; uniquevalues, palette)
+end
 
-const categoricalscale = CategoricalScale(automatic, automatic)
+CategoricalScale(uniquevalues, palette) = CategoricalScale(; uniquevalues, palette)
+CategoricalScale(v::AbstractVector) = CategoricalScale(uniquevalues=v)
+
+const categoricalscale = CategoricalScale()
 
 struct ContinuousScale end
 const continuousscale = ContinuousScale()
@@ -76,8 +82,9 @@ function default_scales(mappings, scales)
         else
             cs = scale === automatic ? categoricalscale : scale
             uv = cs.uniquevalues === automatic ? uniquesort(v) : cs.uniquevalues
+            labels = cs.labels === automatic ? string.(uv) : cs.labels
             p = cs.palette === automatic ? palette : cs.palette
-            CategoricalScale(uv, p)
+            CategoricalScale(uv, p, labels)
         end
     end
 end
