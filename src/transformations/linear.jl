@@ -10,7 +10,7 @@ function (l::Linear)(e::Entries)
     new_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
-        grouping_cols = (; (k => mappings[k] for (k, v) in scales.named if isadiscretescale(v))...)
+        grouping_cols = (; (k => mappings[k] for (k, v) in scales.named if isacategoricalscale(v))...)
         result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
             submappings = map(v -> view(v, idxs), mappings)
             x, y = submappings.positional

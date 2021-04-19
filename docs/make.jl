@@ -23,6 +23,7 @@ makedocs(;
         "index.md",
         "generated/tutorial.md",
         "generated/entries.md",
+        "generated/gallery.md",
         "API.md",
     ],
 )

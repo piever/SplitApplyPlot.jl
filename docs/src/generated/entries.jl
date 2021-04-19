@@ -33,7 +33,7 @@ ae = AxisEntries(
         identity,
         log10,
         color=identity,
-        marker=LittleDict("a" => :circle, "b" => :utriangle, "c" => :dtriangle), #scales
+        marker=CategoricalScale(["a", "b", "c"], [:circle, :utriangle, :dtriangle]), #scales
     ),
 )
 plot!(ae)

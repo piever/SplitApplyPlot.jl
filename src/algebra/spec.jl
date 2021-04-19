@@ -12,7 +12,7 @@ mapping(args...; kwargs...) = Spec(identity, nothing, arguments(args...; kwargs.
 function compose(f, g)
     f === identity && return g
     g === identity && return f
-    return f∘g
+    return f∘g # should this be switched?
 end
 
 function Base.:*(spec1::Spec, spec2::Spec)
