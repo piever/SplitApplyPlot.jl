@@ -177,7 +177,7 @@ AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing 
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
 fig = Figure()
-xscale = CategoricalScale(labels=["label1", "label2", "label3"]) # FIXIME: keyword constructors for `CategoricalScale`
+xscale = CategoricalScale(labels=["label1", "label2", "label3"])
 specs = data(df) *
     mapping(
         :x => xscale,
@@ -193,7 +193,6 @@ AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing 
 fig = Figure()
 xscale = CategoricalScale(
     uniquevalues=["b", "a", "c"],
-    labels=["label1", "label2", "label3"]
 )
 specs = data(df) *
     mapping(
@@ -210,7 +209,7 @@ AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing 
 
 fig = Figure()
 x = 1:100
-y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly
+y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly and ylims are "off"
 df = (; x, y)
 specs = data(df) *
     mapping(
@@ -222,4 +221,31 @@ display(fig)
 AbstractPlotting.save("logscale.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](logscale.svg)
+#
+# ## Custom scales
+#
+# Sometimes, there is no default palettes for a specific attribute. In that
+# case, the user can pass their own.
+
+using Colors
+fig = Figure()
+x=repeat(1:20, inner=20)
+y=repeat(1:20, outer=20)
+u=cos.(x)
+v=sin.(y)
+c=rand(Bool, length(x))
+d=rand(Bool, length(x))
+df = (; x, y, u, v, c, d)
+colors = [colorant"#E24A33", colorant"#348ABD"]
+heads = ['▲', '●']
+specs = data(df) *
+    mapping(:x, :y, :u, :v) *
+    mapping(arrowhead=:c=>CategoricalScale(palette=heads)) *
+    mapping(arrowcolor=:d=>CategoricalScale(palette=colors)) *
+    visual(Arrows, arrowsize=10, lengthscale=0.3)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("arrows.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](arrows.svg)
 #
