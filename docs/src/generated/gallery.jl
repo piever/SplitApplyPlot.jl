@@ -116,3 +116,10 @@ AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing 
 
 # ![](density.svg)
 #
+
+df = (x=randn(1000), c=rand(["a", "b"], 1000))
+fig = Figure()
+specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) *
+    visual(orientation=:vertical)
+"Not yet supported" # hide
+
