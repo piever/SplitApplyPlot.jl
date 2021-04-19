@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Example gallery · SplitApplyPlot.jl</title><link rel="canonical" href="https://piever.github.io/SplitApplyPlot.jl/generated/gallery/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">SplitApplyPlot.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">SplitApplyPlot</a></li><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><a class="tocitem" href="../entries/">Entries</a></li><li class="is-active"><a class="tocitem" href>Example gallery</a><ul class="internal"><li><a class="tocitem" href="#Lines-and-markers"><span>Lines and markers</span></a></li><li><a class="tocitem" href="#Faceting"><span>Faceting</span></a></li><li><a class="tocitem" href="#Statistical-analyses"><span>Statistical analyses</span></a></li><li><a class="tocitem" href="#Discrete-scales"><span>Discrete scales</span></a></li><li><a class="tocitem" href="#Continuous-scales"><span>Continuous scales</span></a></li><li><a class="tocitem" href="#Custom-scales"><span>Custom scales</span></a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Example gallery</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Example gallery</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/piever/SplitApplyPlot.jl/blob/master/docs/src/generated/gallery.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Example-gallery"><a class="docs-heading-anchor" href="#Example-gallery">Example gallery</a><a id="Example-gallery-1"></a><a class="docs-heading-anchor-permalink" href="#Example-gallery" title="Permalink"></a></h1><p>Semi-curated collection of examples.</p><h2 id="Lines-and-markers"><a class="docs-heading-anchor" href="#Lines-and-markers">Lines and markers</a><a id="Lines-and-markers-1"></a><a class="docs-heading-anchor-permalink" href="#Lines-and-markers" title="Permalink"></a></h2><h3 id="A-simple-scatter-plot"><a class="docs-heading-anchor" href="#A-simple-scatter-plot">A simple scatter plot</a><a id="A-simple-scatter-plot-1"></a><a class="docs-heading-anchor-permalink" href="#A-simple-scatter-plot" title="Permalink"></a></h3><pre><code class="language-julia">using SplitApplyPlot, CairoMakie
+
+df = (x=rand(100), y=rand(100))
+fig = Figure()
+specs = data(df) * mapping(:x, :y)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../simplescatter.svg" alt/></p><h3 id="A-simple-lines-plot"><a class="docs-heading-anchor" href="#A-simple-lines-plot">A simple lines plot</a><a id="A-simple-lines-plot-1"></a><a class="docs-heading-anchor-permalink" href="#A-simple-lines-plot" title="Permalink"></a></h3><pre><code class="language-julia">x = range(-π, π, length=100)
+y = sin.(x)
+df = (; x, y)
+fig = Figure()
+specs = data(df) * mapping(:x, :y) * visual(Lines)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../simplelines.svg" alt/></p><h3 id="Lines-and-scatter-combined-plot"><a class="docs-heading-anchor" href="#Lines-and-scatter-combined-plot">Lines and scatter combined plot</a><a id="Lines-and-scatter-combined-plot-1"></a><a class="docs-heading-anchor-permalink" href="#Lines-and-scatter-combined-plot" title="Permalink"></a></h3><pre><code class="language-julia">x = range(-π, π, length=100)
+y = sin.(x)
+df = (; x, y)
+fig = Figure()
+specs = data(df) * mapping(:x, :y) * (visual(Scatter) + visual(Lines))
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../simplescatterlines1.svg" alt/></p><pre><code class="language-julia">x = range(-π, π, length=100)
+y = sin.(x)
+df1 = (; x, y)
+df2 = (x=rand(10), y=rand(10))
+fig = Figure()
+m = mapping(:x, :y)
+geoms = data(df) * visual(Lines) + data(df2) * visual(Scatter)
+plot!(fig, m * geoms)
+display(fig)</code></pre><p><img src="../simplescatterlines2.svg" alt/></p><h3 id="Linear-regression-on-a-scatter-plot"><a class="docs-heading-anchor" href="#Linear-regression-on-a-scatter-plot">Linear regression on a scatter plot</a><a id="Linear-regression-on-a-scatter-plot-1"></a><a class="docs-heading-anchor-permalink" href="#Linear-regression-on-a-scatter-plot" title="Permalink"></a></h3><pre><code class="language-julia">df = (x=rand(100), y=rand(100), z=rand(100))
+fig = Figure()
+m = data(df) * mapping(:x, :y)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+plot!(fig, m * geoms)
+display(fig)</code></pre><p><img src="../linefit.svg" alt/></p><h2 id="Faceting"><a class="docs-heading-anchor" href="#Faceting">Faceting</a><a id="Faceting-1"></a><a class="docs-heading-anchor-permalink" href="#Faceting" title="Permalink"></a></h2><p>Still needs to automatically do things to axes, decorate, etc.</p><h3 id="Facet-grid"><a class="docs-heading-anchor" href="#Facet-grid">Facet grid</a><a id="Facet-grid-1"></a><a class="docs-heading-anchor-permalink" href="#Facet-grid" title="Permalink"></a></h3><pre><code class="language-julia">df = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
+fig = Figure()
+specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+ag = plot!(fig, specs)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)</code></pre><p><img src="../facetscatter.svg" alt/></p><h3 id="Facet-wrap"><a class="docs-heading-anchor" href="#Facet-wrap">Facet wrap</a><a id="Facet-wrap-1"></a><a class="docs-heading-anchor-permalink" href="#Facet-wrap" title="Permalink"></a></h3><pre><code class="language-julia">df = (x=rand(100), y=rand(100), l=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
+specs = data(df) * mapping(:x, :y, layout=:l) # FIXME: does not work...</code></pre><pre class="documenter-example-output">&quot;Not yet implemented&quot;</pre><h3 id="Embedding-facets"><a class="docs-heading-anchor" href="#Embedding-facets">Embedding facets</a><a id="Embedding-facets-1"></a><a class="docs-heading-anchor-permalink" href="#Embedding-facets" title="Permalink"></a></h3><p>All SplitApplyPlot plots can be inserted in any figure position, where the rest of the figure is managed by vanilla Makie. For example</p><pre><code class="language-julia">df = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
+resolution = (1200, 600)
+fig = Figure(; resolution)
+ax = Axis(fig[1, 1])
+text!(ax, &quot;Some plot&quot;)
+specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+ag = plot!(fig[1, 2:3], specs)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)</code></pre><p><img src="../nestedfacet.svg" alt/></p><h3 id="Adding-traces-to-only-some-subplots"><a class="docs-heading-anchor" href="#Adding-traces-to-only-some-subplots">Adding traces to only some subplots</a><a id="Adding-traces-to-only-some-subplots-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-traces-to-only-some-subplots" title="Permalink"></a></h3><pre><code class="language-julia">df1 = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
+df2 = (x=[0, 1], y=[0.5, 0.5], i=fill(&quot;a&quot;, 2), j=fill(&quot;e&quot;, 2)) # FIXME: do we need a smarter way to pass layout?
+fig = Figure()
+m = mapping(:x, :y, layout_x=:i, layout_y=:j)
+geoms = data(df1) * visual(Scatter) + data(df2) * visual(Lines)
+ag = plot!(fig, m * geoms)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)</code></pre><p><img src="../facetscatterlines.svg" alt/></p><h2 id="Statistical-analyses"><a class="docs-heading-anchor" href="#Statistical-analyses">Statistical analyses</a><a id="Statistical-analyses-1"></a><a class="docs-heading-anchor-permalink" href="#Statistical-analyses" title="Permalink"></a></h2><h3 id="Density-plot"><a class="docs-heading-anchor" href="#Density-plot">Density plot</a><a id="Density-plot-1"></a><a class="docs-heading-anchor-permalink" href="#Density-plot" title="Permalink"></a></h3><pre><code class="language-julia">df = (x=randn(1000), c=rand([&quot;a&quot;, &quot;b&quot;], 1000))
+fig = Figure()
+specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../density.svg" alt/></p><p>Using the recipe from AbstractPlotting also works (let us try to figure out whether we need an analysis or not).</p><pre><code class="language-julia">df = (x=randn(1000), c=rand([&quot;a&quot;, &quot;b&quot;], 1000))
+fig = Figure()
+specs = data(df) * mapping(:x, layout_x=:c) * visual(AbstractPlotting.Density)
+ag = plot!(fig, specs)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)</code></pre><p><img src="../densityvisual.svg" alt/></p><pre><code class="language-julia">df = (x=randn(1000), c=rand([&quot;a&quot;, &quot;b&quot;], 1000))
+fig = Figure()
+specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) *
+    visual(orientation=:vertical)</code></pre><pre class="documenter-example-output">&quot;Not yet supported&quot;</pre><h2 id="Discrete-scales"><a class="docs-heading-anchor" href="#Discrete-scales">Discrete scales</a><a id="Discrete-scales-1"></a><a class="docs-heading-anchor-permalink" href="#Discrete-scales" title="Permalink"></a></h2><p>By default categorical ticks, as well as names from legend entries, are taken from the value of the variable converted to a string. Scales can be equipped with labels to overwrite that</p><pre><code class="language-julia">df = (x=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), y=rand(100))
+fig = Figure()
+specs = data(df) * mapping(:x, :y) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../boxplot.svg" alt/></p><pre><code class="language-julia">df = (x=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), y=rand(100))
+fig = Figure()
+xscale = CategoricalScale(labels=[&quot;label1&quot;, &quot;label2&quot;, &quot;label3&quot;])
+specs = data(df) *
+    mapping(
+        :x =&gt; xscale,
+        :y
+    ) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../relabel.svg" alt/></p><p>The order can also be changed by tweaking the scale</p><pre><code class="language-julia">fig = Figure()
+xscale = CategoricalScale(
+    uniquevalues=[&quot;b&quot;, &quot;a&quot;, &quot;c&quot;],
+)
+specs = data(df) *
+    mapping(
+        :x =&gt; xscale,
+        :y
+    ) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../reorder.svg" alt/></p><h2 id="Continuous-scales"><a class="docs-heading-anchor" href="#Continuous-scales">Continuous scales</a><a id="Continuous-scales-1"></a><a class="docs-heading-anchor-permalink" href="#Continuous-scales" title="Permalink"></a></h2><pre><code class="language-julia">fig = Figure()
+x = 1:100
+y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly and ylims are &quot;off&quot;
+df = (; x, y)
+specs = data(df) *
+    mapping(
+        :x,
+        :y =&gt; log =&gt; &quot;√x + 20x + 100 (log scale)&quot;,
+    ) * visual(Lines)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../logscale.svg" alt/></p><h2 id="Custom-scales"><a class="docs-heading-anchor" href="#Custom-scales">Custom scales</a><a id="Custom-scales-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-scales" title="Permalink"></a></h2><p>Sometimes, there is no default palettes for a specific attribute. In that case, the user can pass their own.</p><pre><code class="language-julia">using Colors
+fig = Figure()
+x=repeat(1:20, inner=20)
+y=repeat(1:20, outer=20)
+u=cos.(x)
+v=sin.(y)
+c=rand(Bool, length(x))
+d=rand(Bool, length(x))
+df = (; x, y, u, v, c, d)
+colors = [colorant&quot;#E24A33&quot;, colorant&quot;#348ABD&quot;]
+heads = [&#39;▲&#39;, &#39;●&#39;]
+specs = data(df) *
+    mapping(:x, :y, :u, :v) *
+    mapping(arrowhead=:c=&gt;CategoricalScale(palette=heads)) *
+    mapping(arrowcolor=:d=&gt;CategoricalScale(palette=colors)) *
+    visual(Arrows, arrowsize=10, lengthscale=0.3)
+plot!(fig, specs)
+display(fig)</code></pre><p><img src="../arrows.svg" alt/></p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../entries/">« Entries</a><a class="docs-footer-nextpage" href="../../API/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 19 April 2021 14:42">Monday 19 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
