@@ -66,6 +66,9 @@ plot!(fig, m * geoms)
 display(fig)
 AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing #hide
 
+# ![](linefit.svg)
+#
+
 # ## Faceting
 #
 # Still needs to automatically do things to axes, decorate, etc.
@@ -115,6 +118,19 @@ display(fig)
 AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](density.svg)
+#
+# Using the recipe from AbstractPlotting also works (let us try to figure out whether we need an analysis or not).
+
+df = (x=randn(1000), c=rand(["a", "b"], 1000))
+fig = Figure()
+specs = data(df) * mapping(:x, layout_x=:c) * visual(AbstractPlotting.Density)
+ag = plot!(fig, specs)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)
+AbstractPlotting.save("densityvisual.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](densityvisual.svg)
 #
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
