@@ -91,6 +91,26 @@ df = (x=rand(100), y=rand(100), l=rand(["a", "b", "c", "d", "e", "f"], 100))
 specs = data(df) * mapping(:x, :y, layout=:l) # FIXME: does not work...
 "Not yet implemented" #hide
 
+# ### Embedding facets
+#
+# All SplitApplyPlot plots can be inserted in any figure position, where the rest
+# of the figure is managed by vanilla Makie.
+# For example
+
+df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
+resolution = (1200, 600)
+fig = Figure(; resolution)
+ax = Axis(fig[1, 1])
+text!(ax, "Some plot")
+specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+ag = plot!(fig[1, 2:3], specs)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)
+AbstractPlotting.save("nestedfacet.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](nestedfacet.svg)
+
 # ### Adding traces to only some subplots
 
 df1 = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
