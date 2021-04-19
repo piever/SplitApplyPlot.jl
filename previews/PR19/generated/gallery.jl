@@ -66,6 +66,9 @@ plot!(fig, m * geoms)
 display(fig)
 AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing #hide
 
+# ![](linefit.svg)
+#
+
 # ## Faceting
 #
 # Still needs to automatically do things to axes, decorate, etc.
@@ -116,6 +119,19 @@ AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing 
 
 # ![](density.svg)
 #
+# Using the recipe from AbstractPlotting also works (let us try to figure out whether we need an analysis or not).
+
+df = (x=randn(1000), c=rand(["a", "b"], 1000))
+fig = Figure()
+specs = data(df) * mapping(:x, layout_x=:c) * visual(AbstractPlotting.Density)
+ag = plot!(fig, specs)
+hideinnerdecorations!(ag)
+linkaxes!(ag...)
+display(fig)
+AbstractPlotting.save("densityvisual.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](densityvisual.svg)
+#
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
 fig = Figure()
@@ -123,3 +139,67 @@ specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5)
     visual(orientation=:vertical)
 "Not yet supported" # hide
 
+# ## Discrete scales
+#
+# By default categorical ticks, as well as names from legend entries, are taken from the 
+# value of the variable converted to a string. Scales can be equipped with labels to
+# overwrite that
+
+df = (x=rand(["a", "b", "c"], 100), y=rand(100))
+fig = Figure()
+specs = data(df) * mapping(:x, :y) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](boxplot.svg)
+#
+
+df = (x=rand(["a", "b", "c"], 100), y=rand(100))
+fig = Figure()
+xscale = CategoricalScale(labels=["label1", "label2", "label3"]) # FIXIME: keyword constructors for `CategoricalScale`
+specs = data(df) *
+    mapping(
+        :x => xscale,
+        :y
+    ) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](relabel.svg)
+#
+# The order can also be changed by tweaking the scale
+fig = Figure()
+xscale = CategoricalScale(
+    uniquevalues=["b", "a", "c"],
+    labels=["label1", "label2", "label3"]
+)
+specs = data(df) *
+    mapping(
+        :x => xscale,
+        :y
+    ) * visual(BoxPlot)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](reorder.svg)
+#
+# ## Continuous scales
+
+fig = Figure()
+x = 1:100
+y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly
+df = (; x, y)
+specs = data(df) *
+    mapping(
+        :x,
+        :y => log => "√x + 20x + 100 (log scale)",
+    ) * visual(Lines)
+plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("logscale.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](logscale.svg)
+#
