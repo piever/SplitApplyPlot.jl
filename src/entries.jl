@@ -56,6 +56,7 @@ function compute_axes_grid(fig, e::Entries)
         layout_vec = get(entry.mappings, :layout, nothing)
         cols, rows = map(1:2) do i
             # without layout info, plot on all axes
+            # FIXME: optimize as all values are unique
             isnothing(colrow_vec[i]) || return rescale(colrow_vec[i], colrow_scale[i])[1:1]
             isnothing(layout_vec) || return map(t -> t[i], rescale(layout_vec, layout_scale))[1:1]
             return 1:grid_size[i]
@@ -104,7 +105,9 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         trace = map(rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
-        pop!(named, :layout, nothing)
+        for sym in [:col, :row, :layout]
+            pop!(named, sym, nothing)
+        end
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale
