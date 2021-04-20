@@ -22,6 +22,8 @@ function facet_wrap!(fig, aes::AbstractMatrix{AxisEntries})
     return nothing
 end
 
+# F. Greimel implementation from AlgebraOfGraphics
+
 # TODO: add configuration options here
 function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
     M, N = size(aes)
