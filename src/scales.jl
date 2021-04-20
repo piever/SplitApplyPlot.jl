@@ -50,11 +50,14 @@ isacategoricalscale(::CategoricalScale) = true
 isacategoricalscale(::Any) = false
 
 # should this be done in place for efficiency?
-function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale) 
-    uniquevalues = union(sc1.uniquevalues, sc2.uniquevalues)
+function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale)
+    dict1, dict2 = LittleDict(sc1.uniquevalues, sc1.labels), LittleDict(sc2.uniquevalues, sc2.labels)
+    dict = merge(dict1, dict2)
+    uniquevalues = collect(keys(dict))
+    labels = collect(values(dict))
     # FIXME: check that palettes are consistent?
     palette = sc2.palette === automatic ? sc1.palette : sc2.palette
-    return CategoricalScale(uniquevalues, palette)
+    return CategoricalScale(uniquevalues, palette, labels)
 end
 
 function merge_scales(f1::Function, f2::Function)
