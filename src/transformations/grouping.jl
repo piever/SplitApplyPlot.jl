@@ -15,36 +15,16 @@ function isgrouping((k, v),)
     return k ∉ unsplittable_attrs && isacategoricalscale(v)
 end
 
-function _broadcastable(column, scale)
-    singlescale = isacategoricalscale(scale) || isacontinuousscale(scale)
-    return singlescale ? (Ref(column), Ref(scale)) : (column, scale)
-end
-
-function subselect(column, scale, idxs)
-    singlescale = isacategoricalscale(scale) || isacontinuousscale(scale)
-    return singlescale ? view(column, idxs) : view.(column, Ref(idxs))
-end
-
 # TODO: decide more carefully when to split
 function split_entries(e::Entries, isgrouping=isgrouping)
     entries, labels, scales = e.entries, e.labels, e.scales
     flattened_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
-        flattened_cols = []
-        for (k, vs) in scales.named
-            col = get(mappings, k, nothing)
-            isnothing(col) && continue
-            cols, scs = _broadcastable(col, vs)
-            for (col, v) in zip(cols, scs)
-                isgrouping(k => v) && push!(flattened_cols, col)
-            end
-        end
-        grouping_cols = Tuple(flattened_cols)
+        iter = (get(mappings, k, nothing) for (k, v) in scales.named if isgrouping(k => v))
+        grouping_cols = Tuple(Iterators.filter(!isnothing, iter))
         foreach(indices_iterator(grouping_cols)) do idxs
-            submappings = map(mappings, scales) do v, scale
-                return subselect(v, scale, idxs)
-            end
+            submappings = map(v -> view(v, idxs), mappings)
             new_entry = Entry(entry.plottype, submappings, entry.attributes)
             push!(flattened_entries, new_entry)
         end

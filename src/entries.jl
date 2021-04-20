@@ -31,20 +31,30 @@ end
 
 function compute_axes_grid(fig, e::Entries)
     dict = Dict{NTuple{2, Any}, AxisEntries}()
-    default_layout_scale = CategoricalScale(uniquevalues=[1], palette=[(1, 1)])
-    layout_scale = get(e.scales, :layout, default_layout_scale)
+    layout_scale = get(
+        e.scales,
+        :layout,
+        (
+            get(e.scales, :col, CategoricalScale(uniquevalues=[1], palette=[1])),
+            get(e.scales, :row, CategoricalScale(uniquevalues=[1], palette=[1])),
+        )
+    )
     all_layouts = rescale(layout_scale)
     grid_size = (maximum(first, all_layouts), maximum(last, all_layouts))
+    col_scale = get(e.scales, :col, CategoricalScale(uniquevalues=[1], palette=[1]))
+    row_scale = get(e.scales, :row, CategoricalScale(uniquevalues=[1], palette=[1]))
     axes_grid = map(CartesianIndices(Tuple(grid_size))) do c
         i, j = Tuple(c)
         axis = Axis(fig[i, j])
         return AxisEntries(axis, Entry[], e.labels, e.scales)
     end
     for entry in e.entries
-        layout_col = get(entry.mappings, :layout, nothing)
+        col_vec = get(entry.mappings, :col, nothing)
+        row_vec = get(entry.mappings, :row, nothing)
+        layout_vec = get(entry.mappings, :layout, (col_vec, row_vec))
         # without layout info, plot on all axes
         # we may want to only pass a unique value for "splittable columns"
-        layouts = isnothing(layout_col) ? all_layouts : rescale(layout_col, layout_scale)[1:1]
+        layouts = isnothing(layout_vec) ? all_layouts : rescale(layout_vec, layout_scale)[1:1]
         for (i, j) in layouts
             ae = axes_grid[i, j]
             push!(ae.entries, entry)

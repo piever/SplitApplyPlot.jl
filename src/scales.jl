@@ -75,25 +75,19 @@ function rescale(values, scale::CategoricalScale)
     return f.(idxs)
 end
 
-rescale(values::Tuple, scale::Tuple) = map(tuple, map(rescale, values, scale)...)
-
 rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
-rescale(scales::Tuple) = Iterators.product(map(rescale, scales)...)
 
 function default_scale(column, scale, palette)
     scale === automatic && (scale = iscontinuous(column) ? continuousscale : categoricalscale)
     scale isa NamedTuple && (scale = CategoricalScale(; scale...)) # Do we want this?
     scale isa ContinuousScale && (scale = identity)
     scale isa Function && return scale
-    if scale isa CategoricalScale
-        cs = scale === automatic ? categoricalscale : scale
-        uv = cs.uniquevalues === automatic ? uniquesort(column) : cs.uniquevalues
-        labels = cs.labels === automatic ? string.(uv) : cs.labels
-        p = cs.palette === automatic ? palette : cs.palette
-        return CategoricalScale(uv, p, labels)
-    else
-        return map((c, s) -> default_scale(c, s, palette), column, scale)
-    end
+    @assert scale isa CategoricalScale
+    cs = scale === automatic ? categoricalscale : scale
+    uv = cs.uniquevalues === automatic ? uniquesort(column) : cs.uniquevalues
+    labels = cs.labels === automatic ? string.(uv) : cs.labels
+    p = cs.palette === automatic ? palette : cs.palette
+    return CategoricalScale(uv, p, labels)
 end
 
 # Logic to infer good scales

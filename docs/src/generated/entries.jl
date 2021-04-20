@@ -66,8 +66,10 @@ entries(
 )
 resolution = (600, 600)
 fig = Figure(; resolution)
-# This operation returns a grid of `AxisEntries`
 ag = plot!(fig, entries)
+
+# This operation returns a grid of `AxisEntries` and plots them to the original figure:
+
 display(fig)
 AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
 
