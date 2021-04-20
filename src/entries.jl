@@ -57,7 +57,7 @@ function compute_axes_grid(fig, e::Entries)
         cols, rows = map(1:2) do i
             # without layout info, plot on all axes
             isnothing(colrow_vec[i]) || return rescale(colrow_vec[i], colrow_scale[i])[1:1]
-            isnothing(layout_vec) || return rescale(layout_vec, layout_scale)[1:1][i]
+            isnothing(layout_vec) || return map(t -> t[i], rescale(layout_vec, layout_scale))[1:1]
             return 1:grid_size[i]
         end
         for i in cols, j in rows
