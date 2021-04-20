@@ -48,9 +48,6 @@ isacontinuousscale(::Any) = false
 isacategoricalscale(::CategoricalScale) = true
 isacategoricalscale(::Any) = false
 
-# FIXME: move the piracy bit to AbstractPlotting
-Broadcast.broadcastable(a::Union{CategoricalScale, ContinuousScale, Automatic}) = Ref(a)
-
 # should this be done in place for efficiency?
 function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale) 
     uniquevalues = union(sc1.uniquevalues, sc2.uniquevalues)
