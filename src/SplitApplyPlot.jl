@@ -4,7 +4,7 @@ using Tables: columns, getcolumn
 using StructArrays: uniquesorted, finduniquesorted, components, GroupPerm, StructArray
 using Colors: RGB
 using AbstractPlotting
-using AbstractPlotting: automatic, PlotFunc
+using AbstractPlotting: automatic, Automatic, PlotFunc
 import AbstractPlotting.MakieLayout: hidexdecorations!,
                                      hideydecorations!,
                                      hidedecorations!,

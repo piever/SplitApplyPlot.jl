@@ -18,6 +18,7 @@ function default_palettes()
         marker=[:circle, :xcross, :utriangle, :diamond, :dtriangle, :star8, :pentagon, :rect],
         linestyle=[:solid, :dash, :dot, :dashdot, :dashdotdot],
         side=[:left, :right],
+        layout=wrap,
     )
 end
 
@@ -35,6 +36,8 @@ end
 CategoricalScale(uniquevalues, palette) = CategoricalScale(; uniquevalues, palette)
 CategoricalScale(v::AbstractVector) = CategoricalScale(uniquevalues=v)
 
+uniquevalues(c::CategoricalScale) = c.uniquevalues
+
 const categoricalscale = CategoricalScale()
 
 struct ContinuousScale end
@@ -45,8 +48,6 @@ isacontinuousscale(::Any) = false
 
 isacategoricalscale(::CategoricalScale) = true
 isacategoricalscale(::Any) = false
-
-Base.length(c::CategoricalScale) = length(c.uniquevalues)
 
 # should this be done in place for efficiency?
 function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale) 
@@ -62,29 +63,44 @@ function merge_scales(f1::Function, f2::Function)
 end
 
 rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
+
+apply_palette(p::AbstractArray, idxs, _) = [cycle(p, idx) for idx in idxs]
+apply_palette(::Automatic, idxs, _) = map(something, idxs)
+apply_palette(p, idxs, _) = map(p, idxs)
+
+# TODO: add more customizations?
+struct Wrap end
+
+const wrap = Wrap()
+
+function apply_palette(::Wrap, idxs, uniquevalues)
+    ncols = ceil(Int, sqrt(length(uniquevalues)))
+    return [fldmod1(idx, ncols) for idx in idxs]
+end
+
 function rescale(values, scale::CategoricalScale)
     uniquevalues, palette = scale.uniquevalues, scale.palette
     idxs = indexin(values, uniquevalues)
-    return palette === automatic ? something.(idxs) : cycle.(Ref(palette), idxs)
+    return apply_palette(palette, idxs, uniquevalues)
+end
+
+rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
+
+function default_scale(column, scale, palette)
+    scale === automatic && (scale = iscontinuous(column) ? continuousscale : categoricalscale)
+    scale isa NamedTuple && (scale = CategoricalScale(; scale...)) # Do we want this?
+    scale isa ContinuousScale && (scale = identity)
+    scale isa Function && return scale
+    @assert scale isa CategoricalScale
+    cs = scale === automatic ? categoricalscale : scale
+    uv = cs.uniquevalues === automatic ? uniquesort(column) : cs.uniquevalues
+    labels = cs.labels === automatic ? string.(uv) : cs.labels
+    p = cs.palette === automatic ? palette : cs.palette
+    return CategoricalScale(uv, p, labels)
 end
 
 # Logic to infer good scales
 function default_scales(mappings, scales)
     palettes = mergewith!((_, b) -> b, map(_ -> automatic, mappings), default_palettes())
-    return map(mappings, scales, palettes) do v, scale, palette
-        @assert isacontinuousscale(scale) || isacategoricalscale(scale) || scale === automatic
-        if isacontinuousscale(scale)
-            # fully specified continuous scale
-            scale
-        elseif iscontinuous(v) && scale in (automatic, continuousscale)
-            # unspecified continuous scale
-            identity
-        else
-            cs = scale === automatic ? categoricalscale : scale
-            uv = cs.uniquevalues === automatic ? uniquesort(v) : cs.uniquevalues
-            labels = cs.labels === automatic ? string.(uv) : cs.labels
-            p = cs.palette === automatic ? palette : cs.palette
-            CategoricalScale(uv, p, labels)
-        end
-    end
+    return map(default_scale, mappings, scales, palettes)
 end

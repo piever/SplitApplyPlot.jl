@@ -21,10 +21,8 @@ function split_entries(e::Entries, isgrouping=isgrouping)
     flattened_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
-        grouping_cols = filter(
-            !isnothing,
-            Tuple(get(mappings, k, nothing) for (k, v) in scales.named if isgrouping(k => v))
-        )
+        iter = (get(mappings, k, nothing) for (k, v) in scales.named if isgrouping(k => v))
+        grouping_cols = Tuple(Iterators.filter(!isnothing, iter))
         foreach(indices_iterator(grouping_cols)) do idxs
             submappings = map(v -> view(v, idxs), mappings)
             new_entry = Entry(entry.plottype, submappings, entry.attributes)
