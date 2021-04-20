@@ -14,18 +14,21 @@ import AbstractPlotting.MakieLayout: hidexdecorations!,
 using PooledArrays: PooledArray
 using KernelDensity: kde
 using DataAPI: refarray
+using OrderedCollections: LittleDict
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
 export categoricalscale, CategoricalScale, continuousscale, automatic
 export Density, Linear, Visual
 export density, linear, visual, data, mapping
+export facet!
 
 include("arguments.jl")
 include("scales.jl")
 include("entries.jl")
 include("data.jl")
 include("utils.jl")
+include("facet.jl")
 include("algebra/spec.jl")
 include("algebra/speclist.jl")
 include("transformations/grouping.jl")
