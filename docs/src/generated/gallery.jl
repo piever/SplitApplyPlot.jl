@@ -83,12 +83,13 @@ linkaxes!(ag...)
 display(fig)
 AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
+# ![](facetscatter.svg)
 #
 # ### Facet wrap
 
 df = (x=rand(100), y=rand(100), l=rand(["a", "b", "c", "d", "e", "f"], 100))
 fig = Figure()
-specs = data(df) * mapping(:x, :y, layout=:l=>(palette=t -> fldmod1(t, 2),))
+specs = data(df) * mapping(:x, :y, layout=:l=>(palette=t -> fldmod1(t, 3),))
 ag = plot!(fig, specs)
 display(fig)
 AbstractPlotting.save("facetwrapscatter.svg", AbstractPlotting.current_scene()); nothing #hide

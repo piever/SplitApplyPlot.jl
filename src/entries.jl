@@ -30,43 +30,42 @@ function Base.merge!(e1::Entries, e2::Entries)
 end
 
 function compute_axes_grid(fig, e::Entries)
-    dict = Dict{NTuple{2, Any}, AxisEntries}()
-    colrow_scale = map([:col, :row]) do sym
-        default = CategoricalScale(uniquevalues=[1], palette=[1])
-        return get(e.scales, sym, default)
+
+    rowcol = (:row, :col)
+
+    layout_scale, scales... = map((:layout, rowcol...)) do sym
+        return get(e.scales, sym, nothing)
     end
-    colrow_uniquevalues = uniquevalues.(colrow_scale)
-    colrow_converted = rescale.(colrow_scale)
-    default_layout_scale = CategoricalScale(
-        uniquevalues=vecproduct(colrow_uniquevalues...),
-        palette=vecproduct(colrow_converted...),
-    )
-    layout_scale = get(e.scales, :layout, default_layout_scale)
-    all_layouts = rescale(layout_scale)
-    grid_size = (maximum(first, all_layouts), maximum(last, all_layouts))
-    col_scale = get(e.scales, :col, CategoricalScale(uniquevalues=[1], palette=[1]))
-    row_scale = get(e.scales, :row, CategoricalScale(uniquevalues=[1], palette=[1]))
-    axes_grid = map(CartesianIndices(Tuple(grid_size))) do c
-        i, j = Tuple(c)
-        axis = Axis(fig[i, j])
+
+    grid_size = map(scales, (first, last)) do scale, f
+        isnothing(scale) || return maximum(rescale(scale))
+        isnothing(layout_scale) || return maximum(f, rescale(layout_scale))
+        return 1
+    end
+
+    axes_grid = map(CartesianIndices(grid_size)) do c
+        axis = Axis(fig[Tuple(c)...])
         return AxisEntries(axis, Entry[], e.labels, e.scales)
     end
+
     for entry in e.entries
-        colrow_vec = [get(entry.mappings, :col, nothing), get(entry.mappings, :row, nothing)]
-        layout_vec = get(entry.mappings, :layout, nothing)
-        cols, rows = map(1:2) do i
+        rows, cols = map(rowcol, scales, (first, last)) do sym, scale, f
+            v = get(entry.mappings, sym, nothing)
+            layout_v = get(entry.mappings, :layout, nothing)
             # without layout info, plot on all axes
-            # FIXME: optimize as all values are unique
-            isnothing(colrow_vec[i]) || return rescale(colrow_vec[i], colrow_scale[i])[1:1]
-            isnothing(layout_vec) || return map(t -> t[i], rescale(layout_vec, layout_scale))[1:1]
-            return 1:grid_size[i]
+            # all values in `v` and `layout_v` are equal
+            isnothing(v) || return rescale(v[1:1], scale)
+            isnothing(layout_v) || return map(f, rescale(layout_v[1:1], layout_scale))
+            return 1:f(grid_size)
         end
-        for i in cols, j in rows
+        for i in rows, j in cols
             ae = axes_grid[i, j]
             push!(ae.entries, entry)
         end
     end
+
     return axes_grid
+
 end
 
 function AbstractPlotting.plot!(fig, entries::Entries)
