@@ -106,10 +106,9 @@ AbstractPlotting.save("facetwrapscatter.svg", AbstractPlotting.current_scene());
 df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
 resolution = (1200, 600)
 fig = Figure(; resolution)
-ax = Axis(fig[1, 1])
-text!(ax, "Some plot")
+ax = Axis(fig[1, 1], title="Some plot")
 specs = data(df) * mapping(:x, :y, col=:i, row=:j)
-subfig = fig[1, 2]
+subfig = fig[1, 2:3]
 ag = plot!(subfig, specs)
 facet!(subfig, ag)
 for ae in ag
