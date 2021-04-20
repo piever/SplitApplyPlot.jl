@@ -22,8 +22,15 @@ function Base.:*(s1::OneOrMoreSpecs, s2::OneOrMoreSpecs)
     return SpecList([el1 * el2 for el1 in l1 for el2 in l2])
 end
 
-function AbstractPlotting.plot!(fig, s::OneOrMoreSpecs)
+function Entries(s::OneOrMoreSpecs)
     l::SpecList = s
-    entries = foldl((f, x) -> f(x), l, init=Entries())
-    plot!(fig, entries)
+    return foldl((f, x) -> f(x), l, init=Entries())
+end
+
+function AbstractPlotting.plot!(fig, s::OneOrMoreSpecs; axis=NamedTuple())
+    return plot!(fig, Entries(s); axis)
+end
+
+function AbstractPlotting.plot(s::OneOrMoreSpecs; axis=NamedTuple(), figure=NamedTuple())
+    return plot(Entries(s); axis, figure)
 end

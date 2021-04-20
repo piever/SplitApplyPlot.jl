@@ -253,3 +253,28 @@ AbstractPlotting.save("arrows.svg", AbstractPlotting.current_scene()); nothing #
 
 # ![](arrows.svg)
 #
+# ## Axis and figure keywords
+#
+# ### Axis tweaking
+#
+# To tweak one or more axes, simply use the `axis` keyword when plotting. For example
+#
+df = (x=rand(100), y=rand(100), z=rand(100))
+fig = Figure()
+m = data(df) * mapping(:x, :y)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+plot!(fig, m * geoms, axis=(aspect=1,))
+display(fig)
+AbstractPlotting.save("axis.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](axis.svg)
+#
+# ### Non-mutating version
+#
+df = (x=rand(100), y=rand(100), z=rand(100))
+fig = Figure()
+m = data(df) * mapping(:x, :y)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+fig, ag = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(600, 600),))
+display(fig)
+AbstractPlotting.save("axis.svg", AbstractPlotting.current_scene()); nothing #hide
