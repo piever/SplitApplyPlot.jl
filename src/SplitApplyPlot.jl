@@ -15,6 +15,7 @@ using PooledArrays: PooledArray
 using KernelDensity: kde
 using DataAPI: refarray
 using OrderedCollections: LittleDict
+import FileIO
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries

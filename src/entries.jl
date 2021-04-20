@@ -71,8 +71,8 @@ end
 # TODO: join figure and axis grid in a unique "displayable" object
 function AbstractPlotting.plot(entries::Entries; axis=NamedTuple(), figure=NamedTuple())
     fig = Figure(; figure...)
-    ag = plot!(fig, entries; axis)
-    return fig, ag
+    grid = plot!(fig, entries; axis)
+    return FigureGrid(fig, grid)
 end
 
 function AbstractPlotting.plot!(fig, entries::Entries; axis=NamedTuple())
@@ -134,3 +134,29 @@ function AbstractPlotting.plot!(ae::AxisEntries)
     end
     return axis
 end
+
+struct FigureGrid
+    figure::Figure
+    grid::Matrix{AxisEntries}
+end
+
+Base.show(io::IO, fg::FigureGrid) = show(io, fg.figure)
+Base.show(io::IO, m::MIME, fg::FigureGrid) = show(io, m, fg.figure)
+Base.show(io::IO, ::MIME"text/plain", fg::FigureGrid) = print(io, "FigureGrid()")
+
+Base.showable(mime::MIME{M}, fg::FigureGrid) where {M} = showable(mime, fg.figure)
+
+Base.display(fg::FigureGrid) = display(fg.figure)
+
+function FileIO.save(filename::String, fg::FigureGrid; kwargs...)
+    return FileIO.save(FileIO.query(filename), fg; kwargs...)
+end
+
+function FileIO.save(file::FileIO.Formatted, fg::FigureGrid; kwargs...)
+    return FileIO.save(file, fg.figure; kwargs...)
+end
+
+to_tuple(fg) = (fg.figure, fg.grid)
+
+Base.iterate(fg::FigureGrid) = iterate(to_tuple(fg))
+Base.iterate(fg::FigureGrid, i) = iterate(to_tuple(fg), i)

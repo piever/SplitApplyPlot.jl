@@ -76,3 +76,8 @@ function facet!(fig, aes::AbstractMatrix{AxisEntries})
     facet_grid!(fig, aes)
     return nothing
 end
+
+function facet!(fg::FigureGrid)
+    facet!(fg.figure, fg.grid)
+    return fg
+end
