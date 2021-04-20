@@ -9,8 +9,8 @@ Entry(plottype::PlotFunc, arguments; attributes...) =
 
 struct Entries
     entries::Vector{Entry}
-    labels::Arguments
     scales::Arguments
+    labels::Arguments
 end
 
 Entries() = Entries(Entry[], arguments(), arguments())
@@ -24,9 +24,9 @@ Entries(iterator) = foldl(merge!, iterator, init=Entries())
 
 function Base.merge!(e1::Entries, e2::Entries)
     entries = append!(e1.entries, e2.entries)
-    labels = mergewith!((a, b) -> isempty(b) ? a : b, e1.labels, e2.labels)
     scales = mergewith!(merge_scales, e1.scales, e2.scales)
-    return Entries(entries, labels, scales)
+    labels = mergewith!((a, b) -> isempty(b) ? a : b, e1.labels, e2.labels)
+    return Entries(entries, scales, labels)
 end
 
 function compute_axes_grid(fig, e::Entries)
@@ -45,7 +45,7 @@ function compute_axes_grid(fig, e::Entries)
 
     axes_grid = map(CartesianIndices(grid_size)) do c
         axis = Axis(fig[Tuple(c)...])
-        return AxisEntries(axis, Entry[], e.labels, e.scales)
+        return AxisEntries(axis, Entry[], e.scales, e.labels)
     end
 
     for entry in e.entries
@@ -85,8 +85,8 @@ such as `log10`. Other scales may be supported in the future.
 struct AxisEntries
     axis::Axis
     entries::Vector{Entry}
-    labels::Arguments
     scales::Arguments
+    labels::Arguments
 end
 
 AbstractPlotting.Axis(ae::AxisEntries) = ae.axis

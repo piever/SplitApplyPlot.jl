@@ -27,7 +27,7 @@ function (e::Entries)(f, data, args...; kwargs...)
     scales = default_scales(mappings, scales′)
 
     entry = Entry(Any, mappings)
-    input_entries = Entries([entry], labels, scales)
+    input_entries = Entries([entry], scales, labels)
     entries = f(input_entries)
     merge!(e, entries)
     return e

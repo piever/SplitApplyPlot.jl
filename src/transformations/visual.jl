@@ -11,6 +11,6 @@ function (v::Visual)(e::Entry)
     return Entry(plottype, mappings, attributes)
 end
 
-(v::Visual)(e::Entries) = Entries(map(v, e.entries), e.labels, e.scales)
+(v::Visual)(e::Entries) = Entries(map(v, e.entries), e.scales, e.labels)
 
 visual(plottype=Any; kwargs...) = Spec(Visual(plottype; kwargs...))

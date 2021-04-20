@@ -6,7 +6,7 @@ Linear(; kwargs...) = Linear(Dict{Symbol, Any}(kwargs))
 
 # FIXME: factor out the grouping mechanism
 function (l::Linear)(e::Entries)
-    entries, labels, scales = e.entries, e.labels, e.scales
+    entries, scales, labels = e.entries, e.scales, e.labels
     new_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
@@ -27,7 +27,7 @@ function (l::Linear)(e::Entries)
         end
         push!(new_entries, Entry(Lines, result, entry.attributes))
     end
-    return Entries(new_entries, labels, scales)
+    return Entries(new_entries, scales, labels)
 end
 
 linear(; kwargs...) = Spec(Linear(; kwargs...))

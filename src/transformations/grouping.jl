@@ -17,7 +17,7 @@ end
 
 # TODO: decide more carefully when to split
 function split_entries(e::Entries, isgrouping=isgrouping)
-    entries, labels, scales = e.entries, e.labels, e.scales
+    entries, scales, labels = e.entries, e.scales, e.labels
     flattened_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
@@ -29,5 +29,5 @@ function split_entries(e::Entries, isgrouping=isgrouping)
             push!(flattened_entries, new_entry)
         end
     end
-    return Entries(flattened_entries, labels, scales)
+    return Entries(flattened_entries, scales, labels)
 end

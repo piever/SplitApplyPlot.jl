@@ -35,7 +35,7 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
 end
 
 function (d::Density)(e::Entries)
-    entries, labels, scales = e.entries, e.labels, e.scales
+    entries, scales, labels = e.entries, e.scales, e.labels
     new_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
@@ -54,8 +54,8 @@ function (d::Density)(e::Entries)
     end
     return Entries(
         new_entries,
-        combine(labels, arguments("PDF")),
         combine(scales, arguments(identity)),
+        combine(labels, arguments("PDF")),
     )
 end
 
