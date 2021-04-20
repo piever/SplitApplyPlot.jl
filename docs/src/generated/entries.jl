@@ -85,7 +85,8 @@ entries(
     :Displ => "Displacement",
     :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
-    layout=(:Fl, :Drv) .=> categoricalscale .=> ("Fuel type", "Drive train"),
+    col=:Fl => categoricalscale => "Fuel type",
+    row=:Drv => categoricalscale => "Drive train"
 )
 entries(
     Visual(linewidth=5) ∘ Linear(),

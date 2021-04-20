@@ -35,6 +35,8 @@ end
 CategoricalScale(uniquevalues, palette) = CategoricalScale(; uniquevalues, palette)
 CategoricalScale(v::AbstractVector) = CategoricalScale(uniquevalues=v)
 
+uniquevalues(c::CategoricalScale) = c.uniquevalues
+
 const categoricalscale = CategoricalScale()
 
 struct ContinuousScale end

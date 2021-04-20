@@ -31,14 +31,17 @@ end
 
 function compute_axes_grid(fig, e::Entries)
     dict = Dict{NTuple{2, Any}, AxisEntries}()
-    layout_scale = get(
-        e.scales,
-        :layout,
-        (
-            get(e.scales, :col, CategoricalScale(uniquevalues=[1], palette=[1])),
-            get(e.scales, :row, CategoricalScale(uniquevalues=[1], palette=[1])),
-        )
+    colrow_scale = map([:col, :row]) do sym
+        default = CategoricalScale(uniquevalues=[1], palette=[1])
+        return get(e.scales, sym, default)
+    end
+    colrow_uniquevalues = uniquevalues.(colrow_scale)
+    colrow_converted = rescale.(colrow_scale)
+    default_layout_scale = CategoricalScale(
+        uniquevalues=vecproduct(colrow_uniquevalues...),
+        palette=vecproduct(colrow_converted...),
     )
+    layout_scale = get(e.scales, :layout, default_layout_scale)
     all_layouts = rescale(layout_scale)
     grid_size = (maximum(first, all_layouts), maximum(last, all_layouts))
     col_scale = get(e.scales, :col, CategoricalScale(uniquevalues=[1], palette=[1]))
@@ -49,13 +52,15 @@ function compute_axes_grid(fig, e::Entries)
         return AxisEntries(axis, Entry[], e.labels, e.scales)
     end
     for entry in e.entries
-        col_vec = get(entry.mappings, :col, nothing)
-        row_vec = get(entry.mappings, :row, nothing)
-        layout_vec = get(entry.mappings, :layout, (col_vec, row_vec))
-        # without layout info, plot on all axes
-        # we may want to only pass a unique value for "splittable columns"
-        layouts = isnothing(layout_vec) ? all_layouts : rescale(layout_vec, layout_scale)[1:1]
-        for (i, j) in layouts
+        colrow_vec = [get(entry.mappings, :col, nothing), get(entry.mappings, :row, nothing)]
+        layout_vec = get(entry.mappings, :layout, nothing)
+        cols, rows = map(1:2) do i
+            # without layout info, plot on all axes
+            isnothing(colrow_vec[i]) || return rescale(colrow_vec[i], colrow_scale[i])[1:1]
+            isnothing(layout_vec) || return rescale(layout_vec, layout_scale)[1:1][i]
+            return 1:grid_size[i]
+        end
+        for i in cols, j in rows
             ae = axes_grid[i, j]
             push!(ae.entries, entry)
         end
