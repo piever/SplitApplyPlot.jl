@@ -51,6 +51,3 @@ end
 uniquesort(v) = collect(uniquesorted(v))
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
-
-# Collect product as a vector
-vecproduct(i1, i2) = vec(collect(Iterators.product(i1, i2)))

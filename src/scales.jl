@@ -18,6 +18,7 @@ function default_palettes()
         marker=[:circle, :xcross, :utriangle, :diamond, :dtriangle, :star8, :pentagon, :rect],
         linestyle=[:solid, :dash, :dot, :dashdot, :dashdotdot],
         side=[:left, :right],
+        layout=wrap,
     )
 end
 
@@ -63,15 +64,24 @@ end
 
 rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
 
-to_function(v::AbstractArray) = Base.Fix1(cycle, v)
-to_function(v::Automatic) = something
-to_function(f::Function) = f
+apply_palette(p::AbstractArray, idxs, _) = [cycle(p, idx) for idx in idxs]
+apply_palette(::Automatic, idxs, _) = map(something, idxs)
+apply_palette(p, idxs, _) = map(p, idxs)
+
+# TODO: add more customizations?
+struct Wrap end
+
+const wrap = Wrap()
+
+function apply_palette(::Wrap, idxs, uniquevalues)
+    ncols = ceil(Int, sqrt(length(uniquevalues)))
+    return [fldmod1(idx, ncols) for idx in idxs]
+end
 
 function rescale(values, scale::CategoricalScale)
     uniquevalues, palette = scale.uniquevalues, scale.palette
     idxs = indexin(values, uniquevalues)
-    f = to_function(palette)
-    return f.(idxs)
+    return apply_palette(palette, idxs, uniquevalues)
 end
 
 rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
