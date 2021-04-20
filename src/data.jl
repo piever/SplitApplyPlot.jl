@@ -1,3 +1,6 @@
+apply_context(cols, columnname::Union{Symbol, String}) = getcolumn(cols, columnname)
+apply_context(cols, columnnames::Tuple) = map(Base.Fix1(getcolumn, cols), columnnames)
+
 function column_scale_label(cols, x::Pair{<:Any, <:Union{AbstractString, Symbol}})
     columnname, label = x
     return column_scale_label(cols, columnname => automatic => label)

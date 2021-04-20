@@ -62,16 +62,23 @@ function merge_scales(f1::Function, f2::Function)
 end
 
 rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
+
+to_function(v::AbstractArray) = Base.Fix1(cycle, v)
+to_function(v::Automatic) = something
+to_function(f::Function) = f
+
 function rescale(values, scale::CategoricalScale)
     uniquevalues, palette = scale.uniquevalues, scale.palette
     idxs = indexin(values, uniquevalues)
-    return palette === automatic ? something.(idxs) : cycle.(Ref(palette), idxs)
+    f = to_function(palette)
+    return f.(idxs)
 end
 
 # Logic to infer good scales
 function default_scales(mappings, scales)
     palettes = mergewith!((_, b) -> b, map(_ -> automatic, mappings), default_palettes())
     return map(mappings, scales, palettes) do v, scale, palette
+        scale isa NamedTuple && (scale = CategoricalScale(; scale...))
         @assert isacontinuousscale(scale) || isacategoricalscale(scale) || scale === automatic
         if isacontinuousscale(scale)
             # fully specified continuous scale

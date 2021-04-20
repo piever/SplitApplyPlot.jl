@@ -177,7 +177,7 @@ AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing 
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
 fig = Figure()
-xscale = CategoricalScale(labels=["label1", "label2", "label3"])
+xscale = (labels=["label1", "label2", "label3"],)
 specs = data(df) *
     mapping(
         :x => xscale,
@@ -191,9 +191,7 @@ AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing 
 #
 # The order can also be changed by tweaking the scale
 fig = Figure()
-xscale = CategoricalScale(
-    uniquevalues=["b", "a", "c"],
-)
+xscale = (uniquevalues=["b", "a", "c"],)
 specs = data(df) *
     mapping(
         :x => xscale,
@@ -240,8 +238,8 @@ colors = [colorant"#E24A33", colorant"#348ABD"]
 heads = ['▲', '●']
 specs = data(df) *
     mapping(:x, :y, :u, :v) *
-    mapping(arrowhead=:c=>CategoricalScale(palette=heads)) *
-    mapping(arrowcolor=:d=>CategoricalScale(palette=colors)) *
+    mapping(arrowhead=:c=>(palette=heads,)) *
+    mapping(arrowcolor=:d=>(palette=colors,)) *
     visual(Arrows, arrowsize=10, lengthscale=0.3)
 plot!(fig, specs)
 display(fig)
