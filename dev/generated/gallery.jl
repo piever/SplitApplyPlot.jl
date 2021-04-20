@@ -78,8 +78,7 @@ df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", 
 fig = Figure()
 specs = data(df) * mapping(:x, :y, col=:i, row=:j)
 ag = plot!(fig, specs)
-hideinnerdecorations!(ag)
-linkaxes!(ag...)
+facet!(fig, ag)
 display(fig)
 AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -87,10 +86,11 @@ AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); not
 #
 # ### Facet wrap
 
-df = (x=rand(100), y=rand(100), l=rand(["a", "b", "c", "d", "e", "f"], 100))
+df = (x=rand(100), y=rand(100), l=rand(["a", "b", "c", "d", "e"], 100))
 fig = Figure()
 specs = data(df) * mapping(:x, :y, layout=:l)
 ag = plot!(fig, specs)
+SplitApplyPlot.facet!(fig, ag)
 display(fig)
 AbstractPlotting.save("facetwrapscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -106,12 +106,14 @@ AbstractPlotting.save("facetwrapscatter.svg", AbstractPlotting.current_scene());
 df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
 resolution = (1200, 600)
 fig = Figure(; resolution)
-ax = Axis(fig[1, 1])
-text!(ax, "Some plot")
+ax = Axis(fig[1, 1], title="Some plot")
 specs = data(df) * mapping(:x, :y, col=:i, row=:j)
-ag = plot!(fig[1, 2:3], specs)
-hideinnerdecorations!(ag)
-linkaxes!(ag...)
+subfig = fig[1, 2:3]
+ag = plot!(subfig, specs)
+facet!(subfig, ag)
+for ae in ag
+    Axis(ae).xticklabelrotation[] = π/2
+end
 display(fig)
 AbstractPlotting.save("nestedfacet.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -125,8 +127,7 @@ fig = Figure()
 m = mapping(:x, :y, col=:i, row=:j)
 geoms = data(df1) * visual(Scatter) + data(df2) * visual(Lines)
 ag = plot!(fig, m * geoms)
-hideinnerdecorations!(ag)
-linkaxes!(ag...)
+facet!(fig, ag)
 display(fig)
 AbstractPlotting.save("facetscatterlines.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -151,8 +152,7 @@ df = (x=randn(1000), c=rand(["a", "b"], 1000))
 fig = Figure()
 specs = data(df) * mapping(:x, col=:c) * visual(AbstractPlotting.Density)
 ag = plot!(fig, specs)
-hideinnerdecorations!(ag)
-linkaxes!(ag...)
+facet!(fig, ag)
 display(fig)
 AbstractPlotting.save("densityvisual.svg", AbstractPlotting.current_scene()); nothing #hide
 
