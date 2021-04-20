@@ -75,7 +75,7 @@ AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
 
 # ![](splitapplyplot.svg)
 
-# `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
+# `col` and `row` can be used to return a less trivial grid of axis plots.
 resolution = (1200, 1200)
 fig = Figure(; resolution)
 entries = Entries()
@@ -85,8 +85,8 @@ entries(
     :Displ => "Displacement",
     :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
-    layout_x=:Drv => categoricalscale => "Drive train",
-    layout_y=:Fl => categoricalscale => "Fuel type",
+    col=:Fl => categoricalscale => "Fuel type",
+    row=:Drv => categoricalscale => "Drive train"
 )
 entries(
     Visual(linewidth=5) ∘ Linear(),

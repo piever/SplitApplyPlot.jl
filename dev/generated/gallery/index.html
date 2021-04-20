@@ -32,24 +32,27 @@ geoms = linear() + visual(Scatter) * mapping(color=:z)
 plot!(fig, m * geoms)
 display(fig)</code></pre><p><img src="../linefit.svg" alt/></p><h2 id="Faceting"><a class="docs-heading-anchor" href="#Faceting">Faceting</a><a id="Faceting-1"></a><a class="docs-heading-anchor-permalink" href="#Faceting" title="Permalink"></a></h2><p>Still needs to automatically do things to axes, decorate, etc.</p><h3 id="Facet-grid"><a class="docs-heading-anchor" href="#Facet-grid">Facet grid</a><a id="Facet-grid-1"></a><a class="docs-heading-anchor-permalink" href="#Facet-grid" title="Permalink"></a></h3><pre><code class="language-julia">df = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
 fig = Figure()
-specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+specs = data(df) * mapping(:x, :y, col=:i, row=:j)
 ag = plot!(fig, specs)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
 display(fig)</code></pre><p><img src="../facetscatter.svg" alt/></p><h3 id="Facet-wrap"><a class="docs-heading-anchor" href="#Facet-wrap">Facet wrap</a><a id="Facet-wrap-1"></a><a class="docs-heading-anchor-permalink" href="#Facet-wrap" title="Permalink"></a></h3><pre><code class="language-julia">df = (x=rand(100), y=rand(100), l=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
-specs = data(df) * mapping(:x, :y, layout=:l) # FIXME: does not work...</code></pre><pre class="documenter-example-output">&quot;Not yet implemented&quot;</pre><h3 id="Embedding-facets"><a class="docs-heading-anchor" href="#Embedding-facets">Embedding facets</a><a id="Embedding-facets-1"></a><a class="docs-heading-anchor-permalink" href="#Embedding-facets" title="Permalink"></a></h3><p>All SplitApplyPlot plots can be inserted in any figure position, where the rest of the figure is managed by vanilla Makie. For example</p><pre><code class="language-julia">df = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
+fig = Figure()
+specs = data(df) * mapping(:x, :y, layout=:l)
+ag = plot!(fig, specs)
+display(fig)</code></pre><p><img src="../facetwrapscatter.svg" alt/></p><h3 id="Embedding-facets"><a class="docs-heading-anchor" href="#Embedding-facets">Embedding facets</a><a id="Embedding-facets-1"></a><a class="docs-heading-anchor-permalink" href="#Embedding-facets" title="Permalink"></a></h3><p>All SplitApplyPlot plots can be inserted in any figure position, where the rest of the figure is managed by vanilla Makie. For example</p><pre><code class="language-julia">df = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
 resolution = (1200, 600)
 fig = Figure(; resolution)
 ax = Axis(fig[1, 1])
 text!(ax, &quot;Some plot&quot;)
-specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+specs = data(df) * mapping(:x, :y, col=:i, row=:j)
 ag = plot!(fig[1, 2:3], specs)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
 display(fig)</code></pre><p><img src="../nestedfacet.svg" alt/></p><h3 id="Adding-traces-to-only-some-subplots"><a class="docs-heading-anchor" href="#Adding-traces-to-only-some-subplots">Adding traces to only some subplots</a><a id="Adding-traces-to-only-some-subplots-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-traces-to-only-some-subplots" title="Permalink"></a></h3><pre><code class="language-julia">df1 = (x=rand(100), y=rand(100), i=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), j=rand([&quot;d&quot;, &quot;e&quot;, &quot;f&quot;], 100))
-df2 = (x=[0, 1], y=[0.5, 0.5], i=fill(&quot;a&quot;, 2), j=fill(&quot;e&quot;, 2)) # FIXME: do we need a smarter way to pass layout?
+df2 = (x=[0, 1], y=[0.5, 0.5], i=fill(&quot;a&quot;, 2), j=fill(&quot;e&quot;, 2))
 fig = Figure()
-m = mapping(:x, :y, layout_x=:i, layout_y=:j)
+m = mapping(:x, :y, col=:i, row=:j)
 geoms = data(df1) * visual(Scatter) + data(df2) * visual(Lines)
 ag = plot!(fig, m * geoms)
 hideinnerdecorations!(ag)
@@ -60,7 +63,7 @@ specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5)
 plot!(fig, specs)
 display(fig)</code></pre><p><img src="../density.svg" alt/></p><p>Using the recipe from AbstractPlotting also works (let us try to figure out whether we need an analysis or not).</p><pre><code class="language-julia">df = (x=randn(1000), c=rand([&quot;a&quot;, &quot;b&quot;], 1000))
 fig = Figure()
-specs = data(df) * mapping(:x, layout_x=:c) * visual(AbstractPlotting.Density)
+specs = data(df) * mapping(:x, col=:c) * visual(AbstractPlotting.Density)
 ag = plot!(fig, specs)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
@@ -73,7 +76,7 @@ specs = data(df) * mapping(:x, :y) * visual(BoxPlot)
 plot!(fig, specs)
 display(fig)</code></pre><p><img src="../boxplot.svg" alt/></p><pre><code class="language-julia">df = (x=rand([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], 100), y=rand(100))
 fig = Figure()
-xscale = CategoricalScale(labels=[&quot;label1&quot;, &quot;label2&quot;, &quot;label3&quot;])
+xscale = (labels=[&quot;label1&quot;, &quot;label2&quot;, &quot;label3&quot;],)
 specs = data(df) *
     mapping(
         :x =&gt; xscale,
@@ -81,9 +84,7 @@ specs = data(df) *
     ) * visual(BoxPlot)
 plot!(fig, specs)
 display(fig)</code></pre><p><img src="../relabel.svg" alt/></p><p>The order can also be changed by tweaking the scale</p><pre><code class="language-julia">fig = Figure()
-xscale = CategoricalScale(
-    uniquevalues=[&quot;b&quot;, &quot;a&quot;, &quot;c&quot;],
-)
+xscale = (uniquevalues=[&quot;b&quot;, &quot;a&quot;, &quot;c&quot;],)
 specs = data(df) *
     mapping(
         :x =&gt; xscale,
@@ -113,8 +114,8 @@ colors = [colorant&quot;#E24A33&quot;, colorant&quot;#348ABD&quot;]
 heads = [&#39;▲&#39;, &#39;●&#39;]
 specs = data(df) *
     mapping(:x, :y, :u, :v) *
-    mapping(arrowhead=:c=&gt;CategoricalScale(palette=heads)) *
-    mapping(arrowcolor=:d=&gt;CategoricalScale(palette=colors)) *
+    mapping(arrowhead=:c=&gt;(palette=heads,)) *
+    mapping(arrowcolor=:d=&gt;(palette=colors,)) *
     visual(Arrows, arrowsize=10, lengthscale=0.3)
 plot!(fig, specs)
-display(fig)</code></pre><p><img src="../arrows.svg" alt/></p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../entries/">« Entries</a><a class="docs-footer-nextpage" href="../../API/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 19 April 2021 14:42">Monday 19 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+display(fig)</code></pre><p><img src="../arrows.svg" alt/></p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../entries/">« Entries</a><a class="docs-footer-nextpage" href="../../API/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 20 April 2021 14:19">Tuesday 20 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
