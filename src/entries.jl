@@ -31,28 +31,32 @@ end
 
 function compute_axes_grid(fig, e::Entries)
     dict = Dict{NTuple{2, Any}, AxisEntries}()
-    layout_scales = (
-        layout_y=get(e.scales, :layout_y, CategoricalScale(uniquevalues=[1])),
-        layout_x=get(e.scales, :layout_x, CategoricalScale(uniquevalues=[1])),
-    )
-    grid_size = map(length, layout_scales)
+    default_layout_scale = CategoricalScale(uniquevalues=[1], palette=[(1, 1)])
+    layout_scale = get(e.scales, :layout, default_layout_scale)
+    all_layouts = rescale(layout_scale)
+    grid_size = (maximum(first, all_layouts), maximum(last, all_layouts))
     axes_grid = map(CartesianIndices(Tuple(grid_size))) do c
         i, j = Tuple(c)
         axis = Axis(fig[i, j])
         return AxisEntries(axis, Entry[], e.labels, e.scales)
     end
     for entry in e.entries
-        layout = map((:layout_y, :layout_x)) do sym
-            scale = layout_scales[sym]
-            col = get(entry.mappings, sym, nothing)
-            # without layout info, plot on all axes
-            return isnothing(col) ? (1:grid_size[sym]) : rescale(col, scale)[1]
-        end
-        for i in layout[1], j in layout[2]
+        layout_col = get(entry.mappings, :layout, nothing)
+        # without layout info, plot on all axes
+        # we may want to only pass a unique value for "splittable columns"
+        layouts = isnothing(layout_col) ? all_layouts : rescale(layout_col, layout_scale)[1:1]
+        @show collect(layouts)
+        for (i, j) in layouts
             ae = axes_grid[i, j]
             push!(ae.entries, entry)
         end
     end
+    return axes_grid
+end
+
+function AbstractPlotting.plot!(fig, entries::Entries)
+    axes_grid = compute_axes_grid(fig, split_entries(entries))
+    foreach(plot!, axes_grid)
     return axes_grid
 end
 
@@ -86,8 +90,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         trace = map(rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
-        pop!(named, :layout_y, nothing)
-        pop!(named, :layout_x, nothing)
+        pop!(named, :layout, nothing)
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale

@@ -14,10 +14,15 @@ end
 function column_scale_label(cols, x::Pair{<:Any, <:Pair})
     columnname, scale_label = x
     scale, label = scale_label
-    return getcolumn(cols, columnname), scale, string(label)
+    return apply_context(cols, columnname), scale, string(label)
 end
 
 column_scale_label(cols, x) = column_scale_label(cols, x => automatic => x)
+
+function column_scale_label(cols, x::Tuple)
+    csl = map(Base.Fix1(column_scale_label, cols), x)
+    return ntuple(i -> map(t -> t[i], csl), 3)
+end
 
 function (e::Entries)(f, data, args...; kwargs...)
     cols = columns(data)
@@ -32,10 +37,4 @@ function (e::Entries)(f, data, args...; kwargs...)
     entries = f(input_entries)
     merge!(e, entries)
     return e
-end
-
-function AbstractPlotting.plot!(fig, entries::Entries)
-    axes_grid = compute_axes_grid(fig, split_entries(entries))
-    foreach(plot!, axes_grid)
-    return axes_grid
 end

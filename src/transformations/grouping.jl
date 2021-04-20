@@ -15,6 +15,11 @@ function isgrouping((k, v),)
     return k ∉ unsplittable_attrs && isacategoricalscale(v)
 end
 
+function subselect(column, scale, idxs)
+    singlescale = isacategoricalscale(scale) || isacontinuousscale(scale)
+    return singlescale ? view(column, idxs) : view.(column, Ref(idxs))
+end
+
 # TODO: decide more carefully when to split
 function split_entries(e::Entries, isgrouping=isgrouping)
     entries, labels, scales = e.entries, e.labels, e.scales
@@ -25,8 +30,11 @@ function split_entries(e::Entries, isgrouping=isgrouping)
             !isnothing,
             Tuple(get(mappings, k, nothing) for (k, v) in scales.named if isgrouping(k => v))
         )
+        @show grouping_cols
         foreach(indices_iterator(grouping_cols)) do idxs
-            submappings = map(v -> view(v, idxs), mappings)
+            submappings = map(mappings, scales) do v, scale
+                return subselect(v, scale, idxs)
+            end
             new_entry = Entry(entry.plottype, submappings, entry.attributes)
             push!(flattened_entries, new_entry)
         end

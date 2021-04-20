@@ -46,7 +46,8 @@ isacontinuousscale(::Any) = false
 isacategoricalscale(::CategoricalScale) = true
 isacategoricalscale(::Any) = false
 
-Base.length(c::CategoricalScale) = length(c.uniquevalues)
+# FIXME: move the piracy bit to AbstractPlotting
+Broadcast.broadcastable(a::Union{CategoricalScale, ContinuousScale, Automatic}) = Ref(a)
 
 # should this be done in place for efficiency?
 function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale) 
@@ -74,24 +75,29 @@ function rescale(values, scale::CategoricalScale)
     return f.(idxs)
 end
 
+rescale(values::Tuple, scale::Tuple) = map(tuple, map(rescale, values, scale)...)
+
+rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
+rescale(scales::Tuple) = Iterators.product(map(rescale, scales)...)
+
+function default_scale(column, scale, palette)
+    scale === automatic && (scale = iscontinuous(column) ? continuousscale : categoricalscale)
+    scale isa NamedTuple && (scale = CategoricalScale(; scale...)) # Do we want this?
+    scale isa ContinuousScale && (scale = identity)
+    scale isa Function && return scale
+    if scale isa CategoricalScale
+        cs = scale === automatic ? categoricalscale : scale
+        uv = cs.uniquevalues === automatic ? uniquesort(column) : cs.uniquevalues
+        labels = cs.labels === automatic ? string.(uv) : cs.labels
+        p = cs.palette === automatic ? palette : cs.palette
+        return CategoricalScale(uv, p, labels)
+    else
+        return map((c, s) -> default_scale(c, s, palette), column, scale)
+    end
+end
+
 # Logic to infer good scales
 function default_scales(mappings, scales)
     palettes = mergewith!((_, b) -> b, map(_ -> automatic, mappings), default_palettes())
-    return map(mappings, scales, palettes) do v, scale, palette
-        scale isa NamedTuple && (scale = CategoricalScale(; scale...))
-        @assert isacontinuousscale(scale) || isacategoricalscale(scale) || scale === automatic
-        if isacontinuousscale(scale)
-            # fully specified continuous scale
-            scale
-        elseif iscontinuous(v) && scale in (automatic, continuousscale)
-            # unspecified continuous scale
-            identity
-        else
-            cs = scale === automatic ? categoricalscale : scale
-            uv = cs.uniquevalues === automatic ? uniquesort(v) : cs.uniquevalues
-            labels = cs.labels === automatic ? string.(uv) : cs.labels
-            p = cs.palette === automatic ? palette : cs.palette
-            CategoricalScale(uv, p, labels)
-        end
-    end
+    return map(default_scale, mappings, scales, palettes)
 end
