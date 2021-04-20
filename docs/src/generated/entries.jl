@@ -92,7 +92,7 @@ entries(
     :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
 )
-@time ag = plot!(fig, entries)
+ag = plot!(fig, entries)
 
 # The figure looks as follows:
 

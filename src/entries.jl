@@ -45,7 +45,6 @@ function compute_axes_grid(fig, e::Entries)
         # without layout info, plot on all axes
         # we may want to only pass a unique value for "splittable columns"
         layouts = isnothing(layout_col) ? all_layouts : rescale(layout_col, layout_scale)[1:1]
-        @show collect(layouts)
         for (i, j) in layouts
             ae = axes_grid[i, j]
             push!(ae.entries, entry)
