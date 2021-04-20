@@ -29,7 +29,7 @@ function Base.merge!(e1::Entries, e2::Entries)
     return Entries(entries, scales, labels)
 end
 
-function compute_axes_grid(fig, e::Entries)
+function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 
     rowcol = (:row, :col)
 
@@ -44,8 +44,8 @@ function compute_axes_grid(fig, e::Entries)
     end
 
     axes_grid = map(CartesianIndices(grid_size)) do c
-        axis = Axis(fig[Tuple(c)...])
-        return AxisEntries(axis, Entry[], e.scales, e.labels)
+        ax = Axis(fig[Tuple(c)...]; axis...)
+        return AxisEntries(ax, Entry[], e.scales, e.labels)
     end
 
     for entry in e.entries
@@ -68,8 +68,15 @@ function compute_axes_grid(fig, e::Entries)
 
 end
 
-function AbstractPlotting.plot!(fig, entries::Entries)
-    axes_grid = compute_axes_grid(fig, split_entries(entries))
+# TODO: join figure and axis grid in a unique "displayable" object
+function AbstractPlotting.plot(entries::Entries; axis=NamedTuple(), figure=NamedTuple())
+    fig = Figure(; figure...)
+    grid = plot!(fig, entries; axis)
+    return FigureGrid(fig, grid)
+end
+
+function AbstractPlotting.plot!(fig, entries::Entries; axis=NamedTuple())
+    axes_grid = compute_axes_grid(fig, split_entries(entries); axis)
     foreach(plot!, axes_grid)
     return axes_grid
 end
@@ -127,3 +134,29 @@ function AbstractPlotting.plot!(ae::AxisEntries)
     end
     return axis
 end
+
+struct FigureGrid
+    figure::Figure
+    grid::Matrix{AxisEntries}
+end
+
+Base.show(io::IO, fg::FigureGrid) = show(io, fg.figure)
+Base.show(io::IO, m::MIME, fg::FigureGrid) = show(io, m, fg.figure)
+Base.show(io::IO, ::MIME"text/plain", fg::FigureGrid) = print(io, "FigureGrid()")
+
+Base.showable(mime::MIME{M}, fg::FigureGrid) where {M} = showable(mime, fg.figure)
+
+Base.display(fg::FigureGrid) = display(fg.figure)
+
+function FileIO.save(filename::String, fg::FigureGrid; kwargs...)
+    return FileIO.save(FileIO.query(filename), fg; kwargs...)
+end
+
+function FileIO.save(file::FileIO.Formatted, fg::FigureGrid; kwargs...)
+    return FileIO.save(file, fg.figure; kwargs...)
+end
+
+to_tuple(fg) = (fg.figure, fg.grid)
+
+Base.iterate(fg::FigureGrid) = iterate(to_tuple(fg))
+Base.iterate(fg::FigureGrid, i) = iterate(to_tuple(fg), i)

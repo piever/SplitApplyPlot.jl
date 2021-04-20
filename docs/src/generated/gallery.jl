@@ -9,10 +9,7 @@
 using SplitApplyPlot, CairoMakie
 
 df = (x=rand(100), y=rand(100))
-fig = Figure()
-specs = data(df) * mapping(:x, :y)
-plot!(fig, specs)
-display(fig)
+data(df) * mapping(:x, :y) |> plot
 AbstractPlotting.save("simplescatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](simplescatter.svg)
@@ -22,10 +19,7 @@ AbstractPlotting.save("simplescatter.svg", AbstractPlotting.current_scene()); no
 x = range(-π, π, length=100)
 y = sin.(x)
 df = (; x, y)
-fig = Figure()
-specs = data(df) * mapping(:x, :y) * visual(Lines)
-plot!(fig, specs)
-display(fig)
+data(df) * mapping(:x, :y) * visual(Lines) |> plot
 AbstractPlotting.save("simplelines.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](simplelines.svg)
@@ -35,10 +29,7 @@ AbstractPlotting.save("simplelines.svg", AbstractPlotting.current_scene()); noth
 x = range(-π, π, length=100)
 y = sin.(x)
 df = (; x, y)
-fig = Figure()
-specs = data(df) * mapping(:x, :y) * (visual(Scatter) + visual(Lines))
-plot!(fig, specs)
-display(fig)
+data(df) * mapping(:x, :y) * (visual(Scatter) + visual(Lines)) |> plot
 AbstractPlotting.save("simplescatterlines1.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](simplescatterlines1.svg)
@@ -50,8 +41,7 @@ df2 = (x=rand(10), y=rand(10))
 fig = Figure()
 m = mapping(:x, :y)
 geoms = data(df) * visual(Lines) + data(df2) * visual(Scatter)
-plot!(fig, m * geoms)
-display(fig)
+plot(m * geoms)
 AbstractPlotting.save("simplescatterlines2.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](simplescatterlines2.svg)
@@ -62,8 +52,7 @@ df = (x=rand(100), y=rand(100), z=rand(100))
 fig = Figure()
 m = data(df) * mapping(:x, :y)
 geoms = linear() + visual(Scatter) * mapping(color=:z)
-plot!(fig, m * geoms)
-display(fig)
+plot(m * geoms)
 AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](linefit.svg)
@@ -71,15 +60,13 @@ AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing 
 
 # ## Faceting
 #
-# Still needs to automatically do things to axes, decorate, etc.
+# The "facet style" is only applied with an explicit call to `facet!`.
+#
 # ### Facet grid
 
 df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
 fig = Figure()
-specs = data(df) * mapping(:x, :y, col=:i, row=:j)
-ag = plot!(fig, specs)
-facet!(fig, ag)
-display(fig)
+data(df) * mapping(:x, :y, col=:i, row=:j) |> plot |> facet!
 AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](facetscatter.svg)
@@ -87,11 +74,7 @@ AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); not
 # ### Facet wrap
 
 df = (x=rand(100), y=rand(100), l=rand(["a", "b", "c", "d", "e"], 100))
-fig = Figure()
-specs = data(df) * mapping(:x, :y, layout=:l)
-ag = plot!(fig, specs)
-SplitApplyPlot.facet!(fig, ag)
-display(fig)
+data(df) * mapping(:x, :y, layout=:l) |> plot |> facet!
 AbstractPlotting.save("facetwrapscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](facetwrapscatter.svg)
@@ -123,12 +106,9 @@ AbstractPlotting.save("nestedfacet.svg", AbstractPlotting.current_scene()); noth
 
 df1 = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
 df2 = (x=[0, 1], y=[0.5, 0.5], i=fill("a", 2), j=fill("e", 2))
-fig = Figure()
 m = mapping(:x, :y, col=:i, row=:j)
 geoms = data(df1) * visual(Scatter) + data(df2) * visual(Lines)
-ag = plot!(fig, m * geoms)
-facet!(fig, ag)
-display(fig)
+m * geoms |> plot |> facet!
 AbstractPlotting.save("facetscatterlines.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](facetscatterlines.svg)
@@ -138,10 +118,7 @@ AbstractPlotting.save("facetscatterlines.svg", AbstractPlotting.current_scene())
 # ### Density plot
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
-fig = Figure()
-specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5)
-plot!(fig, specs)
-display(fig)
+data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) |> plot |> facet!
 AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](density.svg)
@@ -149,18 +126,13 @@ AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing 
 # Using the recipe from AbstractPlotting also works (let us try to figure out whether we need an analysis or not).
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
-fig = Figure()
-specs = data(df) * mapping(:x, col=:c) * visual(AbstractPlotting.Density)
-ag = plot!(fig, specs)
-facet!(fig, ag)
-display(fig)
+data(df) * mapping(:x, col=:c) * visual(AbstractPlotting.Density) |> plot |> facet!
 AbstractPlotting.save("densityvisual.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](densityvisual.svg)
 #
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
-fig = Figure()
 specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) *
     visual(orientation=:vertical)
 "Not yet supported" # hide
@@ -172,38 +144,32 @@ specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5)
 # overwrite that
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
-fig = Figure()
-specs = data(df) * mapping(:x, :y) * visual(BoxPlot)
-plot!(fig, specs)
-display(fig)
+data(df) * mapping(:x, :y) * visual(BoxPlot) |> plot
 AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](boxplot.svg)
 #
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
-fig = Figure()
 xscale = (labels=["label1", "label2", "label3"],)
 specs = data(df) *
     mapping(
         :x => xscale,
         :y
     ) * visual(BoxPlot)
-plot!(fig, specs)
-display(fig)
+plot(specs)
 AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](relabel.svg)
 #
 # The order can also be changed by tweaking the scale
-fig = Figure()
 xscale = (uniquevalues=["b", "a", "c"],)
 specs = data(df) *
     mapping(
         :x => xscale,
         :y
     ) * visual(BoxPlot)
-plot!(fig, specs)
+plot(specs)
 display(fig)
 AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -211,7 +177,6 @@ AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing 
 #
 # ## Continuous scales
 
-fig = Figure()
 x = 1:100
 y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly and ylims are "off"
 df = (; x, y)
@@ -220,8 +185,7 @@ specs = data(df) *
         :x,
         :y => log => "√x + 20x + 100 (log scale)",
     ) * visual(Lines)
-plot!(fig, specs)
-display(fig)
+plot(specs)
 AbstractPlotting.save("logscale.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](logscale.svg)
@@ -232,7 +196,6 @@ AbstractPlotting.save("logscale.svg", AbstractPlotting.current_scene()); nothing
 # case, the user can pass their own.
 
 using Colors
-fig = Figure()
 x=repeat(1:20, inner=20)
 y=repeat(1:20, outer=20)
 u=cos.(x)
@@ -247,9 +210,33 @@ specs = data(df) *
     mapping(arrowhead=:c=>(palette=heads,)) *
     mapping(arrowcolor=:d=>(palette=colors,)) *
     visual(Arrows, arrowsize=10, lengthscale=0.3)
-plot!(fig, specs)
-display(fig)
+plot(specs)
 AbstractPlotting.save("arrows.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](arrows.svg)
+#
+# ## Axis and figure keywords
+#
+# ### Axis tweaking
+#
+# To tweak one or more axes, simply use the `axis` keyword when plotting. For example
+#
+df = (x=rand(100), y=rand(100), z=rand(100))
+m = data(df) * mapping(:x, :y)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+plot(m * geoms, axis=(aspect=1,))
+AbstractPlotting.save("axis.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](axis.svg)
+#
+# ### Figure tweaking
+#
+df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
+m = data(df) * mapping(:x, :y, layout=:c)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(600, 600),))
+facet!(fg)
+AbstractPlotting.save("figure.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](figure.svg)
 #
