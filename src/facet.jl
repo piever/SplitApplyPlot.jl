@@ -41,6 +41,7 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
             (xs...) -> maximum(x -> x.left, xs),
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[:, 1])...
         )
+        # FIXME: here and below, set in such a way that one can change padding after the fact?
         padding = lift(protrusion, Axis(aes[1]).ylabelpadding) do val, p
             return (0f0, val + p, 0f0, 0f0)
         end
