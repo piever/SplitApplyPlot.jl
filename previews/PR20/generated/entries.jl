@@ -66,14 +66,16 @@ entries(
 )
 resolution = (600, 600)
 fig = Figure(; resolution)
-# This operation returns a grid of `AxisEntries`
 ag = plot!(fig, entries)
+
+# This operation returns a grid of `AxisEntries` and plots them to the original figure:
+
 display(fig)
 AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
 
 # ![](splitapplyplot.svg)
 
-# `layout_x` and `layout_y` can be used to return a less trivial grid of axis plots.
+# `col` and `row` can be used to return a less trivial grid of axis plots.
 resolution = (1200, 1200)
 fig = Figure(; resolution)
 entries = Entries()
@@ -83,7 +85,8 @@ entries(
     :Displ => "Displacement",
     :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
-    layout=(:Fl, :Drv) .=> categoricalscale .=> ("Fuel type", "Drive train"),
+    col=:Fl => categoricalscale => "Fuel type",
+    row=:Drv => categoricalscale => "Drive train"
 )
 entries(
     Visual(linewidth=5) ∘ Linear(),
@@ -92,7 +95,7 @@ entries(
     :Cty => "City miles",
     color=:Cyl => categoricalscale => "Cylinders",
 )
-@time ag = plot!(fig, entries)
+ag = plot!(fig, entries)
 
 # The figure looks as follows:
 

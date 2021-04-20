@@ -76,20 +76,25 @@ AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing 
 
 df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
 fig = Figure()
-specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+specs = data(df) * mapping(:x, :y, col=:i, row=:j)
 ag = plot!(fig, specs)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
 display(fig)
 AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
-# ![](facetscatter.svg)
 #
 # ### Facet wrap
 
 df = (x=rand(100), y=rand(100), l=rand(["a", "b", "c", "d", "e", "f"], 100))
-specs = data(df) * mapping(:x, :y, layout=:l) # FIXME: does not work...
-"Not yet implemented" #hide
+fig = Figure()
+specs = data(df) * mapping(:x, :y, layout=:l=>(palette=t -> fldmod1(t, 2),))
+ag = plot!(fig, specs)
+display(fig)
+AbstractPlotting.save("facetwrapscatter.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](facetwrapscatter.svg)
+#
 
 # ### Embedding facets
 #
@@ -102,7 +107,7 @@ resolution = (1200, 600)
 fig = Figure(; resolution)
 ax = Axis(fig[1, 1])
 text!(ax, "Some plot")
-specs = data(df) * mapping(:x, :y, layout_x=:i, layout_y=:j)
+specs = data(df) * mapping(:x, :y, col=:i, row=:j)
 ag = plot!(fig[1, 2:3], specs)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
@@ -114,9 +119,9 @@ AbstractPlotting.save("nestedfacet.svg", AbstractPlotting.current_scene()); noth
 # ### Adding traces to only some subplots
 
 df1 = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
-df2 = (x=[0, 1], y=[0.5, 0.5], i=fill("a", 2), j=fill("e", 2)) # FIXME: do we need a smarter way to pass layout?
+df2 = (x=[0, 1], y=[0.5, 0.5], i=fill("a", 2), j=fill("e", 2))
 fig = Figure()
-m = mapping(:x, :y, layout_x=:i, layout_y=:j)
+m = mapping(:x, :y, col=:i, row=:j)
 geoms = data(df1) * visual(Scatter) + data(df2) * visual(Lines)
 ag = plot!(fig, m * geoms)
 hideinnerdecorations!(ag)
@@ -143,7 +148,7 @@ AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing 
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
 fig = Figure()
-specs = data(df) * mapping(:x, layout_x=:c) * visual(AbstractPlotting.Density)
+specs = data(df) * mapping(:x, col=:c) * visual(AbstractPlotting.Density)
 ag = plot!(fig, specs)
 hideinnerdecorations!(ag)
 linkaxes!(ag...)
