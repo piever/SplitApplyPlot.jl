@@ -28,13 +28,13 @@ ae = AxisEntries(
             markersize = 15
         ),
     ],
-    arguments("x", "y", color="identity", marker="function"), #labels
     arguments(
         identity,
         log10,
         color=identity,
         marker=CategoricalScale(["a", "b", "c"], [:circle, :utriangle, :dtriangle]), #scales
     ),
+    arguments("x", "y", color="identity", marker="function"), #labels
 )
 plot!(ae)
 display(fig)
