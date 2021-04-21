@@ -124,7 +124,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         any(isnothing, (label, scale)) && continue
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
         if scale isa CategoricalScale
-            u = map(string, scale.plot)
+            u = map(string, scale.data)
             getproperty(axis, ticks)[] = (axes(u, 1), u)
         end
         getproperty(axis, axislabel)[] = string(label)

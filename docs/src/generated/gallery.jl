@@ -174,7 +174,7 @@ AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing 
 # ## Continuous scales
 
 x = 1:100
-y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly and ylims are "off"
+y = @. sqrt(x) + 20x + 100
 df = (; x, y)
 specs = data(df) *
     mapping(
@@ -182,9 +182,23 @@ specs = data(df) *
         :y => log => "√x + 20x + 100 (log scale)",
     ) * visual(Lines)
 plot(specs)
-AbstractPlotting.save("logscale.svg", AbstractPlotting.current_scene()); nothing #hide
+AbstractPlotting.save("logscale1.svg", AbstractPlotting.current_scene()); nothing #hide
 
-# ![](logscale.svg)
+# ![](logscale1.svg)
+#
+
+x = 1:100
+y = @. sqrt(x) + 20x + 100
+df = (; x, y)
+specs = data(df) *
+    mapping(
+        :x,
+        :y => "√x + 20x + 100",
+    ) * visual(Lines)
+plot(specs, axis=(yscale=log,))
+AbstractPlotting.save("logscale2.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](logscale2.svg)
 #
 # ## Custom scales
 #
