@@ -34,9 +34,9 @@ function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
 
     entries = map(Entry, labeledentries)
 
-    op(::Nothing, mappings) = map(String, mappings)
+    op(::Nothing, mappings) = copy(mappings)
     op(acc, mappings) = mergewith!(acc, mappings) do x, y
-        return isempty(String(y)) ? String(x) : String(y)
+        return isempty(y) ? x : y
     end
 
     labels = mapfoldl(le -> le.labels, op, labeledentries, init=nothing)

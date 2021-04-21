@@ -48,7 +48,6 @@ AbstractPlotting.save("simplescatterlines2.svg", AbstractPlotting.current_scene(
 # ### Linear regression on a scatter plot
 
 df = (x=rand(100), y=rand(100), z=rand(100))
-fig = Figure()
 m = data(df) * mapping(:x, :y)
 geoms = linear() + visual(Scatter) * mapping(color=:z)
 plot(m * geoms)
@@ -59,7 +58,6 @@ AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing 
 # ### Overload default geometry
 
 df = (x=rand(100), y=rand(100), z=rand(100))
-fig = Figure()
 m = data(df) * mapping(:x, :y)
 geoms = visual(Scatter) * linear() + visual(Scatter) * mapping(color=:z)
 plot(m * geoms)
@@ -74,7 +72,6 @@ AbstractPlotting.save("linefitscatter.svg", AbstractPlotting.current_scene()); n
 # ### Facet grid
 
 df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
-fig = Figure()
 data(df) * mapping(:x, :y, col=:i, row=:j) |> plot |> facet!
 AbstractPlotting.save("facetscatter.svg", AbstractPlotting.current_scene()); nothing #hide
 

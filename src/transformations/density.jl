@@ -34,36 +34,28 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
     return (x, y, z)
 end
 
-function (d::Density)(layer::Layer)
-    data, entry = layer.data, layer.entry
-    mappings = entry.mappings
-    grouping_cols = filter(!iscontinuous, Tuple(data))
-    pdfname = newname(keys(data), :PDF)
-    new_data, new_mappings = transform_by_group(data, mappings) do subdata, labels
-        
-    end
-    result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
-        subdata = map(v -> view(v, idxs), data)
-        pos_names = mappings.positional
-        args = map(n -> subdata[n], pos_names)
+function (d::Density)(le::LabeledEntry)
+    mappings, labels = le.mappings, le.labels
+    grouping_cols = (; (k => v for (k, v) in mappings.named if !iscontinuous(v))...)
+    newmappings = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
+        submappings = map(v -> view(v, idxs), mappings)
+        args = submappings.positional
         new_args = _density(args...; d.options...)
-        vals = map(keys(subdata)) do k
-            i = findfirst(==(k), pos_names)
-            return if isnothing(i)
-                col = subdata[k]
-                fill(first(col), length(first(new_args)))
-            else
-                collect(new_args[i])
-            end
+        named = map(grouping_cols) do v
+            return idxs isa Colon ? v : fill(v[first(idxs)], length(first(new_args)))
         end
-        new_data = merge(
-            NamedTuple{keys(subdata)}(vals),
-            NamedTuple{(pdfname,)}((last(new_args),))
-        )
-        return isnothing(acc) ? new_data : map(append!, acc, new_data)
+        m = arguments(new_args...; named...)
+        return isnothing(acc) ? map(collect, m) : map(append!, acc, m)
     end
-    new_entry = combine(entry, Entry(Lines, arguments(pdfname)))
-    return Layer((), result, new_entry)
+    newlabels = copy(labels)
+    push!(newlabels.positional, "PDF")
+    defaultplot = length(mappings.positional) == 1 ? Lines : Heatmap
+    return LabeledEntry(
+        AbstractPlotting.plottype(le.plottype, defaultplot),
+        newmappings,
+        newlabels,
+        le.attributes
+    )
 end
 
 density(; kwargs...) = Layer((Density(; kwargs...),))
