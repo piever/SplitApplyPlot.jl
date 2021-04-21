@@ -22,3 +22,12 @@ function (r::Renamer)(x)
     label = r.labels[i]
     return Sorted(i, label)
 end
+
+struct NonNumeric{T}
+    x::T
+end
+
+nonnumeric(x) = NonNumeric(x)
+
+Base.print(io::IO, n::NonNumeric) = print(io, s.x)
+Base.isless(n1::NonNumeric, n2::NonNumeric) = isless(n1.x, n2.x)

@@ -36,38 +36,30 @@ using RDatasets: dataset
 using SplitApplyPlot, CairoMakie
 mpg = dataset("ggplot2", "mpg");
 cols = mapping(:Displ => "Displacement", :Hwy => "Highway miles");
-grp = mapping(color = :Cyl => categoricalscale => "Cylinders");
+grp = mapping(color = :Cyl => nonnumeric => "Cylinders");
 scat = visual(Scatter)
 pipeline = cols * scat
-fig = Figure()
-plot!(fig, data(mpg) * pipeline)
-display(fig)
+plot(data(mpg) * pipeline)
 AbstractPlotting.save("scatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](scatter.svg)
 #
 # Now let's simply add `grp` to the pipeline to color according to `:Cyl`.
 
-fig = Figure()
-plot!(fig, data(mpg) * grp * pipeline)
-display(fig)
+plot(data(mpg) * grp * pipeline)
 AbstractPlotting.save("grouped_scatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](grouped_scatter.svg)
 # Traces can be added together with `+`.
 
 pipenew = cols * (scat + linear())
-fig = Figure()
-plot!(fig, data(mpg) * pipenew)
-display(fig)
+plot(data(mpg) * pipenew)
 AbstractPlotting.save("linear.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](linear.svg)
 # We can put grouping in the pipeline (we get a warning because of a degenerate group).
 
-fig = Figure()
-plot!(fig, data(mpg) * grp * pipenew)
-display(fig)
+plot(data(mpg) * grp * pipenew)
 AbstractPlotting.save("grouped_linear.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](grouped_linear.svg)
@@ -75,9 +67,7 @@ AbstractPlotting.save("grouped_linear.svg", AbstractPlotting.current_scene()); n
 # but do the linear regression with all the data.
 
 different_grouping = grp * scat + linear()
-fig = Figure()
-plot!(fig, data(mpg) * cols * different_grouping)
-display(fig)
+plot(data(mpg) * cols * different_grouping)
 AbstractPlotting.save("semi_grouped.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](semi_grouped.svg)

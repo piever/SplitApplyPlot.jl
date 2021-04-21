@@ -19,10 +19,9 @@ import FileIO
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
-export renamer
+export renamer, nonnumeric
 export density, linear, visual, data, mapping
 export facet!
-export analyze
 
 include("arguments.jl")
 include("scales.jl")
