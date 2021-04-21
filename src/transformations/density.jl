@@ -39,6 +39,9 @@ function (d::Density)(layer::Layer)
     mappings = entry.mappings
     grouping_cols = filter(!iscontinuous, Tuple(data))
     pdfname = newname(keys(data), :PDF)
+    new_data, new_mappings = transform_by_group(data, mappings) do subdata, labels
+        
+    end
     result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
         subdata = map(v -> view(v, idxs), data)
         pos_names = mappings.positional

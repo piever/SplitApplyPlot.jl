@@ -25,15 +25,12 @@ end
 
 column_transformation_label(cols, x) = column_transformation_label(cols, x => identity => x)
 
-function process_columns(data, entry)
+function process_columns(data, oldmappings)
     cols = columns(data)
-    df = Dict{Symbol, AbstractVector}()
-    mappings = entry.mappings
-    new_mappings = map(mappings) do m
+    mappingslabels = map(oldmappings) do m
         c, t, l = column_transformation_label(cols, m)
-        df[l] = map(t, c)
-        return l
+        return map(t, c) => l
     end
-    new_entry = Entry(entry.plottype, new_mappings, entry.attributes)
-    return (NamedTuple(df), new_entry)
+    mappings, labels = map(first, mappingslabels), map(last, mappingslabels)
+    return LabeledEntry(Any, mappings, labels, Dict{Symbol, Any}())
 end

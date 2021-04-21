@@ -15,7 +15,7 @@ function isgrouping((k, v),)
     return k ∉ unsplittable_attrs && isa(v, CategoricalScale)
 end
 
-# TODO: decide more carefully when to split
+# Here we decide how to split entries in order to plot them
 function split_entries(e::Entries, isgrouping=isgrouping)
     entries, scales, labels = e.entries, e.scales, e.labels
     flattened_entries = Entry[]
@@ -31,3 +31,26 @@ function split_entries(e::Entries, isgrouping=isgrouping)
     end
     return Entries(flattened_entries, scales, labels)
 end
+
+# function transform_by_group(f, data, mappings)
+#     labels = copy(mappings)
+#     discrete_labels = Dict{Symbol, Any}()
+#     new_labels = nothing
+#     for (k, v) in pairs(labels.named)
+#         if !iscontinuous(data[k])
+#             pop!(labels.named, k)
+#             discrete_labels[k] = v
+#         end
+#     end
+#     grouping_cols = filter(!iscontinuous, Tuple(data))
+#     result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
+#         subdata = map(v -> view(v, idxs), data)
+#         # consider name deduplication
+#         new_data, new_labels = f(subdata, labels)
+#         l = length(new_data[new_labels[1]])
+#         discrete_data = map(col -> fill(first(col), l), subdata)
+#         all_data = merge(discrete_data, new_data)
+#         return isnothing(acc) ? map(collect, new_data) : map(append!, acc, new_data)
+#     end
+#     return result, mergewith!((_, b) -> b, new_labels, discrete_labels)
+# end

@@ -1,16 +1,13 @@
 struct Layer
     transformations::Tuple
     data::Any
-    entry::Entry
+    mappings::Arguments
 end
 
-Layer(transformations::Tuple=()) = Layer(transformations, nothing, Entry())
+Layer(transformations::Tuple=()) = Layer(transformations, nothing, arguments())
 
-Layer(entry::Entry) = Layer((), nothing, entry)
-
-data(df) = Layer((), df, Entry())
-mapping(args...; kwargs...) = Layer(Entry(arguments(args...; kwargs...)))
-visual(plottype=Any; attributes...) = Layer(Entry(plottype, arguments(); attributes...))
+data(df) = Layer((), df, arguments())
+mapping(args...; kwargs...) = Layer((), nothing, arguments(args...; kwargs...))
 
 function combine(a1::Arguments, a2::Arguments)
     return Arguments(
@@ -31,9 +28,9 @@ end
 function Base.:*(l1::Layer, l2::Layer)
     t1, t2 = l1.transformations, l2.transformations
     d1, d2 = l1.data, l2.data
-    e1, e2 = l1.entry, l2.entry
-    transformations = combine(t1, t2) # in what order to execute them?
+    m1, m2 = l1.mappings, l2.mappings
+    transformations = (t1..., t2...) # in what order to execute them?
     data = isnothing(d2) ? d1 : d2
-    entry = combine(e1, e2)
-    return Layer(transformations, data, entry)
+    mappings = combine(m1, m2)
+    return Layer(transformations, data, mappings)
 end
