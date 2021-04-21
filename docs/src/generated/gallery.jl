@@ -151,10 +151,9 @@ AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing 
 #
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
-xscale = (labels=["label1", "label2", "label3"],)
 specs = data(df) *
     mapping(
-        :x => xscale,
+        :x => renamer("a" => "label1", "b" => "label2", "c" => "label3"),
         :y
     ) * visual(BoxPlot)
 plot(specs)
@@ -163,14 +162,12 @@ AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing 
 # ![](relabel.svg)
 #
 # The order can also be changed by tweaking the scale
-xscale = (uniquevalues=["b", "a", "c"],)
 specs = data(df) *
     mapping(
-        :x => xscale,
+        :x => renamer("b" => "label b", "a" => "label a", "c" => "label c"),
         :y
     ) * visual(BoxPlot)
 plot(specs)
-display(fig)
 AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](reorder.svg)
@@ -207,10 +204,10 @@ colors = [colorant"#E24A33", colorant"#348ABD"]
 heads = ['▲', '●']
 specs = data(df) *
     mapping(:x, :y, :u, :v) *
-    mapping(arrowhead=:c=>(palette=heads,)) *
-    mapping(arrowcolor=:d=>(palette=colors,)) *
+    mapping(arrowhead=:c) *
+    mapping(arrowcolor=:d) *
     visual(Arrows, arrowsize=10, lengthscale=0.3)
-plot(specs)
+plot(specs; palettes=(arrowcolor=colors, arrowhead=heads))
 AbstractPlotting.save("arrows.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](arrows.svg)

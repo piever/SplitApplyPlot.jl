@@ -26,7 +26,10 @@ summarize(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
 merge_summaries!(s1::Set, s2::Set) = union!(s1, s2)
 merge_summaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
 
-function Entries(s::OneOrMoreSpecs, palettes=default_palettes())
+function Entries(s::OneOrMoreSpecs, palettes=NamedTuple())
+
+    palettes = mergewith!((_, b) -> b, default_palettes(), arguments(; palettes...))
+
     specs::SpecList = analyze(s)
 
     entries = map(specs) do spec
@@ -45,13 +48,17 @@ function Entries(s::OneOrMoreSpecs, palettes=default_palettes())
     end
 
     scales = default_scales(summaries, palettes)
+
     return Entries(entries, scales, labels)
+
 end
 
-function AbstractPlotting.plot!(fig, s::OneOrMoreSpecs; axis=NamedTuple())
-    return plot!(fig, Entries(s); axis)
+function AbstractPlotting.plot!(fig, s::OneOrMoreSpecs;
+                                axis=NamedTuple(), palettes=NamedTuple())
+    return plot!(fig, Entries(s, palettes); axis)
 end
 
-function AbstractPlotting.plot(s::OneOrMoreSpecs; axis=NamedTuple(), figure=NamedTuple())
-    return plot(Entries(s); axis, figure)
+function AbstractPlotting.plot(s::OneOrMoreSpecs;
+                               axis=NamedTuple(), figure=NamedTuple(), palettes=NamedTuple())
+    return plot(Entries(s, palettes); axis, figure)
 end
