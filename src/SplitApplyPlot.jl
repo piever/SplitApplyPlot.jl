@@ -34,6 +34,6 @@ include("algebra/layers.jl")
 include("algebra/consume.jl")
 include("transformations/grouping.jl")
 include("transformations/linear.jl")
-# include("transformations/density.jl")
+include("transformations/density.jl")
 
 end

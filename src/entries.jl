@@ -17,20 +17,6 @@ end
 
 Entries() = Entries(Entry[], arguments(), arguments())
 
-"""
-    Entries(iterator)
-
-Return a unique `Entries` object from an iterator of `Entries`. Scales and labels are combined.
-"""
-Entries(iterator) = foldl(merge!, iterator, init=Entries())
-
-function Base.merge!(e1::Entries, e2::Entries)
-    entries = append!(e1.entries, e2.entries)
-    scales = mergewith!(merge_scales, e1.scales, e2.scales)
-    labels = mergewith!((a, b) -> isempty(b) ? a : b, e1.labels, e2.labels)
-    return Entries(entries, scales, labels)
-end
-
 function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 
     rowcol = (:row, :col)

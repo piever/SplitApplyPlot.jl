@@ -47,3 +47,12 @@ end
 uniquesort(v) = collect(uniquesorted(v))
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
+
+function newname(names, sym)
+    newsym, i = sym, 1
+    while newsym in names
+        newsym = Symbol(sym, i)
+        i += 1
+    end
+    return newsym
+end
