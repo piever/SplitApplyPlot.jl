@@ -33,7 +33,7 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
         for ae in aes
             Axis(ae).ylabelvisible[] = false
         end
-        row_dict = LittleDict(row_scale.plot, row_scale.data)
+        row_dict = Dict(zip(row_scale.plot, row_scale.data))
         for m in 1:M
             Box(fig[m, N, Right()], color=:gray85, strokevisible=true)
             Label(fig[m, N, Right()], string(row_dict[m]); rotation=-π/2)
@@ -53,7 +53,7 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
         for ae in aes
             Axis(ae).xlabelvisible[] = false
         end
-        col_dict = LittleDict(col_scale.plot, col_scale.data)
+        col_dict = Dict(zip(col_scale.plot, col_scale.data))
         for n in 1:N
             Box(fig[1, n, Top()], color=:gray85, strokevisible=true)
             Label(fig[1, n, Top()], string(col_dict[n]))

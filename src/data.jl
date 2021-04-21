@@ -27,7 +27,7 @@ column_transformation_label(cols, x) = column_transformation_label(cols, x => id
 
 function process_columns(data, entry)
     cols = columns(data)
-    df = LittleDict{Symbol, AbstractVector}()
+    df = Dict{Symbol, AbstractVector}()
     mappings = entry.mappings
     new_mappings = map(mappings) do m
         c, t, l = column_transformation_label(cols, m)
@@ -35,5 +35,5 @@ function process_columns(data, entry)
         return l
     end
     new_entry = Entry(entry.plottype, new_mappings, entry.attributes)
-    return (df, new_entry)
+    return (NamedTuple(df), new_entry)
 end

@@ -14,7 +14,6 @@ import AbstractPlotting.MakieLayout: hidexdecorations!,
 using PooledArrays: PooledArray
 using KernelDensity: kde
 using DataAPI: refarray
-using OrderedCollections: LittleDict
 import FileIO
 
 export hideinnerdecorations!, deleteemptyaxes!
@@ -34,8 +33,7 @@ include("algebra/layer.jl")
 include("algebra/layers.jl")
 include("algebra/consume.jl")
 include("transformations/grouping.jl")
-# include("transformations/visual.jl")
-# include("transformations/linear.jl")
+include("transformations/linear.jl")
 # include("transformations/density.jl")
 
 end
