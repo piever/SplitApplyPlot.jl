@@ -1,19 +1,19 @@
-function consume(spec::Spec)
-    init = Spec((), spec.data, spec.entry)
-    return foldl(consume, spec.transformations; init)
+function consume(layer::Layer)
+    init = Layer((), layer.data, layer.entry)
+    return foldl(consume, layer.transformations; init)
 end
 
-consume(specs::SpecList, f) = SpecList([consume(f, spec) for spec in specs])
+consume(layers::Layers, f) = Layers([consume(f, layer) for layer in layers])
 
-consume(spec::Spec, f) = f(spec)
+consume(layer::Layer, f) = f(layer)
 
-function analyze(spec::Spec)::SpecList
-    data, entry = process_columns(spec.data, spec.entry)
-    s = Spec(spec.transformations, data, entry)
-    return consume(s)
+function analyze(layer::Layer)::Layers
+    data, entry = process_columns(layer.data, layer.entry)
+    l = Layer(layer.transformations, data, entry)
+    return consume(l)
 end
 
-function analyze(specs::SpecList)::SpecList
-    list = collect(Iterators.flatten(Iterators.map(analyze, specs)))
-    return SpecList(list)
+function analyze(layers::Layers)::Layers
+    list = collect(Iterators.flatten(Iterators.map(analyze, layers)))
+    return Layers(list)
 end

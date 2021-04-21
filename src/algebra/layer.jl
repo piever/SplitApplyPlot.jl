@@ -1,16 +1,16 @@
-struct Spec
+struct Layer
     transformations::Tuple
     data::Any
     entry::Entry
 end
 
-Spec(transformations::Tuple=()) = Spec(transformations, nothing, Entry())
+Layer(transformations::Tuple=()) = Layer(transformations, nothing, Entry())
 
-Spec(entry::Entry) = Spec((), nothing, entry)
+Layer(entry::Entry) = Layer((), nothing, entry)
 
-data(df) = Spec((), df, Entry())
-mapping(args...; kwargs...) = Spec(Entry(arguments(args...; kwargs...)))
-visual(plottype=Any; attributes...) = Spec(Entry(plottype, arguments(); attributes...))
+data(df) = Layer((), df, Entry())
+mapping(args...; kwargs...) = Layer(Entry(arguments(args...; kwargs...)))
+visual(plottype=Any; attributes...) = Layer(Entry(plottype, arguments(); attributes...))
 
 function combine(a1::Arguments, a2::Arguments)
     return Arguments(
@@ -28,12 +28,12 @@ function combine(entry1::Entry, entry2::Entry)
     return Entry(plottype, mappings, attributes)
 end
 
-function Base.:*(spec1::Spec, spec2::Spec)
-    t1, t2 = spec1.transformations, spec2.transformations
-    d1, d2 = spec1.data, spec2.data
-    e1, e2 = spec1.entry, spec2.entry
+function Base.:*(l1::Layer, l2::Layer)
+    t1, t2 = l1.transformations, l2.transformations
+    d1, d2 = l1.data, l2.data
+    e1, e2 = l1.entry, l2.entry
     transformations = combine(t1, t2) # in what order to execute them?
     data = isnothing(d2) ? d1 : d2
     entry = combine(e1, e2)
-    return Spec(transformations, data, entry)
+    return Layer(transformations, data, entry)
 end
