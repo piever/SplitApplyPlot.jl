@@ -1,19 +1,19 @@
+function consume(layers::Layers)
+    nested = map(consume, layers)
+    return reduce(vcat, nested)
+end
+
 function consume(layer::Layer)
-    init = Layer((), layer.data, layer.entry)
+    init = [process_columns(layer.data, layer.mappings)]
     return foldl(consume, layer.transformations; init)
 end
 
-consume(layers::Layers, f) = Layers([consume(f, layer) for layer in layers])
+to_labeledentries(l::LabeledEntry) = [l]
+to_labeledentries(l::AbstractVector{LabeledEntry}) = l
 
-consume(layer::Layer, f) = f(layer)
-
-function analyze(layer::Layer)::Layers
-    data, entry = process_columns(layer.data, layer.entry)
-    l = Layer(layer.transformations, data, entry)
-    return consume(l)
+function consume(v::AbstractVector{LabeledEntry}, f)
+    results = [consume(le, f) for le in v]
+    return reduce(vcat, results)
 end
 
-function analyze(layers::Layers)::Layers
-    list = collect(Iterators.flatten(Iterators.map(analyze, layers)))
-    return Layers(list)
-end
+consume(le::LabeledEntry, f) = to_labeledentries(f(le))

@@ -30,18 +30,16 @@ function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
 
     palettes = mergewith!((_, b) -> b, default_palettes(), arguments(; palettes...))
 
-    layers::Layers = analyze(s)
+    labeledentries = consume(s)
 
-    entries = map(layers) do layer
-        return apply_context(layer.data, layer.entry)
-    end
+    entries = map(Entry, labeledentries)
 
-    op(::Nothing, mappings) = map(String, mappings)
+    op(::Nothing, mappings) = copy(mappings)
     op(acc, mappings) = mergewith!(acc, mappings) do x, y
-        return isempty(String(y)) ? String(x) : String(y)
+        return isempty(y) ? x : y
     end
 
-    labels = mapfoldl(layer -> layer.entry.mappings, op, layers, init=nothing)
+    labels = mapfoldl(le -> le.labels, op, labeledentries, init=nothing)
 
     summaries = mapfoldl((a, b) -> mergewith!(merge_summaries!, a, b), entries, init=arguments()) do entry
         return map(summarize, entry.mappings)

@@ -33,6 +33,7 @@ include("algebra/layer.jl")
 include("algebra/layers.jl")
 include("algebra/consume.jl")
 include("transformations/grouping.jl")
+include("transformations/visual.jl")
 include("transformations/linear.jl")
 include("transformations/density.jl")
 

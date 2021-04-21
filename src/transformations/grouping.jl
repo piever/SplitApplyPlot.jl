@@ -15,7 +15,7 @@ function isgrouping((k, v),)
     return k ∉ unsplittable_attrs && isa(v, CategoricalScale)
 end
 
-# TODO: decide more carefully when to split
+# Here we decide how to split entries in order to plot them
 function split_entries(e::Entries, isgrouping=isgrouping)
     entries, scales, labels = e.entries, e.scales, e.labels
     flattened_entries = Entry[]
