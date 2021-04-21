@@ -10,6 +10,7 @@
 # - entries.
 
 using SplitApplyPlot, CairoMakie
+using SplitApplyPlot: CategoricalScale, ContinuousScale
 resolution = (600, 600)
 fig = Figure(; resolution)
 N = 11
@@ -29,9 +30,9 @@ ae = AxisEntries(
         ),
     ],
     arguments(
-        identity,
-        log10,
-        color=identity,
+        ContinuousScale(identity, (0, 1)),
+        ContinuousScale(identity, (0, 1)),
+        color=ContinuousScale(identity, (0, 1)),
         marker=CategoricalScale(["a", "b", "c"], [:circle, :utriangle, :dtriangle]), #scales
     ),
     arguments("x", "y", color="identity", marker="function"), #labels

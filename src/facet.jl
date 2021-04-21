@@ -3,7 +3,6 @@
 function facet_wrap!(fig, aes::AbstractMatrix{AxisEntries})
     scale = get(aes[1].scales, :layout, nothing)
     isnothing(scale) && return aes
-    label_dict = LittleDict(scale.uniquevalues, scale.labels)
     for ae in aes
         ax = Axis(ae)
         entries = ae.entries
@@ -16,7 +15,7 @@ function facet_wrap!(fig, aes::AbstractMatrix{AxisEntries})
             delete!(ax)
         else
             v, _ = it
-            ax.title[] = label_dict[first(v)]
+            ax.title[] = string(first(v))
         end
     end
     return nothing
@@ -34,10 +33,10 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
         for ae in aes
             Axis(ae).ylabelvisible[] = false
         end
-        row_dict = LittleDict(rescale(row_scale), row_scale.labels)
+        row_dict = LittleDict(row_scale.plot, row_scale.data)
         for m in 1:M
             Box(fig[m, N, Right()], color=:gray85, strokevisible=true)
-            Label(fig[m, N, Right()], row_dict[m]; rotation=-π/2)
+            Label(fig[m, N, Right()], string(row_dict[m]); rotation=-π/2)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.left, xs),
@@ -54,10 +53,10 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
         for ae in aes
             Axis(ae).xlabelvisible[] = false
         end
-        col_dict = LittleDict(rescale(col_scale), col_scale.labels)
+        col_dict = LittleDict(col_scale.plot, col_scale.data)
         for n in 1:N
             Box(fig[1, n, Top()], color=:gray85, strokevisible=true)
-            Label(fig[1, n, Top()], col_dict[n])
+            Label(fig[1, n, Top()], string(col_dict[n]))
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.bottom, xs),

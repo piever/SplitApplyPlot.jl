@@ -40,8 +40,8 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
     end
 
     grid_size = map(scales, (first, last)) do scale, f
-        isnothing(scale) || return maximum(rescale(scale))
-        isnothing(layout_scale) || return maximum(f, rescale(layout_scale))
+        isnothing(scale) || return maximum(scale.plot)
+        isnothing(layout_scale) || return maximum(f, layout_scale.plot)
         return 1
     end
 
@@ -123,14 +123,9 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         label, scale = get(labels, i, nothing), get(scales, i, nothing)
         any(isnothing, (label, scale)) && continue
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
-        if isacategoricalscale(scale)
-            u = scale.labels
+        if scale isa CategoricalScale
+            u = map(string, scale.plot)
             getproperty(axis, ticks)[] = (axes(u, 1), u)
-        else
-            @assert isacontinuousscale(scale)
-            if hasproperty(axis, axisscale) # support older AbstractPlotting
-                getproperty(axis, axisscale)[] = scale
-            end
         end
         getproperty(axis, axislabel)[] = string(label)
     end

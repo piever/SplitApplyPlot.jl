@@ -22,65 +22,48 @@ function default_palettes()
     )
 end
 
-Base.@kwdef struct CategoricalScale
-    uniquevalues=automatic
-    palette=automatic
-    labels=automatic
-end
-
-function CategoricalScale(d::AbstractDict)
-    uniquevalues, palette = collect(keys(d)), collect(values(d))
-    return CategoricalScale(; uniquevalues, palette)
-end
-
-CategoricalScale(uniquevalues, palette) = CategoricalScale(; uniquevalues, palette)
-CategoricalScale(v::AbstractVector) = CategoricalScale(uniquevalues=v)
-
-uniquevalues(c::CategoricalScale) = c.uniquevalues
-
-const categoricalscale = CategoricalScale()
-
-struct ContinuousScale end
-const continuousscale = ContinuousScale()
-
-isacontinuousscale(::Function) = true
-isacontinuousscale(::Any) = false
-
-isacategoricalscale(::CategoricalScale) = true
-isacategoricalscale(::Any) = false
-
-rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
-
-apply_palette(p::AbstractArray, idxs, _) = [cycle(p, idx) for idx in idxs]
-apply_palette(::Automatic, idxs, _) = map(something, idxs)
-apply_palette(p, idxs, _) = map(p, idxs)
+apply_palette(p::AbstractVector, uv) = [cycle(p, idx) for idx in eachindex(uv)]
+apply_palette(::Automatic, uv) = eachindex(uv)
+apply_palette(p, uv) = map(p, eachindex(uv))
 
 # TODO: add more customizations?
 struct Wrap end
 
 const wrap = Wrap()
 
-function apply_palette(::Wrap, idxs, uniquevalues)
-    ncols = ceil(Int, sqrt(length(uniquevalues)))
-    return [fldmod1(idx, ncols) for idx in idxs]
+function apply_palette(::Wrap, uv)
+    ncols = ceil(Int, sqrt(length(uv)))
+    return [fldmod1(idx, ncols) for idx in eachindex(uv)]
 end
 
-function rescale(values, scale::CategoricalScale)
-    uniquevalues, palette = scale.uniquevalues, scale.palette
-    idxs = indexin(values, uniquevalues)
-    return apply_palette(palette, idxs, uniquevalues)
+struct ContinuousScale{T, F}
+    f::F
+    extrema::Tuple{T, T}
 end
 
-rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
+rescale(values, c::ContinuousScale) = values # Is this ideal?
+
+struct CategoricalScale{S, T}
+    data::S
+    plot::T
+end
+
+function rescale(values, c::CategoricalScale)
+    idxs = indexin(values, c.data)
+    return c.plot[idxs]
+end
+
+Base.length(c::CategoricalScale) = length(c.data)
 
 function default_scale(summary, palette)
     iscont = summary isa Tuple
     return if iscont
-        identity
+        f = palette isa Function ? palette : identity
+        ContinuousScale(f, summary)
     else
-        uv = sort!(collect(summary))
-        labels = string.(uv)
-        CategoricalScale(uv, palette, labels)
+        data = sort!(collect(summary))
+        plot = apply_palette(palette, data)
+        return CategoricalScale(data, plot)
     end
 end
 
