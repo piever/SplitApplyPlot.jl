@@ -127,7 +127,7 @@ AbstractPlotting.save("facetscatterlines.svg", AbstractPlotting.current_scene())
 # ### Density plot
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
-data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) |> plot |> facet!
+data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) |> plot
 AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](density.svg)

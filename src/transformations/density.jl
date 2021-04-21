@@ -34,7 +34,7 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
     return (x, y, z)
 end
 
-function (d::Density)(e::Entries)
+function (d::Density)(layer::Layer)
     data, entry = layer.data, layer.entry
     mappings = entry.mappings
     grouping_cols = filter(!iscontinuous, Tuple(data))
@@ -45,7 +45,7 @@ function (d::Density)(e::Entries)
         args = map(n -> subdata[n], pos_names)
         new_args = _density(args...; d.options...)
         vals = map(keys(subdata)) do k
-            i = findfirst(==(k), args)
+            i = findfirst(==(k), pos_names)
             return if isnothing(i)
                 col = subdata[k]
                 fill(first(col), length(first(new_args)))
@@ -63,4 +63,4 @@ function (d::Density)(e::Entries)
     return Layer((), result, new_entry)
 end
 
-density(; kwargs...) = Spec(Density(; kwargs...))
+density(; kwargs...) = Layer((Density(; kwargs...),))
