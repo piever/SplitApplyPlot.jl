@@ -4,30 +4,29 @@ end
 
 Linear(; kwargs...) = Linear(Dict{Symbol, Any}(kwargs))
 
-# FIXME: factor out the grouping mechanism
-function (l::Linear)(e::Entries)
-    entries, scales, labels = e.entries, e.scales, e.labels
-    new_entries = Entry[]
-    for entry in entries
-        mappings = entry.mappings
-        grouping_cols = (; (k => mappings[k] for (k, v) in scales.named if isacategoricalscale(v))...)
-        result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
-            submappings = map(v -> view(v, idxs), mappings)
-            x, y = submappings.positional
-            x̂ = [x x]
-            x̂[:, 2] .= 1
-            a, b = x̂ \ y
-            length = 100
-            rg = range(extrema(x)...; length)
-            named = map(grouping_cols) do v
-                return idxs isa Colon ? v : fill(v[first(idxs)], length)
-            end
-            new_mappings = arguments(rg, a .* rg .+ b; named...)
-            return isnothing(acc) ? map(collect, new_mappings) : map(append!, acc, new_mappings)
+function (l::Linear)(layer::Layer)
+    data, entry = layer.data, layer.entry
+    mappings = entry.mappings
+    grouping_cols = filter(!iscontinuous, Tuple(data))
+    newdata = map(v -> similar(v, 0), data)
+    result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
+        subdata = map(v -> view(v, idxs), data)
+        xname, yname = mappings.positional
+        x, y = subdata[xname], subdata[yname]
+        x̂ = [x x]
+        x̂[:, 2] .= 1
+        a, b = x̂ \ y
+        length = 200
+        new_x = collect(range(extrema(x)...; length))
+        new_y = @. a * new_x + b
+        vals = map(keys(subdata)) do k
+            col = subdata[k]
+            return (k == xname) ? new_x : (k == yname) ? new_y : fill(first(col), length)
         end
-        push!(new_entries, Entry(Lines, result, entry.attributes))
+        new_data = NamedTuple{keys(subdata)}(vals)
+        return isnothing(acc) ? new_data : map(append!, acc, new_data)
     end
-    return Entries(new_entries, scales, labels)
+    return Layer((), result, combine(entry, Entry(Lines)))
 end
 
-linear(; kwargs...) = Spec(Linear(; kwargs...))
+linear(; kwargs...) = Layer((Linear(; kwargs...),))

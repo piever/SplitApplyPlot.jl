@@ -22,88 +22,53 @@ function default_palettes()
     )
 end
 
-Base.@kwdef struct CategoricalScale
-    uniquevalues=automatic
-    palette=automatic
-    labels=automatic
-end
-
-function CategoricalScale(d::AbstractDict)
-    uniquevalues, palette = collect(keys(d)), collect(values(d))
-    return CategoricalScale(; uniquevalues, palette)
-end
-
-CategoricalScale(uniquevalues, palette) = CategoricalScale(; uniquevalues, palette)
-CategoricalScale(v::AbstractVector) = CategoricalScale(uniquevalues=v)
-
-uniquevalues(c::CategoricalScale) = c.uniquevalues
-
-const categoricalscale = CategoricalScale()
-
-struct ContinuousScale end
-const continuousscale = ContinuousScale()
-
-isacontinuousscale(::Function) = true
-isacontinuousscale(::Any) = false
-
-isacategoricalscale(::CategoricalScale) = true
-isacategoricalscale(::Any) = false
-
-# should this be done in place for efficiency?
-function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale)
-    dict1, dict2 = LittleDict(sc1.uniquevalues, sc1.labels), LittleDict(sc2.uniquevalues, sc2.labels)
-    dict = merge(dict1, dict2)
-    uniquevalues = collect(keys(dict))
-    labels = collect(values(dict))
-    # FIXME: check that palettes are consistent?
-    palette = sc2.palette === automatic ? sc1.palette : sc2.palette
-    return CategoricalScale(uniquevalues, palette, labels)
-end
-
-function merge_scales(f1::Function, f2::Function)
-    @assert f1 === f2
-    return f1
-end
-
-rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
-
-apply_palette(p::AbstractArray, idxs, _) = [cycle(p, idx) for idx in idxs]
-apply_palette(::Automatic, idxs, _) = map(something, idxs)
-apply_palette(p, idxs, _) = map(p, idxs)
+apply_palette(p::AbstractVector, uv) = [cycle(p, idx) for idx in eachindex(uv)]
+apply_palette(::Automatic, uv) = eachindex(uv)
+apply_palette(p, uv) = map(p, eachindex(uv))
 
 # TODO: add more customizations?
 struct Wrap end
 
 const wrap = Wrap()
 
-function apply_palette(::Wrap, idxs, uniquevalues)
-    ncols = ceil(Int, sqrt(length(uniquevalues)))
-    return [fldmod1(idx, ncols) for idx in idxs]
+function apply_palette(::Wrap, uv)
+    ncols = ceil(Int, sqrt(length(uv)))
+    return [fldmod1(idx, ncols) for idx in eachindex(uv)]
 end
 
-function rescale(values, scale::CategoricalScale)
-    uniquevalues, palette = scale.uniquevalues, scale.palette
-    idxs = indexin(values, uniquevalues)
-    return apply_palette(palette, idxs, uniquevalues)
+struct ContinuousScale{T, F}
+    f::F
+    extrema::Tuple{T, T}
 end
 
-rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
+rescale(values, c::ContinuousScale) = values # Is this ideal?
 
-function default_scale(column, scale, palette)
-    scale === automatic && (scale = iscontinuous(column) ? continuousscale : categoricalscale)
-    scale isa NamedTuple && (scale = CategoricalScale(; scale...)) # Do we want this?
-    scale isa ContinuousScale && (scale = identity)
-    scale isa Function && return scale
-    @assert scale isa CategoricalScale
-    cs = scale === automatic ? categoricalscale : scale
-    uv = cs.uniquevalues === automatic ? uniquesort(column) : cs.uniquevalues
-    labels = cs.labels === automatic ? string.(uv) : cs.labels
-    p = cs.palette === automatic ? palette : cs.palette
-    return CategoricalScale(uv, p, labels)
+struct CategoricalScale{S, T}
+    data::S
+    plot::T
+end
+
+function rescale(values, c::CategoricalScale)
+    idxs = indexin(values, c.data)
+    return c.plot[idxs]
+end
+
+Base.length(c::CategoricalScale) = length(c.data)
+
+function default_scale(summary, palette)
+    iscont = summary isa Tuple
+    return if iscont
+        f = palette isa Function ? palette : identity
+        ContinuousScale(f, summary)
+    else
+        data = sort!(collect(summary))
+        plot = apply_palette(palette, data)
+        return CategoricalScale(data, plot)
+    end
 end
 
 # Logic to infer good scales
-function default_scales(mappings, scales)
-    palettes = mergewith!((_, b) -> b, map(_ -> automatic, mappings), default_palettes())
-    return map(default_scale, mappings, scales, palettes)
+function default_scales(summaries, palettes)
+    palettes = mergewith!((_, b) -> b, map(_ -> automatic, summaries), palettes)
+    return map(default_scale, summaries, palettes)
 end

@@ -10,6 +10,7 @@
 # - entries.
 
 using SplitApplyPlot, CairoMakie
+using SplitApplyPlot: CategoricalScale, ContinuousScale
 resolution = (600, 600)
 fig = Figure(; resolution)
 N = 11
@@ -29,9 +30,9 @@ ae = AxisEntries(
         ),
     ],
     arguments(
-        identity,
-        log10,
-        color=identity,
+        ContinuousScale(identity, (0, 1)),
+        ContinuousScale(identity, (0, 1)),
+        color=ContinuousScale(identity, (0, 1)),
         marker=CategoricalScale(["a", "b", "c"], [:circle, :utriangle, :dtriangle]), #scales
     ),
     arguments("x", "y", color="identity", marker="function"), #labels
@@ -42,77 +43,3 @@ AbstractPlotting.save("axisentries.svg", AbstractPlotting.current_scene()); noth
 
 # ![](axisentries.svg)
 #
-# ## Transforming and accumulating `Entries`
-#
-# Generating `AxisEntries` objects by hand is extremely laborious. SplitApplyPlot provides
-# a simple way to generate them from data.
-
-using RDatasets
-mpg = RDatasets.dataset("ggplot2", "mpg")
-entries = Entries()
-entries(
-    Visual(Scatter),
-    mpg,
-    :Displ => "Displacement",
-    :Cty => "City miles",
-    color=:Cyl => categoricalscale => "Cylinders",
-)
-entries(
-    Visual(linewidth=5) ∘ Linear(),
-    mpg,
-    :Displ => "Displacement",
-    :Cty => "City miles",
-    color=:Cyl => categoricalscale => "Cylinders",
-)
-resolution = (600, 600)
-fig = Figure(; resolution)
-ag = plot!(fig, entries)
-
-# This operation returns a grid of `AxisEntries` and plots them to the original figure:
-
-display(fig)
-AbstractPlotting.save("splitapplyplot.svg", fig); nothing #hide
-
-# ![](splitapplyplot.svg)
-
-# `col` and `row` can be used to return a less trivial grid of axis plots.
-resolution = (1200, 1200)
-fig = Figure(; resolution)
-entries = Entries()
-entries(
-    Visual(Scatter),
-    mpg,
-    :Displ => "Displacement",
-    :Cty => "City miles",
-    color=:Cyl => categoricalscale => "Cylinders",
-    col=:Fl => categoricalscale => "Fuel type",
-    row=:Drv => categoricalscale => "Drive train"
-)
-entries(
-    Visual(linewidth=5) ∘ Linear(),
-    mpg,
-    :Displ => "Displacement",
-    :Cty => "City miles",
-    color=:Cyl => categoricalscale => "Cylinders",
-)
-ag = plot!(fig, entries)
-
-# The figure looks as follows:
-
-display(fig)
-AbstractPlotting.save("splitapplyplot_grid.svg", fig); nothing #hide
-
-# ![](splitapplyplot_grid.svg)
-#
-# The figure can then be further cleaned up by working with the matrix of axes:
-
-hideinnerdecorations!(ag)
-linkaxes!(ag...)
-display(fig)
-AbstractPlotting.save("splitapplyplot_grid_clean.svg", fig); nothing #hide
-
-# ![](splitapplyplot_grid_clean.svg)
-#
-# As there is a lot of repetition within the entries that are added to the plot,
-# the standard interface to generate these entries is an algebra that allows us
-# to factor out the common part.

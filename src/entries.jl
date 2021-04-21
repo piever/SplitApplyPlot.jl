@@ -4,8 +4,10 @@ struct Entry
     attributes::Dict{Symbol, Any}
 end
 
-Entry(plottype::PlotFunc, arguments; attributes...) =
-    Entry(plottype, arguments, Dict{Symbol, Any}(attributes))
+Entry(plottype::PlotFunc=Any, mappings=arguments(); attributes...) =
+    Entry(plottype, mappings, Dict{Symbol, Any}(attributes))
+
+Entry(mappings::Arguments; attributes...) = Entry(Any, mappings; attributes...)
 
 struct Entries
     entries::Vector{Entry}
@@ -14,20 +16,6 @@ struct Entries
 end
 
 Entries() = Entries(Entry[], arguments(), arguments())
-
-"""
-    Entries(iterator)
-
-Return a unique `Entries` object from an iterator of `Entries`. Scales and labels are combined.
-"""
-Entries(iterator) = foldl(merge!, iterator, init=Entries())
-
-function Base.merge!(e1::Entries, e2::Entries)
-    entries = append!(e1.entries, e2.entries)
-    scales = mergewith!(merge_scales, e1.scales, e2.scales)
-    labels = mergewith!((a, b) -> isempty(b) ? a : b, e1.labels, e2.labels)
-    return Entries(entries, scales, labels)
-end
 
 function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 
@@ -38,8 +26,8 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
     end
 
     grid_size = map(scales, (first, last)) do scale, f
-        isnothing(scale) || return maximum(rescale(scale))
-        isnothing(layout_scale) || return maximum(f, rescale(layout_scale))
+        isnothing(scale) || return maximum(scale.plot)
+        isnothing(layout_scale) || return maximum(f, layout_scale.plot)
         return 1
     end
 
@@ -121,14 +109,9 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         label, scale = get(labels, i, nothing), get(scales, i, nothing)
         any(isnothing, (label, scale)) && continue
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
-        if isacategoricalscale(scale)
-            u = scale.labels
+        if scale isa CategoricalScale
+            u = map(string, scale.data)
             getproperty(axis, ticks)[] = (axes(u, 1), u)
-        else
-            @assert isacontinuousscale(scale)
-            if hasproperty(axis, axisscale) # support older AbstractPlotting
-                getproperty(axis, axisscale)[] = scale
-            end
         end
         getproperty(axis, axislabel)[] = string(label)
     end

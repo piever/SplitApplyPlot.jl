@@ -1,34 +1,39 @@
 apply_context(cols, columnname::Union{Symbol, String}) = getcolumn(cols, columnname)
 
-function column_scale_label(cols, x::Pair{<:Any, <:Union{AbstractString, Symbol}})
-    columnname, label = x
-    return column_scale_label(cols, columnname => automatic => label)
-end
-
-function column_scale_label(cols, x::Pair{<:Any, <:Any})
-    columnname, scale = x
-    return column_scale_label(cols, columnname => scale => columnname)
-end
-
-function column_scale_label(cols, x::Pair{<:Any, <:Pair})
-    columnname, scale_label = x
-    scale, label = scale_label
-    return apply_context(cols, columnname), scale, string(label)
-end
-
-column_scale_label(cols, x) = column_scale_label(cols, x => automatic => x)
-
-function (e::Entries)(f, data, args...; kwargs...)
-    cols = columns(data)
-    csl = map(arguments(args...; kwargs...)) do x
-        return column_scale_label(cols, x)
+function apply_context(cols, entry::Entry)
+    new_mappings = map(entry.mappings) do m
+        return apply_context(cols, m)
     end
-    mappings, scales′, labels = ntuple(i -> map(t -> t[i], csl), 3)
-    scales = default_scales(mappings, scales′)
+    return Entry(entry.plottype, new_mappings, entry.attributes)
+end
 
-    entry = Entry(Any, mappings)
-    input_entries = Entries([entry], scales, labels)
-    entries = f(input_entries)
-    merge!(e, entries)
-    return e
+function column_transformation_label(cols, x::Pair{<:Any, <:Union{AbstractString, Symbol}})
+    columnname, label = x
+    return column_transformation_label(cols, columnname => identity => label)
+end
+
+function column_transformation_label(cols, x::Pair{<:Any, <:Any})
+    columnname, transformation = x
+    return column_transformation_label(cols, columnname => transformation => columnname)
+end
+
+function column_transformation_label(cols, x::Pair{<:Any, <:Pair})
+    columnname, transformation_label = x
+    transformation, label = transformation_label
+    return apply_context(cols, columnname), transformation, Symbol(label)
+end
+
+column_transformation_label(cols, x) = column_transformation_label(cols, x => identity => x)
+
+function process_columns(data, entry)
+    cols = columns(data)
+    df = Dict{Symbol, AbstractVector}()
+    mappings = entry.mappings
+    new_mappings = map(mappings) do m
+        c, t, l = column_transformation_label(cols, m)
+        df[l] = map(t, c)
+        return l
+    end
+    new_entry = Entry(entry.plottype, new_mappings, entry.attributes)
+    return (NamedTuple(df), new_entry)
 end

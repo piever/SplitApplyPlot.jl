@@ -38,7 +38,6 @@ x = range(-π, π, length=100)
 y = sin.(x)
 df1 = (; x, y)
 df2 = (x=rand(10), y=rand(10))
-fig = Figure()
 m = mapping(:x, :y)
 geoms = data(df) * visual(Lines) + data(df2) * visual(Scatter)
 plot(m * geoms)
@@ -47,7 +46,7 @@ AbstractPlotting.save("simplescatterlines2.svg", AbstractPlotting.current_scene(
 # ![](simplescatterlines2.svg)
 #
 # ### Linear regression on a scatter plot
-#
+
 df = (x=rand(100), y=rand(100), z=rand(100))
 fig = Figure()
 m = data(df) * mapping(:x, :y)
@@ -57,7 +56,17 @@ AbstractPlotting.save("linefit.svg", AbstractPlotting.current_scene()); nothing 
 
 # ![](linefit.svg)
 #
+# ### Overload default geometry
 
+df = (x=rand(100), y=rand(100), z=rand(100))
+fig = Figure()
+m = data(df) * mapping(:x, :y)
+geoms = visual(Scatter) * linear() + visual(Scatter) * mapping(color=:z)
+plot(m * geoms)
+AbstractPlotting.save("linefitscatter.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](linefitscatter.svg)
+#
 # ## Faceting
 #
 # The "facet style" is only applied with an explicit call to `facet!`.
@@ -90,9 +99,9 @@ df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", 
 resolution = (1200, 600)
 fig = Figure(; resolution)
 ax = Axis(fig[1, 1], title="Some plot")
-specs = data(df) * mapping(:x, :y, col=:i, row=:j)
+layer = data(df) * mapping(:x, :y, col=:i, row=:j)
 subfig = fig[1, 2:3]
-ag = plot!(subfig, specs)
+ag = plot!(subfig, layer)
 facet!(subfig, ag)
 for ae in ag
     Axis(ae).xticklabelrotation[] = π/2
@@ -118,7 +127,7 @@ AbstractPlotting.save("facetscatterlines.svg", AbstractPlotting.current_scene())
 # ### Density plot
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
-data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) |> plot |> facet!
+data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) |> plot
 AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](density.svg)
@@ -133,7 +142,7 @@ AbstractPlotting.save("densityvisual.svg", AbstractPlotting.current_scene()); no
 #
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
-specs = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) *
+layer = data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) *
     visual(orientation=:vertical)
 "Not yet supported" # hide
 
@@ -151,26 +160,23 @@ AbstractPlotting.save("boxplot.svg", AbstractPlotting.current_scene()); nothing 
 #
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(100))
-xscale = (labels=["label1", "label2", "label3"],)
-specs = data(df) *
+layer = data(df) *
     mapping(
-        :x => xscale,
+        :x => renamer("a" => "label1", "b" => "label2", "c" => "label3"),
         :y
     ) * visual(BoxPlot)
-plot(specs)
+plot(layer)
 AbstractPlotting.save("relabel.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](relabel.svg)
 #
 # The order can also be changed by tweaking the scale
-xscale = (uniquevalues=["b", "a", "c"],)
-specs = data(df) *
+layer = data(df) *
     mapping(
-        :x => xscale,
+        :x => renamer("b" => "label b", "a" => "label a", "c" => "label c"),
         :y
     ) * visual(BoxPlot)
-plot(specs)
-display(fig)
+plot(layer)
 AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](reorder.svg)
@@ -178,17 +184,31 @@ AbstractPlotting.save("reorder.svg", AbstractPlotting.current_scene()); nothing 
 # ## Continuous scales
 
 x = 1:100
-y = @. sqrt(x) + 20x + 100 # FIXME: things closer to zero fail spuriosly and ylims are "off"
+y = @. sqrt(x) + 20x + 100
 df = (; x, y)
-specs = data(df) *
+layer = data(df) *
     mapping(
         :x,
         :y => log => "√x + 20x + 100 (log scale)",
     ) * visual(Lines)
-plot(specs)
-AbstractPlotting.save("logscale.svg", AbstractPlotting.current_scene()); nothing #hide
+plot(layer)
+AbstractPlotting.save("logscale1.svg", AbstractPlotting.current_scene()); nothing #hide
 
-# ![](logscale.svg)
+# ![](logscale1.svg)
+#
+
+x = 1:100
+y = @. sqrt(x) + 20x + 100
+df = (; x, y)
+layer = data(df) *
+    mapping(
+        :x,
+        :y => "√x + 20x + 100",
+    ) * visual(Lines)
+plot(layer, axis=(yscale=log,))
+AbstractPlotting.save("logscale2.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](logscale2.svg)
 #
 # ## Custom scales
 #
@@ -205,12 +225,12 @@ d=rand(Bool, length(x))
 df = (; x, y, u, v, c, d)
 colors = [colorant"#E24A33", colorant"#348ABD"]
 heads = ['▲', '●']
-specs = data(df) *
+layer = data(df) *
     mapping(:x, :y, :u, :v) *
-    mapping(arrowhead=:c=>(palette=heads,)) *
-    mapping(arrowcolor=:d=>(palette=colors,)) *
+    mapping(arrowhead=:c) *
+    mapping(arrowcolor=:d) *
     visual(Arrows, arrowsize=10, lengthscale=0.3)
-plot(specs)
+plot(layer; palettes=(arrowcolor=colors, arrowhead=heads))
 AbstractPlotting.save("arrows.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](arrows.svg)

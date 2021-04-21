@@ -34,29 +34,33 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
     return (x, y, z)
 end
 
-function (d::Density)(e::Entries)
-    entries, scales, labels = e.entries, e.scales, e.labels
-    new_entries = Entry[]
-    for entry in entries
-        mappings = entry.mappings
-        grouping_cols = (; (k => mappings[k] for (k, v) in scales.named if isacategoricalscale(v))...)
-        result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
-            submappings = map(v -> view(v, idxs), mappings)
-            args = submappings.positional
-            new_args = _density(args...; d.options...)
-            named = map(grouping_cols) do v
-                return idxs isa Colon ? v : fill(v[first(idxs)], length(first(new_args)))
+function (d::Density)(layer::Layer)
+    data, entry = layer.data, layer.entry
+    mappings = entry.mappings
+    grouping_cols = filter(!iscontinuous, Tuple(data))
+    pdfname = newname(keys(data), :PDF)
+    result = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
+        subdata = map(v -> view(v, idxs), data)
+        pos_names = mappings.positional
+        args = map(n -> subdata[n], pos_names)
+        new_args = _density(args...; d.options...)
+        vals = map(keys(subdata)) do k
+            i = findfirst(==(k), pos_names)
+            return if isnothing(i)
+                col = subdata[k]
+                fill(first(col), length(first(new_args)))
+            else
+                collect(new_args[i])
             end
-            new_mappings = arguments(new_args...; named...)
-            return isnothing(acc) ? map(collect, new_mappings) : map(append!, acc, new_mappings)
         end
-        push!(new_entries, Entry(Lines, result, entry.attributes))
+        new_data = merge(
+            NamedTuple{keys(subdata)}(vals),
+            NamedTuple{(pdfname,)}((last(new_args),))
+        )
+        return isnothing(acc) ? new_data : map(append!, acc, new_data)
     end
-    return Entries(
-        new_entries,
-        combine(scales, arguments(identity)),
-        combine(labels, arguments("PDF")),
-    )
+    new_entry = combine(entry, Entry(Lines, arguments(pdfname)))
+    return Layer((), result, new_entry)
 end
 
-density(; kwargs...) = Spec(Density(; kwargs...))
+density(; kwargs...) = Layer((Density(; kwargs...),))
