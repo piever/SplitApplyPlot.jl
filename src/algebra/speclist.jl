@@ -33,17 +33,12 @@ function Entries(s::OneOrMoreSpecs, palettes=default_palettes())
         return apply_context(spec.data, spec.entry)
     end
 
-    labels = foldl(specs, init=nothing) do acc, spec
-        entry = spec.entry
-        mappings = entry.mappings
-        return if isnothing(acc)
-            map(String, mappings)
-        else
-            mergewith!(acc, spec) do x, y
-                return isempty(String(y)) ? String(x) : String(y)
-            end
-        end
+    op(::Nothing, mappings) = map(String, mappings)
+    op(acc, mappings) = mergewith!(acc, mappings) do x, y
+        return isempty(String(y)) ? String(x) : String(y)
     end
+
+    labels = mapfoldl(spec -> spec.entry.mappings, op, specs, init=nothing)
 
     summaries = mapfoldl((a, b) -> mergewith!(merge_summaries!, a, b), entries, init=arguments()) do entry
         return map(summarize, entry.mappings)

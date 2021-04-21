@@ -10,6 +10,7 @@ Spec(entry::Entry) = Spec((), nothing, entry)
 
 data(df) = Spec((), df, Entry())
 mapping(args...; kwargs...) = Spec(Entry(arguments(args...; kwargs...)))
+visual(plottype=Any; attributes...) = Spec(Entry(plottype, arguments(); attributes...))
 
 function combine(a1::Arguments, a2::Arguments)
     return Arguments(
