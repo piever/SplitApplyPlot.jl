@@ -1,21 +1,16 @@
 struct Spec
-    transformation::Any
+    transformations::Tuple
     data::Any
-    mappings::Arguments
+    entry::Entry
 end
 
-Spec(transformation=identity) = Spec(transformation, nothing, arguments())
+Spec(transformations::Tuple=()) = Spec(transformations, nothing, Entry())
 
-data(df) = Spec(identity, df, arguments())
-mapping(args...; kwargs...) = Spec(identity, nothing, arguments(args...; kwargs...))
+Spec(entry::Entry) = Spec((), nothing, entry)
 
-function compose(f, g)
-    f === identity && return g
-    g === identity && return f
-    return f∘g # should this be switched?
-end
+data(df) = Spec((), df, Entry())
+mapping(args...; kwargs...) = Spec(Entry(arguments(args...; kwargs...)))
 
-# FIXME: better name?
 function combine(a1::Arguments, a2::Arguments)
     return Arguments(
         vcat(a1.positional, a2.positional),
@@ -23,16 +18,21 @@ function combine(a1::Arguments, a2::Arguments)
     )
 end
 
-function Base.:*(spec1::Spec, spec2::Spec)
-    t1, t2 = spec1.transformation, spec2.transformation
-    d1, d2 = spec1.data, spec2.data
-    m1, m2 = spec1.mappings, spec2.mappings
-    transformation = compose(t1, t2)
-    data = isnothing(d2) ? d1 : d2
-    mappings = combine(m1, m2)
-    return Spec(transformation, data, mappings)
+combine(t1::Tuple, t2::Tuple) = (t1..., t2...)
+
+function combine(entry1::Entry, entry2::Entry)
+    plottype = AbstractPlotting.plottype(entry1.plottype, entry2.plottype)
+    mappings = combine(entry1.mappings, entry2.mappings)
+    attributes = merge(entry1.attributes, entry2.attributes)
+    return Entry(plottype, mappings, attributes)
 end
 
-function (e::Entries)(s::Spec)
-    return e(s.transformation, s.data, s.mappings.positional...; s.mappings.named...)
+function Base.:*(spec1::Spec, spec2::Spec)
+    t1, t2 = spec1.transformations, spec2.transformations
+    d1, d2 = spec1.data, spec2.data
+    e1, e2 = spec1.entry, spec2.entry
+    transformations = combine(t1, t2) # in what order to execute them?
+    data = isnothing(d2) ? d1 : d2
+    entry = combine(e1, e2)
+    return Spec(transformations, data, entry)
 end

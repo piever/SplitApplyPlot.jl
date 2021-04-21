@@ -4,8 +4,10 @@ struct Entry
     attributes::Dict{Symbol, Any}
 end
 
-Entry(plottype::PlotFunc, arguments; attributes...) =
-    Entry(plottype, arguments, Dict{Symbol, Any}(attributes))
+Entry(plottype::PlotFunc=Any, mappings=arguments(); attributes...) =
+    Entry(plottype, mappings, Dict{Symbol, Any}(attributes))
+
+Entry(mappings::Arguments; attributes...) = Entry(Any, mappings; attributes...)
 
 struct Entries
     entries::Vector{Entry}

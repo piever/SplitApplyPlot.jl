@@ -49,22 +49,6 @@ isacontinuousscale(::Any) = false
 isacategoricalscale(::CategoricalScale) = true
 isacategoricalscale(::Any) = false
 
-# should this be done in place for efficiency?
-function merge_scales(sc1::CategoricalScale, sc2::CategoricalScale)
-    dict1, dict2 = LittleDict(sc1.uniquevalues, sc1.labels), LittleDict(sc2.uniquevalues, sc2.labels)
-    dict = merge(dict1, dict2)
-    uniquevalues = collect(keys(dict))
-    labels = collect(values(dict))
-    # FIXME: check that palettes are consistent?
-    palette = sc2.palette === automatic ? sc1.palette : sc2.palette
-    return CategoricalScale(uniquevalues, palette, labels)
-end
-
-function merge_scales(f1::Function, f2::Function)
-    @assert f1 === f2
-    return f1
-end
-
 rescale(values, scale::Function) = values # AbstractPlotting will take care of the rescaling
 
 apply_palette(p::AbstractArray, idxs, _) = [cycle(p, idx) for idx in idxs]
@@ -89,21 +73,19 @@ end
 
 rescale(scale::CategoricalScale) = rescale(scale.uniquevalues, scale)
 
-function default_scale(column, scale, palette)
-    scale === automatic && (scale = iscontinuous(column) ? continuousscale : categoricalscale)
-    scale isa NamedTuple && (scale = CategoricalScale(; scale...)) # Do we want this?
-    scale isa ContinuousScale && (scale = identity)
-    scale isa Function && return scale
-    @assert scale isa CategoricalScale
-    cs = scale === automatic ? categoricalscale : scale
-    uv = cs.uniquevalues === automatic ? uniquesort(column) : cs.uniquevalues
-    labels = cs.labels === automatic ? string.(uv) : cs.labels
-    p = cs.palette === automatic ? palette : cs.palette
-    return CategoricalScale(uv, p, labels)
+function default_scale(summary, palette)
+    iscont = summary isa Tuple
+    return if iscont
+        identity
+    else
+        uv = sort!(collect(summary))
+        labels = string.(uv)
+        CategoricalScale(uv, palette, labels)
+    end
 end
 
 # Logic to infer good scales
-function default_scales(mappings, scales)
-    palettes = mergewith!((_, b) -> b, map(_ -> automatic, mappings), default_palettes())
-    return map(default_scale, mappings, scales, palettes)
+function default_scales(summaries, palettes)
+    palettes = mergewith!((_, b) -> b, map(_ -> automatic, summaries), palettes)
+    return map(default_scale, summaries, palettes)
 end

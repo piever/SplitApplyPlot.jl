@@ -12,10 +12,6 @@ iscontinuous(::AbstractVector) = false
 iscontinuous(::AbstractVector{<:Number}) = true
 iscontinuous(::AbstractVector{<:Bool}) = false
 
-function getcolumns(cols, select)
-    return map(name -> getcolumn(cols, name), select)
-end
-
 for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
     @eval function $sym(ae::AxisEntries; kwargs...)
         axis = Axis(ae)
