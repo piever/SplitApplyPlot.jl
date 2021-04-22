@@ -1,6 +1,6 @@
 module SplitApplyPlot
 
-using Tables: rows, columns, getcolumn
+using Tables: rows, columns, getcolumn, columnnames
 using StructArrays: components, GroupPerm, StructArray
 using Colors: RGB
 using AbstractPlotting
