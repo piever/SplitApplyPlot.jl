@@ -273,6 +273,14 @@ AbstractPlotting.save("widedensity.svg", AbstractPlotting.current_scene()); noth
 # ![](widedensity.svg)
 #
 
+df = (a=rand(100), b=rand(100), c=rand(100), d=rand(100))
+m = data(df) * mapping(1, 2:4, color=dims(1))
+geoms = linear() + visual(Scatter)
+fg = plot(m * geoms)
+AbstractPlotting.save("widescatter.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](widescatter.svg)
+#
 # The wide format is combined with broadcast semantics.
 
 df = (sepal_length=rand(100), sepal_width=rand(100), petal_length=rand(100), petal_width=rand(100))
