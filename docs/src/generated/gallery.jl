@@ -39,7 +39,7 @@ y = sin.(x)
 df1 = (; x, y)
 df2 = (x=rand(10), y=rand(10))
 m = mapping(:x, :y)
-geoms = data(df) * visual(Lines) + data(df2) * visual(Scatter)
+geoms = data(df1) * visual(Lines) + data(df2) * visual(Scatter)
 plot(m * geoms)
 AbstractPlotting.save("simplescatterlines2.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -257,3 +257,16 @@ AbstractPlotting.save("figure.svg", AbstractPlotting.current_scene()); nothing #
 
 # ![](figure.svg)
 #
+# ## Multiple selection
+#
+# Selecting multiple columns at once can have two possible applications. One is
+# "wide data", the other is on-the-fly creating of novel columns.
+#
+# ### Wide data
+#
+df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
+m = data(df) * mapping(:x, (:x, :y, :z) => (+) => "x + y + z", layout=:c)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(1200, 600),))
+facet!(fg)
+AbstractPlotting.save("figure.svg", AbstractPlotting.current_scene()); nothing #hide

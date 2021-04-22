@@ -4,16 +4,13 @@ function consume(layers::Layers)
 end
 
 function consume(layer::Layer)
-    init = [process_columns(layer.data, layer.mappings)]
+    init = process_columns(layer.data, layer.mappings)
     return foldl(consume, layer.transformations; init)
 end
 
-to_labeledentries(l::LabeledEntry) = [l]
-to_labeledentries(l::AbstractVector{LabeledEntry}) = l
-
-function consume(v::AbstractVector{LabeledEntry}, f)
+function consume(v::AbstractArray{LabeledEntry}, f)
     results = [consume(le, f) for le in v]
     return reduce(vcat, results)
 end
 
-consume(le::LabeledEntry, f) = to_labeledentries(f(le))
+consume(le::LabeledEntry, f) = maybewrap(f(le))
