@@ -1,7 +1,7 @@
 module SplitApplyPlot
 
 using Tables: rows, columns, getcolumn
-using StructArrays: uniquesorted, finduniquesorted, components, GroupPerm, StructArray
+using StructArrays: components, GroupPerm, StructArray
 using Colors: RGB
 using AbstractPlotting
 using AbstractPlotting: automatic, Automatic, PlotFunc

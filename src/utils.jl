@@ -44,6 +44,4 @@ function deleteemptyaxes!(aes::Matrix{AxisEntries})
     end
 end
 
-uniquesort(v) = collect(uniquesorted(v))
-
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
