@@ -39,7 +39,7 @@ y = sin.(x)
 df1 = (; x, y)
 df2 = (x=rand(10), y=rand(10))
 m = mapping(:x, :y)
-geoms = data(df) * visual(Lines) + data(df2) * visual(Scatter)
+geoms = data(df1) * visual(Lines) + data(df2) * visual(Scatter)
 plot(m * geoms)
 AbstractPlotting.save("simplescatterlines2.svg", AbstractPlotting.current_scene()); nothing #hide
 
@@ -251,9 +251,53 @@ AbstractPlotting.save("axis.svg", AbstractPlotting.current_scene()); nothing #hi
 df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
 m = data(df) * mapping(:x, :y, layout=:c)
 geoms = linear() + visual(Scatter) * mapping(color=:z)
-fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(600, 600),))
+fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(1200, 600),))
 facet!(fg)
 AbstractPlotting.save("figure.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](figure.svg)
+#
+# ## Multiple selection
+#
+# Selecting multiple columns at once can have two possible applications. One is
+# "wide data", the other is on-the-fly creating of novel columns.
+#
+# ### Wide data
+#
+
+df = (a=randn(100), b=randn(100), c=randn(100))
+m = data(df) * mapping((:a, :b, :c) .=> "some label") * mapping(color=dims(1))
+plot(m * SplitApplyPlot.density())
+AbstractPlotting.save("widedensity.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](widedensity.svg)
+#
+
+# The wide format is combined with broadcast semantics.
+
+df = (sepal_length=rand(100), sepal_width=rand(100), petal_length=rand(100), petal_width=rand(100))
+xvars = ["sepal_length", "sepal_width"]
+yvars = ["petal_length" "petal_width"]
+m = data(df) * mapping(
+    xvars .=> "sepal",
+    yvars .=> "petal",
+    row=dims(1) => c -> split(xvars[c], '_')[2],
+    col=dims(2) => c -> split(yvars[c], '_')[2],
+)
+geoms = linear() + visual(Scatter)
+facet!(plot(m * geoms))
+AbstractPlotting.save("widefacet.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](widefacet.svg)
+#
+# ### New columns on the fly
+#
+df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
+m = data(df) * mapping(:x, (:x, :y, :z) => (+) => "x + y + z", layout=:c)
+geoms = linear() + visual(Scatter) * mapping(color=:z)
+fg = plot(m * geoms)
+facet!(fg)
+AbstractPlotting.save("columnonthefly.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](columnonthefly.svg)
 #

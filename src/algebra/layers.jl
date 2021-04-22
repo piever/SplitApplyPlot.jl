@@ -30,7 +30,7 @@ function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
 
     palettes = mergewith!((_, b) -> b, default_palettes(), arguments(; palettes...))
 
-    labeledentries = consume(s)
+    labeledentries = process_transformations(s)
 
     entries = map(Entry, labeledentries)
 

@@ -65,7 +65,6 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 
 end
 
-# TODO: join figure and axis grid in a unique "displayable" object
 function AbstractPlotting.plot(entries::Entries; axis=NamedTuple(), figure=NamedTuple())
     fig = Figure(; figure...)
     grid = plot!(fig, entries; axis)

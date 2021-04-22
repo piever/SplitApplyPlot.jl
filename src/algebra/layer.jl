@@ -6,7 +6,7 @@ end
 
 Layer(transformations::Tuple=()) = Layer(transformations, nothing, arguments())
 
-data(df) = Layer((), df, arguments())
+data(df) = Layer((), columns(df), arguments())
 mapping(args...; kwargs...) = Layer((), nothing, arguments(args...; kwargs...))
 
 function Base.:*(l1::Layer, l2::Layer)
