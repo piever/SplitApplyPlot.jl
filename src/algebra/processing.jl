@@ -13,31 +13,39 @@ function (d::DimsSelector)(c::CartesianIndex{N}) where N
     return CartesianIndex(t)
 end
 
+compute_label(data, name::StringLike) = string(name)
+compute_label(data, name::Integer) = string(columnnames(data)[name])
+compute_label(data, name::DimsSelector) = ""
+
 struct NameTransformationLabel
     name::Any
     transformation::Any
     label::String
 end
 
-# Also support integer column names?
-NameTransformationLabel(x::StringLike) = NameTransformationLabel(x => identity => x)
-
-NameTransformationLabel(x::DimsSelector) = NameTransformationLabel(x => identity => "")
-
-function NameTransformationLabel(x::Pair{<:Any, <:StringLike})
-    columnname, label = x
-    return NameTransformationLabel(columnname => identity => label)
+function NameTransformationLabel(name, transformation, label::Symbol)
+    return NameTransformationLabel(name, transformation, string(label))
 end
 
-function NameTransformationLabel(x::Pair{<:Any, <:Any})
-    columnname, transformation = x
-    return NameTransformationLabel(columnname => transformation => columnname)
+function NameTransformationLabel(data, x::Union{StringLike, Integer, DimsSelector})
+    return NameTransformationLabel(x, identity, compute_label(data, x))
 end
 
-function NameTransformationLabel(x::Pair{<:Any, <:Pair})
-    columnname, transformation_label = x
+function NameTransformationLabel(data, x::Pair{<:Any, <:StringLike})
+    name, label = x
+    return NameTransformationLabel(name, identity, label)
+end
+
+function NameTransformationLabel(data, x::Pair{<:Any, <:Any})
+    name, transformation = x
+    label = compute_label(data, name)
+    return NameTransformationLabel(name, transformation, label)
+end
+
+function NameTransformationLabel(data, x::Pair{<:Any, <:Pair})
+    name, transformation_label = x
     transformation, label = transformation_label
-    return NameTransformationLabel(columnname, transformation, string(label))
+    return NameTransformationLabel(name, transformation, label)
 end
 
 maybewrap(x::ArrayLike) = x
@@ -59,10 +67,9 @@ end
 getlabel(x::LabeledArray) = x.label
 getarray(x::LabeledArray) = x.array
 
-# FIXME: improve automatic labeling for broadcasted case
 function process_data(data, mappings′)
     mappings = map(mappings′) do x
-        return map(NameTransformationLabel, maybewrap(x))
+        return map(x -> NameTransformationLabel(data, x), maybewrap(x))
     end
     ax = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
     return map(CartesianIndices(ax)) do c
