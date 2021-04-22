@@ -19,6 +19,7 @@ struct NameTransformationLabel
     label::String
 end
 
+# Also support integer column names?
 NameTransformationLabel(x::StringLike) = NameTransformationLabel(x => identity => x)
 
 NameTransformationLabel(x::DimsSelector) = NameTransformationLabel(x => identity => "")
