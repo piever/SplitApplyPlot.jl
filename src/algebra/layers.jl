@@ -26,10 +26,8 @@ summary(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
 mergesummaries!(s1::Set, s2::Set) = union!(s1, s2)
 mergesummaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
 
-function assert_equality(a, b)
-    @assert a == b
-    return b
-end
+mergelabellists!(s1::String, s2::String) = [s1, s2]
+mergelabellists!(s1::Vector{String}, s2::String) = push!(s1, s2)
 
 function inner_mapfoldl(f, op, entries)
     combine(a, b) = mergewith!(op, a, b)
@@ -41,13 +39,12 @@ function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
 
     entries = map(Entry, labeledentries)
 
-    summaries = inner_mapfoldl(mergesummaries!, entries) do entry
-        return map(summary, entry.mappings)
-    end
+    summaries = inner_mapfoldl(e -> map(summary, e.mappings), mergesummaries!, entries)
     palettes = merge!(default_palettes(), arguments(; palettes...))
     scales = default_scales(summaries, palettes)
 
-    labels = inner_mapfoldl(le -> le.labels, assert_equality, labeledentries)
+    labellists = inner_mapfoldl(le -> le.labels, mergelabellists!, labeledentries)
+    labels = map(v -> join(unique(v), ' '), labellists)
 
     return Entries(entries, scales, labels)
 end

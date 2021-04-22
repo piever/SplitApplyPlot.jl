@@ -53,6 +53,11 @@ maybewrap(x) = fill(x)
 
 apply_context(data, c::CartesianIndex, name) = getcolumn(data, Symbol(name))
 
+function apply_context(data, c::CartesianIndex, idx::Integer)
+    name = columnnames(data)[idx]
+    return getcolumn(data, name)
+end
+
 function apply_context(data, c::CartesianIndex, name::DimsSelector)
     val = name(c)
     l = length(rows(data))
