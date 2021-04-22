@@ -13,7 +13,7 @@ function Base.:*(l1::Layer, l2::Layer)
     t1, t2 = l1.transformations, l2.transformations
     d1, d2 = l1.data, l2.data
     m1, m2 = l1.mappings, l2.mappings
-    transformations = (t1..., t2...) # in what order to execute them?
+    transformations = (t1..., t2...)
     data = isnothing(d2) ? d1 : d2
     mappings = Arguments(
         vcat(m1.positional, m2.positional),

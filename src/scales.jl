@@ -69,6 +69,6 @@ end
 
 # Logic to infer good scales
 function default_scales(summaries, palettes)
-    palettes = mergewith!((_, b) -> b, map(_ -> automatic, summaries), palettes)
+    palettes = merge!(map(_ -> automatic, summaries), palettes)
     return map(default_scale, summaries, palettes)
 end

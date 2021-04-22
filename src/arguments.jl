@@ -43,3 +43,9 @@ function Base.mergewith!(op, a::Arguments, b::Arguments)
     mergewith!(op, a.named, b.named)
     return a
 end
+
+latter(_, b) = b
+
+Base.merge!(a::Arguments, b::Arguments) = mergewith!(latter, a, b)
+
+Base.merge(a::Arguments, b::Arguments) = merge!(copy(a), b)

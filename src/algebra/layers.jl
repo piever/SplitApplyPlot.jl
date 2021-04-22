@@ -22,33 +22,31 @@ function Base.:*(s1::OneOrMoreLayers, s2::OneOrMoreLayers)
     return Layers([el1 * el2 for el1 in l1 for el2 in l2])
 end
 
-summarize(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
-merge_summaries!(s1::Set, s2::Set) = union!(s1, s2)
-merge_summaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
+summary(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
+mergesummaries!(s1::Set, s2::Set) = union!(s1, s2)
+mergesummaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
+
+function inner_mapfoldl(f, op, entries)
+    combine(a, b) = mergewith!(op, a, b)
+    return mapfoldl(f, combine, entries; init=arguments())
+end
 
 function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
-
-    palettes = mergewith!((_, b) -> b, default_palettes(), arguments(; palettes...))
-
     labeledentries = process_transformations(s)
 
     entries = map(Entry, labeledentries)
 
-    op(::Nothing, mappings) = copy(mappings)
-    op(acc, mappings) = mergewith!(acc, mappings) do x, y
-        return isempty(y) ? x : y
+    summaries = inner_mapfoldl(mergesummaries!, entries) do entry
+        return map(summary, entry.mappings)
     end
-
-    labels = mapfoldl(le -> le.labels, op, labeledentries, init=nothing)
-
-    summaries = mapfoldl((a, b) -> mergewith!(merge_summaries!, a, b), entries, init=arguments()) do entry
-        return map(summarize, entry.mappings)
-    end
-
+    palettes = merge!(default_palettes(), arguments(; palettes...))
     scales = default_scales(summaries, palettes)
 
-    return Entries(entries, scales, labels)
+    labels = inner_mapfoldl((x, y) -> isempty(y) ? x : y, labeledentries) do le
+        return le.labels
+    end
 
+    return Entries(entries, scales, labels)
 end
 
 function AbstractPlotting.plot!(fig, s::OneOrMoreLayers;
