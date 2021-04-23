@@ -1,3 +1,6 @@
+const ArrayLike = Union{AbstractArray, Tuple}
+const StringLike = Union{AbstractString, Symbol}
+
 function cycle(v::AbstractVector, i::Int)
     ax = axes(v, 1)
     return v[first(ax) + mod(i - first(ax), length(ax))]

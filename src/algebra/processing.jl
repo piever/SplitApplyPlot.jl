@@ -1,6 +1,3 @@
-const ArrayLike = Union{AbstractArray, Tuple}
-const StringLike = Union{AbstractString, Symbol}
-
 struct DimsSelector{N}
     dims::NTuple{N, Int}
 end
