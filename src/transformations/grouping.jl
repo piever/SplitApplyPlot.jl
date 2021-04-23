@@ -45,7 +45,6 @@ function group(le::LabelledEntry; unsplittable=())
     les = LabelledEntry[]
     mappings = le.mappings
     axs = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
-    # TODO: also group by first column
     iter = (m for (k, m) in mappings.named
         if m isa AbstractVector && !iscontinuous(m) && k ∉ unsplittable)
     grouping_cols = Tuple(iter)

@@ -34,13 +34,15 @@ end
 function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
     labeledentries = process_transformations(s)
 
-    entries = map(Entry, labeledentries)
+    entries = map(labeledentries) do entry
+        return Entry(entry.plottype, map(getvalue, entry.mappings), entry.attributes)
+    end
 
     summaries = inner_mapfoldl(e -> map(summary, e.mappings), mergesummaries!, entries)
     palettes = merge!(default_palettes(), arguments(; palettes...))
     scales = default_scales(summaries, palettes)
 
-    labellists = inner_mapfoldl(le -> map(vcat, le.labels), union!, labeledentries)
+    labellists = inner_mapfoldl(le -> map(vcat∘getlabel, le.mappings), union!, labeledentries)
     labels = map(v -> join(v, ' '), labellists)
 
     return Entries(entries, scales, labels)

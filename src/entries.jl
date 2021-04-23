@@ -9,14 +9,14 @@ Entry(plottype::PlotFunc=Any, mappings=arguments(); attributes...) =
 
 Entry(mappings::Arguments; attributes...) = Entry(Any, mappings; attributes...)
 
-struct LabeledEntry
-    plottype::PlotFunc
-    mappings::Arguments
-    labels::Arguments
-    attributes::Dict{Symbol, Any}
-end
+# struct LabeledEntry
+#     plottype::PlotFunc
+#     mappings::Arguments
+#     labels::Arguments
+#     attributes::Dict{Symbol, Any}
+# end
 
-Entry(le::LabeledEntry) = Entry(le.plottype, le.mappings, le.attributes)
+# Entry(le::LabeledEntry) = Entry(le.plottype, le.mappings, le.attributes)
 
 struct Entries
     entries::Vector{Entry}

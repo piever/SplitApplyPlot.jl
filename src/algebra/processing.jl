@@ -23,10 +23,6 @@ struct NameTransformationLabel
     label::String
 end
 
-getname(ntl::NameTransformationLabel) = ntl.name
-gettransformation(ntl::NameTransformationLabel) = ntl.transformation
-getlabel(ntl::NameTransformationLabel) = ntl.label
-
 function NameTransformationLabel(name, transformation, label::Symbol)
     return NameTransformationLabel(name, transformation, string(label))
 end
@@ -73,13 +69,16 @@ function apply_context(data, axs::NTuple{N, Any}, d::DimsSelector) where N
     return reshape(CartesianIndices(sz), 1, sz...)
 end
 
-struct LabeledArray
+struct Labeled{T}
     label::AbstractString
-    array::AbstractArray
+    value::T
 end
 
-getlabel(x::LabeledArray) = x.label
-getarray(x::LabeledArray) = x.array
+getlabel(x::Labeled) = x.label
+getvalue(x::Labeled) = x.value
+
+getlabel(x) = ""
+getvalue(x) = x
 
 function process_data(data, mappings′)
     mappings = map(mappings′) do x
@@ -87,18 +86,17 @@ function process_data(data, mappings′)
     end
     axs = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
     labeledarrays = map(mappings) do ntls
-        names = map(getname, ntls)
-        transformations = map(gettransformation, ntls)
-        labels = map(getlabel, ntls)
+        names = map(ntl -> ntl.name, ntls)
+        transformations = map(ntl -> ntl.transformation, ntls)
+        labels = map(ntl -> ntl.label, ntls)
         res = map(transformations, names) do transformation, name
             cols = apply_context(data, axs, maybewrap(name))
             # use broadcast and allow mixing dims and categorical selector?
             map(transformation, cols...)
         end
-        return LabeledArray(join(unique(labels), ' '), unnest(res))
+        return Labeled(join(unique(labels), ' '), unnest(res))
     end
-    labels, arrays = map(getlabel, labeledarrays), map(getarray, labeledarrays)
-    return LabeledEntry(Any, arrays, labels, Dict{Symbol, Any}())
+    return Entry(Any, labeledarrays, Dict{Symbol, Any}())
 end
 
 function process_transformations(layers::Layers)
@@ -111,9 +109,9 @@ function process_transformations(layer::Layer)
     return foldl(process_transformations, layer.transformations; init)
 end
 
-function process_transformations(v::AbstractArray{LabeledEntry}, f)
+function process_transformations(v::AbstractArray{Entry}, f)
     results = [process_transformations(le, f) for le in v]
     return reduce(vcat, results)
 end
 
-process_transformations(le::LabeledEntry, f) = vec(maybewrap(f(le)))
+process_transformations(le::Entry, f) = vec(maybewrap(f(le)))
