@@ -26,23 +26,21 @@ summary(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
 mergesummaries!(s1::Set, s2::Set) = union!(s1, s2)
 mergesummaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
 
-function inner_mapfoldl(f, op, entries)
-    combine(a, b) = mergewith!(op, a, b)
-    return mapfoldl(f, combine, entries; init=arguments())
-end
-
 function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
-    labeledentries = process_transformations(s)
-
-    entries = map(labeledentries) do entry
-        return Entry(entry.plottype, map(getvalue, entry.mappings), entry.attributes)
+    summaries = arguments()
+    labellists = arguments()
+    entries = Entry[]
+    for labeledentry in process_transformations(s)
+        for le in splitapply(labeledentry)
+            entry = Entry(le.plottype, map(getvalue, le.mappings), le.attributes)
+            push!(entries, entry)
+            mergewith!(mergesummaries!, summaries, map(summary, entry.mappings))
+            mergewith!(union!, labellists, map(vcat∘getlabel, le.mappings))
+        end
     end
 
-    summaries = inner_mapfoldl(e -> map(summary, e.mappings), mergesummaries!, entries)
     palettes = merge!(default_palettes(), arguments(; palettes...))
     scales = default_scales(summaries, palettes)
-
-    labellists = inner_mapfoldl(le -> map(vcat∘getlabel, le.mappings), union!, labeledentries)
     labels = map(v -> join(v, ' '), labellists)
 
     return Entries(entries, scales, labels)

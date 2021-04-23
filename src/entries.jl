@@ -76,7 +76,7 @@ function AbstractPlotting.plot(entries::Entries; axis=NamedTuple(), figure=Named
 end
 
 function AbstractPlotting.plot!(fig, entries::Entries; axis=NamedTuple())
-    axes_grid = compute_axes_grid(fig, split_entries(entries); axis)
+    axes_grid = compute_axes_grid(fig, entries; axis)
     foreach(plot!, axes_grid)
     return axes_grid
 end
