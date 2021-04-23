@@ -40,3 +40,27 @@ function split_entries(e::Entries, isgrouping=isgrouping)
     end
     return Entries(flattened_entries, scales, labels)
 end
+
+function group(le::LabelledEntry; unsplittable=())
+    les = LabelledEntry[]
+    mappings = le.mappings
+    axs = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
+    # TODO: also group by first column
+    iter = (m for (k, m) in mappings.named
+        if m isa AbstractVector && !iscontinuous(m) && k ∉ unsplittable)
+    grouping_cols = Tuple(iter)
+    foreach(indices_iterator(grouping_cols)) do idxs
+        for c in CartesianIndices(Base.tail(axs))
+            submappings = map(mappings) do v
+                I = ntuple(ndims(v)) do n
+                    i = n == 1 ? idxs : c[n-1]
+                    return adjust_index(axs[n], axes(v, n), i)
+                end
+                return view(v, I...)
+            end
+            new_entry = LabeledEntry(le.plottype, submappings, le.labels, le.attributes)
+            push!(les, new_entry)
+        end
+    end
+    return les
+end

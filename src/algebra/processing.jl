@@ -92,7 +92,8 @@ function process_data(data, mappings′)
         labels = map(getlabel, ntls)
         res = map(transformations, names) do transformation, name
             cols = apply_context(data, axs, maybewrap(name))
-            broadcast(transformation, cols...)
+            # use broadcast and allow mixing dims and categorical selector?
+            map(transformation, cols...)
         end
         return LabeledArray(join(unique(labels), ' '), unnest(res))
     end
