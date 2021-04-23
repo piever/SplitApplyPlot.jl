@@ -35,26 +35,17 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
 end
 
 function (d::Density)(le::Entry)
-    labels, mappings = map(getlabel, le.mappings), map(getvalue, le.mappings)
-    grouping_cols = (; (k => v for (k, v) in mappings.named if !iscontinuous(v))...)
-    newmappings = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
-        submappings = map(v -> view(v, idxs), mappings)
-        args = submappings.positional
-        new_args = _density(args...; d.options...)
-        named = map(grouping_cols) do v
-            return idxs isa Colon ? v : fill(v[first(idxs)], length(first(new_args)))
-        end
-        m = arguments(new_args...; named...)
-        return isnothing(acc) ? map(collect, m) : map(append!, acc, m)
+    return splitapply(le) do entry
+        labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
+        res = _density(mappings.positional...; mappings.named..., d.options...)
+        labeled_res = map(Labeled, vcat(labels.positional, "PDF"), collect(res))
+        default_plottype = length(res) == 2 ? Lines : Heatmap
+        return Entry(
+            AbstractPlotting.plottype(entry.plottype, default_plottype),
+            Arguments(labeled_res),
+            entry.attributes
+        )
     end
-    newlabels = copy(labels)
-    push!(newlabels.positional, "PDF")
-    defaultplot = length(mappings.positional) == 1 ? Lines : Heatmap
-    return Entry(
-        AbstractPlotting.plottype(le.plottype, defaultplot),
-        map(Labeled, newlabels, newmappings),
-        le.attributes
-    )
 end
 
 density(; kwargs...) = Layer((Density(; kwargs...),))

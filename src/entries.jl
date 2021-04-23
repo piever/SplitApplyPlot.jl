@@ -9,6 +9,19 @@ Entry(plottype::PlotFunc=Any, mappings=arguments(); attributes...) =
 
 Entry(mappings::Arguments; attributes...) = Entry(Any, mappings; attributes...)
 
+function separate!(entry::Entry)
+    discrete, _ = separate!(entry.mappings)
+    return discrete => entry
+end
+
+function recombine!(discrete, entry::Entry)
+    return Entry(
+        entry.plottype,
+        recombine!(discrete, entry.mappings),
+        entry.attributes
+    )
+end
+
 struct Entries
     entries::Vector{Entry}
     scales::Arguments
@@ -91,11 +104,14 @@ function prefix(i::Int, sym::Symbol)
     return Symbol(var, sym)
 end
 
+unwrap(x) = x
+unwrap(x::AbstractArray{<:Any, 0}) = x[]
+
 function AbstractPlotting.plot!(ae::AxisEntries)
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
     for entry in entries
         plottype, mappings, attributes = entry.plottype, entry.mappings, entry.attributes
-        trace = map(rescale, mappings, scales)
+        trace = map(unwrap∘rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
         for sym in [:col, :row, :layout]

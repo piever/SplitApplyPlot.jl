@@ -3,6 +3,8 @@ struct Arguments
     named::Dict{Symbol, Any}
 end
 
+Arguments(v::AbstractVector) = Arguments(v, Dict{Symbol, Any}())
+
 function arguments(args...; kwargs...)
     positional = collect(Any, args)
     named = Dict{Symbol, Any}(kwargs)
@@ -49,3 +51,22 @@ latter(_, b) = b
 Base.merge!(a::Arguments, b::Arguments) = mergewith!(latter, a, b)
 
 Base.merge(a::Arguments, b::Arguments) = merge!(copy(a), b)
+
+function separate!(continuous::Arguments)
+    discrete = Dict{Symbol, Any}()
+    for (k, v) in continuous.named
+        label, value = getlabel(v), getvalue(v)
+        iscontinuous(value) && continue
+        discrete[k] = Labeled(label, first(value))
+        pop!(continuous.named, k)
+    end
+    return NamedTuple(discrete) => continuous
+end
+
+function recombine!(discrete, continuous)
+    for (k, v) in pairs(discrete)
+        label, value = getlabel(v), getvalue(v)
+        continuous[k] = Labeled(label, fill(value))
+    end
+    return continuous
+end
