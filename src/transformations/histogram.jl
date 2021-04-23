@@ -24,7 +24,7 @@ end
 compute_edges(data, extrema, bins::Tuple{Vararg{AbstractArray}}, closed) = bins
 
 function _histogram(data...; bins=sturges(length(data[1])), wts=automatic,
-    normalization=:none, extrema=map(extrema, data), closed=:left)
+    normalization=:none, extrema, closed=:left)
 
     bins_tuple = bins isa Tuple ? bins : map(_ -> bins, data)
     edges = compute_edges(data, extrema, bins_tuple, closed)
@@ -39,17 +39,21 @@ end
 
 function (h::HistogramAnalysis)(le::Entry)
     summaries = map(summary∘getvalue, le.mappings.positional)
+    extrema = get(h.options, :extrema, Tuple(summaries))
+    options = merge(h.options, pairs((; extrema)))
+
     f(edges) = edges[1:end-1] .+ diff(edges)./2
     return splitapply(le) do entry
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
-        extrema = get(h.options, :extrema, Tuple(summaries))
-        hist = _histogram(mappings.positional...; mappings.named..., h.options...)
+        hist = _histogram(mappings.positional...; mappings.named..., options...)
         normalization = get(h.options, :normalization, :none)
         newlabel = normalization == :none ? "count" : string(normalization)
         plottypes = [BarPlot, Heatmap, Volume]
         N = length(mappings.positional)
         default_plottype = plottypes[N]
-        kwargs = N == 1 ? (; width = step(hist.edges[1])) : NamedTuple()
+        kwargs = N == 1 ? (; width=step(hist.edges[1])) : NamedTuple()
+        @show kwargs.width
+        @show map(f, hist.edges)
         labeled_res = map(
             Labeled,
             vcat(labels.positional, newlabel),

@@ -4,8 +4,8 @@
 
 using SplitApplyPlot, CairoMakie
 
-df = (x=randn(1000), y=randn(1000), z=rand(["a", "b", "c"], 1000))
-data(df) * mapping(:x, layout=:z) * histogram(bins=15) |> draw
+df = (x=randn(100), y=randn(100), z=rand(["a", "b", "c"], 100))
+data(df) * mapping(:x, layout=:z) * histogram(bins=5) * visual(x_gap=0) |> draw
 
 data(df) * mapping(:x, :y, layout=:z) * histogram(bins=15) |> draw
 
