@@ -62,3 +62,9 @@ unnest(arr::NTuple{<:Any, <:AbstractArray}) = unnest(collect(arr))
 adjust_index(rg1, rg2, idx::Integer) = idx in rg2 ? idx : only(rg2)
 adjust_index(rg1, rg2, idxs::AbstractArray) = map(idx -> adjust_index(rg1, rg2, idx), idxs)
 adjust_index(rg1, rg2, ::Colon) = rg1 == rg2 ? Colon() : fill(only(rg2), length(rg1))
+
+maybewrap(x::ArrayLike) = x
+maybewrap(x) = fill(x)
+
+unwrap(x) = x
+unwrap(x::AbstractArray{<:Any, 0}) = x[]

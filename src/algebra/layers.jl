@@ -26,23 +26,22 @@ summary(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
 mergesummaries!(s1::Set, s2::Set) = union!(s1, s2)
 mergesummaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
 
+mergelabels(a, b) = a
+
 function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
     summaries = arguments()
-    labellists = arguments()
+    labels = arguments()
     entries = Entry[]
     for labeledentry in process_transformations(s)
         for le in splitapply(labeledentry)
             entry = Entry(le.plottype, map(getvalue, le.mappings), le.attributes)
             push!(entries, entry)
             mergewith!(mergesummaries!, summaries, map(summary, entry.mappings))
-            mergewith!(union!, labellists, map(vcat∘getlabel, le.mappings))
+            mergewith!(mergelabels, labels, map(getlabel, le.mappings))
         end
     end
-
     palettes = merge!(default_palettes(), arguments(; palettes...))
     scales = default_scales(summaries, palettes)
-    labels = map(v -> join(v, ' '), labellists)
-
     return Entries(entries, scales, labels)
 end
 

@@ -104,9 +104,6 @@ function prefix(i::Int, sym::Symbol)
     return Symbol(var, sym)
 end
 
-unwrap(x) = x
-unwrap(x::AbstractArray{<:Any, 0}) = x[]
-
 function AbstractPlotting.plot!(ae::AxisEntries)
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
     for entry in entries

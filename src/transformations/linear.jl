@@ -14,7 +14,11 @@ function (l::Linear)(le::Entry)
         length = 100
         rg = range(extrema(x)...; length)
         m = arguments(rg, a .* rg .+ b)
-        return Entry(map(Labeled, labels, m))
+        return Entry(
+            AbstractPlotting.plottype(entry.plottype, Lines),
+            map(Labeled, labels, m),
+            entry.attributes
+        )
     end
 end
 

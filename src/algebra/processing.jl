@@ -48,9 +48,6 @@ function NameTransformationLabel(data, x::Pair{<:Any, <:Pair})
     return NameTransformationLabel(name, transformation, label)
 end
 
-maybewrap(x::ArrayLike) = x
-maybewrap(x) = fill(x)
-
 function apply_context(data, axs, names::ArrayLike)
     return map(name -> apply_context(data, axs, name), names)
 end
