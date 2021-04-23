@@ -4,13 +4,12 @@ function cycle(v::AbstractVector, i::Int)
 end
 
 """
-    iscontinuous(v::AbstractVector)
+    iscontinuous(v::AbstractArray)
 
 Determine whether `v` should be treated as a continuous or categorical vector.
 """
-iscontinuous(::AbstractVector) = false
-iscontinuous(::AbstractVector{<:Number}) = true
-iscontinuous(::AbstractVector{<:Bool}) = false
+iscontinuous(::AbstractArray) = false
+iscontinuous(::AbstractArray{<:Number}) = true
 
 for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
     @eval function $sym(ae::AxisEntries; kwargs...)
@@ -58,13 +57,8 @@ function unnest(arr::AbstractArray{<:AbstractArray})
     return reshape(flattened, inner_size..., outer_size...)
 end
 
-function adjustrange(rg::Base.OneTo{T}, select) where {T}
-    l::T = select ? last(rg) : 1
-    return Base.OneTo(l)
-end
+unnest(arr::NTuple{<:Any, <:AbstractArray}) = unnest(collect(arr))
 
-function adjustrange(rg::AbstractUnitRange{T}, select) where {T}
-    f::T = first(rg)
-    l::T = select ? last(rg) : 1
-    return f:l
-end
+adjust_index(rg1, rg2, idx::Integer) = idx in rg2 ? idx : only(rg2)
+adjust_index(rg1, rg2, idxs::AbstractArray) = map(idx -> adjust_index(rg1, rg2, idx), idxs)
+adjust_index(rg1, rg2, ::Colon) = rg1 == rg2 ? Colon() : fill(only(rg2), length(rg1))

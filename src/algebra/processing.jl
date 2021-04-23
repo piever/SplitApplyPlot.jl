@@ -67,9 +67,10 @@ function apply_context(data, axs, idx::Integer)
 end
 
 function apply_context(data, axs::NTuple{N, Any}, d::DimsSelector) where N
-    select = ntuple(in(d.dims), N)
-    rgs = map(adjustrange, axs, select)
-    return CartesianIndices(rgs)
+    sz = ntuple(N) do n
+        return n in d.dims ? length(axs[n]) : 1
+    end
+    return reshape(CartesianIndices(sz), 1, sz...)
 end
 
 struct LabeledArray
@@ -91,7 +92,7 @@ function process_data(data, mappings′)
         labels = map(getlabel, ntls)
         res = map(transformations, names) do transformation, name
             cols = apply_context(data, axs, maybewrap(name))
-            map(transformation, cols...)
+            broadcast(transformation, cols...)
         end
         return LabeledArray(join(unique(labels), ' '), unnest(res))
     end

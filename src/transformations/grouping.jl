@@ -21,12 +21,21 @@ function split_entries(e::Entries, isgrouping=isgrouping)
     flattened_entries = Entry[]
     for entry in entries
         mappings = entry.mappings
+        axs = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
         iter = (get(mappings, k, nothing) for (k, v) in scales.named if isgrouping(k => v))
-        grouping_cols = Tuple(Iterators.filter(!isnothing, iter))
+        grouping_cols = Tuple(Iterators.filter(t -> t isa AbstractVector, iter))
         foreach(indices_iterator(grouping_cols)) do idxs
-            submappings = map(v -> view(v, idxs), mappings)
-            new_entry = Entry(entry.plottype, submappings, entry.attributes)
-            push!(flattened_entries, new_entry)
+            for c in CartesianIndices(Base.tail(axs))
+                submappings = map(mappings) do v
+                    I = ntuple(ndims(v)) do n
+                        i = n == 1 ? idxs : c[n-1]
+                        return adjust_index(axs[n], axes(v, n), i)
+                    end
+                    return view(v, I...)
+                end
+                new_entry = Entry(entry.plottype, submappings, entry.attributes)
+                push!(flattened_entries, new_entry)
+            end
         end
     end
     return Entries(flattened_entries, scales, labels)
