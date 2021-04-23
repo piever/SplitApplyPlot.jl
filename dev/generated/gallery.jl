@@ -224,8 +224,8 @@ colors = [colorant"#E24A33", colorant"#348ABD"]
 heads = ['▲', '●']
 layer = data(df) *
     mapping(:x, :y, :u, :v) *
-    mapping(arrowhead=:c) *
-    mapping(arrowcolor=:d) *
+    mapping(arrowhead=:c => nonnumeric) *
+    mapping(arrowcolor=:d => nonnumeric) *
     visual(Arrows, arrowsize=10, lengthscale=0.3)
 plot(layer; palettes=(arrowcolor=colors, arrowhead=heads))
 AbstractPlotting.save("arrows.svg", AbstractPlotting.current_scene()); nothing #hide
