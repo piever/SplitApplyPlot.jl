@@ -34,8 +34,8 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
     return (x, y, z)
 end
 
-function (d::Density)(le::LabeledEntry)
-    mappings, labels = le.mappings, le.labels
+function (d::Density)(le::Entry)
+    labels, mappings = map(getlabel, le.mappings), map(getvalue, le.mappings)
     grouping_cols = (; (k => v for (k, v) in mappings.named if !iscontinuous(v))...)
     newmappings = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
         submappings = map(v -> view(v, idxs), mappings)
@@ -50,10 +50,9 @@ function (d::Density)(le::LabeledEntry)
     newlabels = copy(labels)
     push!(newlabels.positional, "PDF")
     defaultplot = length(mappings.positional) == 1 ? Lines : Heatmap
-    return LabeledEntry(
+    return Entry(
         AbstractPlotting.plottype(le.plottype, defaultplot),
-        newmappings,
-        newlabels,
+        map(Labeled, newlabels, newmappings),
         le.attributes
     )
 end

@@ -4,8 +4,8 @@ end
 
 Linear(; kwargs...) = Linear(Dict{Symbol, Any}(kwargs))
 
-function (l::Linear)(le::LabeledEntry)
-    mappings = le.mappings
+function (l::Linear)(le::Entry)
+    labels, mappings = map(getlabel, le.mappings), map(getvalue, le.mappings)
     grouping_cols = (; (k => v for (k, v) in mappings.named if !iscontinuous(v))...)
     newmappings = foldl(indices_iterator(grouping_cols), init=nothing) do acc, idxs
         submappings = map(v -> view(v, idxs), mappings)
@@ -21,10 +21,9 @@ function (l::Linear)(le::LabeledEntry)
         m = arguments(rg, a .* rg .+ b; named...)
         return isnothing(acc) ? map(collect, m) : map(append!, acc, m)
     end
-    return LabeledEntry(
+    return Entry(
         AbstractPlotting.plottype(le.plottype, Lines),
-        newmappings,
-        le.labels,
+        map(Labeled, labels, newmappings),
         le.attributes
     )
 end
