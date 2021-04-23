@@ -1,9 +1,9 @@
-struct Density
+struct DensityAnalysis
     options::Dict{Symbol, Any}
 end
-Density(; kwargs...) = Density(Dict{Symbol, Any}(kwargs))
+DensityAnalysis(; kwargs...) = DensityAnalysis(Dict{Symbol, Any}(kwargs))
 
-function _density(data; xlims = (-Inf, Inf), trim = false, kwargs...)
+function _density(data; xlims=(-Inf, Inf), trim=false, kwargs...)
     k = kde(data; kwargs...)
     x, y = k.x, k.density
     xmin, xmax = xlims
@@ -17,7 +17,7 @@ function _density(data; xlims = (-Inf, Inf), trim = false, kwargs...)
     return (x, y)
 end
 
-function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim = false, kwargs...)
+function _density(datax, datay; xlims=(-Inf, Inf), ylims=(-Inf, Inf), trim=false, kwargs...)
     k = kde((datax, datay); kwargs...)
     x, y, z = k.x, k.y, k.density
     xmin, xmax = xlims
@@ -34,12 +34,13 @@ function _density(datax, datay; xlims = (-Inf, Inf), ylims = (-Inf, Inf), trim =
     return (x, y, z)
 end
 
-function (d::Density)(le::Entry)
+function (d::DensityAnalysis)(le::Entry)
     return splitapply(le) do entry
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
         res = _density(mappings.positional...; mappings.named..., d.options...)
-        labeled_res = map(Labeled, vcat(labels.positional, "PDF"), collect(res))
-        default_plottype = length(res) == 2 ? Lines : Heatmap
+        labeled_res = map(Labeled, vcat(labels.positional, "pdf"), collect(res))
+        plottypes = [Lines, Heatmap, Volume]
+        default_plottype = plottypes[length(mappings.positional)]
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
             Arguments(labeled_res),
@@ -48,4 +49,4 @@ function (d::Density)(le::Entry)
     end
 end
 
-density(; kwargs...) = Layer((Density(; kwargs...),))
+density(; kwargs...) = Layer((DensityAnalysis(; kwargs...),))

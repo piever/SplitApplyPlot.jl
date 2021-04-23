@@ -94,19 +94,14 @@ function process_data(data, mappings′)
     return Entry(Any, labeledarrays, Dict{Symbol, Any}())
 end
 
-function process_transformations(layers::Layers)
-    nested = map(process_transformations, layers)
-    return reduce(vcat, nested)
-end
+process_transformations(layers::Layers) = map(process_transformations, layers)
 
 function process_transformations(layer::Layer)
-    init = [process_data(layer.data, layer.mappings)]
-    return foldl(process_transformations, layer.transformations; init)
+    init = process_data(layer.data, layer.mappings)
+    res = foldl(process_transformations, layer.transformations; init)
+    return res isa Entry ? splitapply(res) : res
 end
 
-function process_transformations(v::AbstractArray{Entry}, f)
-    results = [process_transformations(le, f) for le in v]
-    return reduce(vcat, results)
-end
+process_transformations(v::AbstractArray{Entry}, f) = map(f, v)
 
-process_transformations(le::Entry, f) = vec(maybewrap(f(le)))
+process_transformations(le::Entry, f) = f(le)

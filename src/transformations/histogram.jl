@@ -1,0 +1,83 @@
+to_weights(v) = weights(v)
+to_weights(v::AbstractWeights) = v
+
+function trim(range, min, max, closed)
+    if closed == :left
+        i1 = searchsortedlast(range, min)
+        i2 = searchsortedfirst(range, nextfloat(max))
+    else
+        i1 = searchsortedlast(range, prevfloat(min))
+        i2 = searchsortedfirst(range, max)
+    end
+    return range[i1:i2]
+end
+
+function compute_edges(data, extrema, bins::Tuple{Vararg{Integer}}, closed)
+    ranges = map(extrema, bins) do (min, max), n
+        histrange(min, max, n, closed)
+    end
+    # trim axis
+    map(ranges, data) do range, d
+        trim(range, Base.extrema(d)..., closed)
+    end
+end
+compute_edges(data, extrema, bins::Tuple{Vararg{AbstractArray}}, closed) = bins
+
+function _histogram(data...; bins=sturges(length(data[1])), wts=automatic,
+    normalization=:none, extrema=map(extrema, data), closed=:left)
+
+    bins_tuple = bins isa Tuple ? bins : map(_ -> bins, data)
+    edges = compute_edges(data, extrema, bins_tuple, closed)
+    weights = wts === automatic ? () : (to_weights(wts),)
+    h = fit(Histogram, data, weights..., edges)
+    return normalize(h, mode=normalization)
+end
+
+struct HistogramAnalysis
+    options::Dict{Symbol, Any}
+end
+
+function (h::HistogramAnalysis)(le::Entry)
+    summaries = map(summary∘getvalue, le.mappings.positional)
+    f(edges) = edges[1:end-1] .+ diff(edges)./2
+    return splitapply(le) do entry
+        labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
+        extrema = get(h.options, :extrema, Tuple(summaries))
+        hist = _histogram(mappings.positional...; mappings.named..., h.options...)
+        normalization = get(h.options, :normalization, :none)
+        newlabel = normalization == :none ? "count" : string(normalization)
+        plottypes = [BarPlot, Heatmap, Volume]
+        N = length(mappings.positional)
+        default_plottype = plottypes[N]
+        kwargs = N == 1 ? (; width = step(hist.edges[1])) : NamedTuple()
+        labeled_res = map(
+            Labeled,
+            vcat(labels.positional, newlabel),
+            (map(f, hist.edges)..., hist.weights)
+        )
+        return Entry(
+            AbstractPlotting.plottype(entry.plottype, default_plottype),
+            Arguments(labeled_res),
+            merge(entry.attributes, pairs(kwargs))
+        )
+    end
+end
+
+
+"""
+    histogram(bins=automatic, wts=automatic, normalization=:none)
+Plot a histogram of `values`. `bins` can be an `Int` to create that
+number of equal-width bins over the range of `values`.
+Alternatively, it can be a sorted iterable of bin edges. The histogram
+can be normalized by setting `normalization`. Possible values are:
+*  `:pdf`: Normalize by sum of weights and bin sizes. Resulting histogram
+   has norm 1 and represents a PDF.
+* `:density`: Normalize by bin sizes only. Resulting histogram represents
+   count density of input and does not have norm 1.
+* `:probability`: Normalize by sum of weights only. Resulting histogram
+   represents the fraction of probability mass for each bin and does not have
+   norm 1.
+*  `:none`: Do not normalize.
+Weighted data is supported via the keyword `wts`.
+"""
+histogram(; options...) = Layer((HistogramAnalysis(Dict{Symbol, Any}(options)),))
