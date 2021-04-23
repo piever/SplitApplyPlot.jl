@@ -57,3 +57,14 @@ function unnest(arr::AbstractArray{<:AbstractArray})
     flattened = reduce(vcat, map(vec, vec(arr)))
     return reshape(flattened, inner_size..., outer_size...)
 end
+
+function adjustrange(rg::Base.OneTo{T}, select) where {T}
+    l::T = select ? last(rg) : 1
+    return Base.OneTo(l)
+end
+
+function adjustrange(rg::AbstractUnitRange{T}, select) where {T}
+    f::T = first(rg)
+    l::T = select ? last(rg) : 1
+    return f:l
+end

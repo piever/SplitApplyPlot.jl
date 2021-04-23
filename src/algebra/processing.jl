@@ -55,20 +55,22 @@ end
 maybewrap(x::ArrayLike) = x
 maybewrap(x) = fill(x)
 
-apply_context(data, names::ArrayLike) = map(Base.Fix1(apply_context, data), names)
+function apply_context(data, axs, names::ArrayLike)
+    return map(name -> apply_context(data, axs, name), names)
+end
 
-apply_context(data, name::StringLike) = getcolumn(data, Symbol(name))
+apply_context(data, axs, name::StringLike) = getcolumn(data, Symbol(name))
 
-function apply_context(data, idx::Integer)
+function apply_context(data, axs, idx::Integer)
     name = columnnames(data)[idx]
     return getcolumn(data, name)
 end
 
-# function apply_context(data, name::DimsSelector)
-#     val = name(c)
-#     l = length(rows(data))
-#     return fill(val, l)
-# end
+function apply_context(data, axs::NTuple{N, Any}, d::DimsSelector) where N
+    select = ntuple(in(d.dims), N)
+    rgs = map(adjustrange, axs, select)
+    return CartesianIndices(rgs)
+end
 
 struct LabeledArray
     label::AbstractString
@@ -78,17 +80,20 @@ end
 getlabel(x::LabeledArray) = x.label
 getarray(x::LabeledArray) = x.array
 
-function process_data(data, mappings)
-    labeledarrays = map(mappings) do x
-        ntls = map(Base.Fix1(NameTransformationLabel, data), maybewrap(x))
+function process_data(data, mappings′)
+    mappings = map(mappings′) do x
+        return map(Base.Fix1(NameTransformationLabel, data), maybewrap(x))
+    end
+    axs = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
+    labeledarrays = map(mappings) do ntls
         names = map(getname, ntls)
         transformations = map(gettransformation, ntls)
         labels = map(getlabel, ntls)
         res = map(transformations, names) do transformation, name
-            cols = apply_context(data, maybewrap(name))
+            cols = apply_context(data, axs, maybewrap(name))
             map(transformation, cols...)
         end
-        return LabeledArray(join(labels, ' '), unnest(res))
+        return LabeledArray(join(unique(labels), ' '), unnest(res))
     end
     labels, arrays = map(getlabel, labeledarrays), map(getarray, labeledarrays)
     return LabeledEntry(Any, arrays, labels, Dict{Symbol, Any}())
