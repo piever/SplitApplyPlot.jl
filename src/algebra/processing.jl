@@ -74,6 +74,8 @@ struct Labeled{T}
     value::T
 end
 
+Labeled(x) = Labeled(getlabel(x), getvalue(x))
+
 getlabel(x::Labeled) = x.label
 getvalue(x::Labeled) = x.value
 
@@ -91,7 +93,6 @@ function process_data(data, mappings′)
         labels = map(ntl -> ntl.label, ntls)
         res = map(transformations, names) do transformation, name
             cols = apply_context(data, axs, maybewrap(name))
-            # use broadcast and allow mixing dims and categorical selector?
             map(transformation, cols...)
         end
         return Labeled(join(unique(labels), ' '), unnest(res))
