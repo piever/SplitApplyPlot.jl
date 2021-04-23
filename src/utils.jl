@@ -45,3 +45,15 @@ function deleteemptyaxes!(aes::Matrix{AxisEntries})
 end
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
+
+function assert_equal(a, b)
+    @assert a == b
+    return a
+end
+
+function unnest(arr::AbstractArray{<:AbstractArray})
+    inner_size = mapreduce(size, assert_equal, arr)
+    outer_size = size(arr)
+    flattened = reduce(vcat, map(vec, vec(arr)))
+    return reshape(flattened, inner_size..., outer_size...)
+end

@@ -23,6 +23,10 @@ struct NameTransformationLabel
     label::String
 end
 
+getname(ntl::NameTransformationLabel) = ntl.name
+gettransformation(ntl::NameTransformationLabel) = ntl.transformation
+getlabel(ntl::NameTransformationLabel) = ntl.label
+
 function NameTransformationLabel(name, transformation, label::Symbol)
     return NameTransformationLabel(name, transformation, string(label))
 end
@@ -51,18 +55,20 @@ end
 maybewrap(x::ArrayLike) = x
 maybewrap(x) = fill(x)
 
-apply_context(data, c::CartesianIndex, name) = getcolumn(data, Symbol(name))
+apply_context(data, names::ArrayLike) = map(Base.Fix1(apply_context, data), names)
 
-function apply_context(data, c::CartesianIndex, idx::Integer)
+apply_context(data, name::StringLike) = getcolumn(data, Symbol(name))
+
+function apply_context(data, idx::Integer)
     name = columnnames(data)[idx]
     return getcolumn(data, name)
 end
 
-function apply_context(data, c::CartesianIndex, name::DimsSelector)
-    val = name(c)
-    l = length(rows(data))
-    return fill(val, l)
-end
+# function apply_context(data, name::DimsSelector)
+#     val = name(c)
+#     l = length(rows(data))
+#     return fill(val, l)
+# end
 
 struct LabeledArray
     label::AbstractString
@@ -72,23 +78,20 @@ end
 getlabel(x::LabeledArray) = x.label
 getarray(x::LabeledArray) = x.array
 
-function process_data(data, mappings′)
-    mappings = map(mappings′) do x
-        return map(x -> NameTransformationLabel(data, x), maybewrap(x))
-    end
-    ax = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
-    return map(CartesianIndices(ax)) do c
-        labeledarrays = map(mappings) do m
-            ntl = m[Broadcast.newindex(m, c)]
-            name, transformation, label = ntl.name, ntl.transformation, ntl.label
-            names = maybewrap(name)
-            cols = map(name -> apply_context(data, c, name), names)
-            res = map(transformation, cols...)
-            return LabeledArray(label, res)
+function process_data(data, mappings)
+    labeledarrays = map(mappings) do x
+        ntls = map(Base.Fix1(NameTransformationLabel, data), maybewrap(x))
+        names = map(getname, ntls)
+        transformations = map(gettransformation, ntls)
+        labels = map(getlabel, ntls)
+        res = map(transformations, names) do transformation, name
+            cols = apply_context(data, maybewrap(name))
+            map(transformation, cols...)
         end
-        labels, arrays = map(getlabel, labeledarrays), map(getarray, labeledarrays)
-        return LabeledEntry(Any, arrays, labels, Dict{Symbol, Any}())
+        return LabeledArray(join(labels, ' '), unnest(res))
     end
+    labels, arrays = map(getlabel, labeledarrays), map(getarray, labeledarrays)
+    return LabeledEntry(Any, arrays, labels, Dict{Symbol, Any}())
 end
 
 function process_transformations(layers::Layers)
@@ -97,7 +100,7 @@ function process_transformations(layers::Layers)
 end
 
 function process_transformations(layer::Layer)
-    init = vec(process_data(layer.data, layer.mappings))
+    init = [process_data(layer.data, layer.mappings)]
     return foldl(process_transformations, layer.transformations; init)
 end
 
