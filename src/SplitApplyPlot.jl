@@ -20,6 +20,7 @@ export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
 export renamer, nonnumeric
 export density, linear, visual, data, dims, mapping
+export draw, draw!
 export facet!
 
 include("arguments.jl")

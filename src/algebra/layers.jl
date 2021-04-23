@@ -54,3 +54,17 @@ function AbstractPlotting.plot(s::OneOrMoreLayers;
                                axis=NamedTuple(), figure=NamedTuple(), palettes=NamedTuple())
     return plot(Entries(s, palettes); axis, figure)
 end
+
+# Convenience function, which may become superfluous if `plot` also calls `facet!`
+function draw(s::OneOrMoreLayers;
+              axis = NamedTuple(), figure=NamedTuple(), palettes=NamedTuple())
+    fg = plot(s; axis, figure, palettes)
+    return facet!(fg)
+end
+
+function draw!(fig, s::OneOrMoreLayers;
+               axis=NamedTuple(), palettes=NamedTuple())
+    ag = plot!(fig, s; axis, palettes)
+    facet!(fig, ag)
+    return ag
+end

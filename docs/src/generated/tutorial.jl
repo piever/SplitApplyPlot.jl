@@ -39,27 +39,27 @@ cols = mapping(:Displ => "Displacement", :Hwy => "Highway miles");
 grp = mapping(color = :Cyl => nonnumeric => "Cylinders");
 scat = visual(Scatter)
 pipeline = cols * scat
-plot(data(mpg) * pipeline)
+draw(data(mpg) * pipeline)
 AbstractPlotting.save("scatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](scatter.svg)
 #
 # Now let's simply add `grp` to the pipeline to color according to `:Cyl`.
 
-plot(data(mpg) * grp * pipeline)
+draw(data(mpg) * grp * pipeline)
 AbstractPlotting.save("grouped_scatter.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](grouped_scatter.svg)
 # Traces can be added together with `+`.
 
 pipenew = cols * (scat + linear())
-plot(data(mpg) * pipenew)
+draw(data(mpg) * pipenew)
 AbstractPlotting.save("linear.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](linear.svg)
 # We can put grouping in the pipeline (we get a warning because of a degenerate group).
 
-plot(data(mpg) * grp * pipenew)
+draw(data(mpg) * grp * pipenew)
 AbstractPlotting.save("grouped_linear.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](grouped_linear.svg)
@@ -67,7 +67,7 @@ AbstractPlotting.save("grouped_linear.svg", AbstractPlotting.current_scene()); n
 # but do the linear regression with all the data.
 
 different_grouping = grp * scat + linear()
-plot(data(mpg) * cols * different_grouping)
+draw(data(mpg) * cols * different_grouping)
 AbstractPlotting.save("semi_grouped.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](semi_grouped.svg)
