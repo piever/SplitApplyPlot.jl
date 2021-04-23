@@ -9,14 +9,18 @@ Entry(plottype::PlotFunc=Any, mappings=arguments(); attributes...) =
 
 Entry(mappings::Arguments; attributes...) = Entry(Any, mappings; attributes...)
 
-struct LabeledEntry
-    plottype::PlotFunc
-    mappings::Arguments
-    labels::Arguments
-    attributes::Dict{Symbol, Any}
+function separate!(entry::Entry)
+    discrete, _ = separate!(entry.mappings)
+    return discrete => entry
 end
 
-Entry(le::LabeledEntry) = Entry(le.plottype, le.mappings, le.attributes)
+function recombine!(discrete, entry::Entry)
+    return Entry(
+        entry.plottype,
+        recombine!(discrete, entry.mappings),
+        entry.attributes
+    )
+end
 
 struct Entries
     entries::Vector{Entry}
@@ -72,7 +76,7 @@ function AbstractPlotting.plot(entries::Entries; axis=NamedTuple(), figure=Named
 end
 
 function AbstractPlotting.plot!(fig, entries::Entries; axis=NamedTuple())
-    axes_grid = compute_axes_grid(fig, split_entries(entries); axis)
+    axes_grid = compute_axes_grid(fig, entries; axis)
     foreach(plot!, axes_grid)
     return axes_grid
 end
@@ -104,7 +108,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
     for entry in entries
         plottype, mappings, attributes = entry.plottype, entry.mappings, entry.attributes
-        trace = map(rescale, mappings, scales)
+        trace = map(unwrap∘rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
         for sym in [:col, :row, :layout]

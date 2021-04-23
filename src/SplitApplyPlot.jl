@@ -17,7 +17,7 @@ using DataAPI: refarray
 import FileIO
 
 export hideinnerdecorations!, deleteemptyaxes!
-export arguments, Entry, LabeledEntry, Entries, AxisEntries
+export arguments, Entry, Entries, AxisEntries
 export renamer, nonnumeric
 export density, linear, visual, data, dims, mapping
 export facet!

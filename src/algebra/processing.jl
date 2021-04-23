@@ -1,6 +1,3 @@
-const ArrayLike = Union{AbstractArray, Tuple}
-const StringLike = Union{AbstractString, Symbol}
-
 struct DimsSelector{N}
     dims::NTuple{N, Int}
 end
@@ -48,47 +45,53 @@ function NameTransformationLabel(data, x::Pair{<:Any, <:Pair})
     return NameTransformationLabel(name, transformation, label)
 end
 
-maybewrap(x::ArrayLike) = x
-maybewrap(x) = fill(x)
+function apply_context(data, axs, names::ArrayLike)
+    return map(name -> apply_context(data, axs, name), names)
+end
 
-apply_context(data, c::CartesianIndex, name) = getcolumn(data, Symbol(name))
+apply_context(data, axs, name::StringLike) = getcolumn(data, Symbol(name))
 
-function apply_context(data, c::CartesianIndex, idx::Integer)
+function apply_context(data, axs, idx::Integer)
     name = columnnames(data)[idx]
     return getcolumn(data, name)
 end
 
-function apply_context(data, c::CartesianIndex, name::DimsSelector)
-    val = name(c)
-    l = length(rows(data))
-    return fill(val, l)
+function apply_context(data, axs::NTuple{N, Any}, d::DimsSelector) where N
+    sz = ntuple(N) do n
+        return n in d.dims ? length(axs[n]) : 1
+    end
+    return reshape(CartesianIndices(sz), 1, sz...)
 end
 
-struct LabeledArray
+struct Labeled{T}
     label::AbstractString
-    array::AbstractArray
+    value::T
 end
 
-getlabel(x::LabeledArray) = x.label
-getarray(x::LabeledArray) = x.array
+Labeled(x) = Labeled(getlabel(x), getvalue(x))
+
+getlabel(x::Labeled) = x.label
+getvalue(x::Labeled) = x.value
+
+getlabel(x) = ""
+getvalue(x) = x
 
 function process_data(data, mappings′)
     mappings = map(mappings′) do x
-        return map(x -> NameTransformationLabel(data, x), maybewrap(x))
+        return map(Base.Fix1(NameTransformationLabel, data), maybewrap(x))
     end
-    ax = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
-    return map(CartesianIndices(ax)) do c
-        labeledarrays = map(mappings) do m
-            ntl = m[Broadcast.newindex(m, c)]
-            name, transformation, label = ntl.name, ntl.transformation, ntl.label
-            names = maybewrap(name)
-            cols = map(name -> apply_context(data, c, name), names)
-            res = map(transformation, cols...)
-            return LabeledArray(label, res)
+    axs = Broadcast.combine_axes(mappings.positional..., values(mappings.named)...)
+    labeledarrays = map(mappings) do ntls
+        names = map(ntl -> ntl.name, ntls)
+        transformations = map(ntl -> ntl.transformation, ntls)
+        labels = map(ntl -> ntl.label, ntls)
+        res = map(transformations, names) do transformation, name
+            cols = apply_context(data, axs, maybewrap(name))
+            map(transformation, cols...)
         end
-        labels, arrays = map(getlabel, labeledarrays), map(getarray, labeledarrays)
-        return LabeledEntry(Any, arrays, labels, Dict{Symbol, Any}())
+        return Labeled(join(unique(labels), ' '), unnest(res))
     end
+    return Entry(Any, labeledarrays, Dict{Symbol, Any}())
 end
 
 function process_transformations(layers::Layers)
@@ -97,13 +100,13 @@ function process_transformations(layers::Layers)
 end
 
 function process_transformations(layer::Layer)
-    init = vec(process_data(layer.data, layer.mappings))
+    init = [process_data(layer.data, layer.mappings)]
     return foldl(process_transformations, layer.transformations; init)
 end
 
-function process_transformations(v::AbstractArray{LabeledEntry}, f)
+function process_transformations(v::AbstractArray{Entry}, f)
     results = [process_transformations(le, f) for le in v]
     return reduce(vcat, results)
 end
 
-process_transformations(le::LabeledEntry, f) = vec(maybewrap(f(le)))
+process_transformations(le::Entry, f) = vec(maybewrap(f(le)))
