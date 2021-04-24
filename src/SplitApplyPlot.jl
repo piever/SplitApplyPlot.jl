@@ -12,7 +12,7 @@ import AbstractPlotting.MakieLayout: hidexdecorations!,
                                      linkxaxes!,
                                      linkyaxes!
 using PooledArrays: PooledArray
-using KernelDensity: kde
+using KernelDensity: kde, pdf
 using StatsBase: fit, histrange, Histogram, normalize, weights, AbstractWeights, sturges
 using DataAPI: refarray
 import FileIO

@@ -1,24 +1,9 @@
 to_weights(v) = weights(v)
 to_weights(v::AbstractWeights) = v
 
-function trim(range, min, max, closed)
-    if closed == :left
-        i1 = searchsortedlast(range, min)
-        i2 = searchsortedfirst(range, nextfloat(max))
-    else
-        i1 = searchsortedlast(range, prevfloat(min))
-        i2 = searchsortedfirst(range, max)
-    end
-    return range[i1:i2]
-end
-
 function compute_edges(data, extrema, bins::Tuple{Vararg{Integer}}, closed)
-    ranges = map(extrema, bins) do (min, max), n
+    return map(extrema, bins) do (min, max), n
         histrange(min, max, n, closed)
-    end
-    # trim axis
-    map(ranges, data) do range, d
-        trim(range, Base.extrema(d)..., closed)
     end
 end
 compute_edges(data, extrema, bins::Tuple{Vararg{AbstractArray}}, closed) = bins
@@ -46,14 +31,12 @@ function (h::HistogramAnalysis)(le::Entry)
     return splitapply(le) do entry
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
         hist = _histogram(mappings.positional...; mappings.named..., options...)
-        normalization = get(h.options, :normalization, :none)
+        normalization = get(options, :normalization, :none)
         newlabel = normalization == :none ? "count" : string(normalization)
         plottypes = [BarPlot, Heatmap, Volume]
         N = length(mappings.positional)
         default_plottype = plottypes[N]
-        kwargs = N == 1 ? (; width=step(hist.edges[1])) : NamedTuple()
-        @show kwargs.width
-        @show map(f, hist.edges)
+        kwargs = N == 1 ? (width=step(hist.edges[1]), x_gap=0, dodge_gap=0) : (;)
         labeled_res = map(
             Labeled,
             vcat(labels.positional, newlabel),

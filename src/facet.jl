@@ -3,6 +3,7 @@
 function facet_wrap!(fig, aes::AbstractMatrix{AxisEntries})
     scale = get(aes[1].scales, :layout, nothing)
     isnothing(scale) && return aes
+    linkaxes!(aes...)
     for ae in aes
         ax = Axis(ae)
         entries = ae.entries
