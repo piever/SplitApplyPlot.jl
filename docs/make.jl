@@ -22,6 +22,8 @@ makedocs(;
     pages=Any[
         "index.md",
         "generated/tutorial.md",
+        "generated/analyses.md",
+        "generated/statistical_plots.md",
         "generated/entries.md",
         "generated/gallery.md",
         "API.md",

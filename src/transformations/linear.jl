@@ -1,10 +1,10 @@
-struct Linear
+struct LinearAnalysis
     options::Dict{Symbol, Any}
 end
 
-Linear(; kwargs...) = Linear(Dict{Symbol, Any}(kwargs))
+LinearAnalysis(; kwargs...) = LinearAnalysis(Dict{Symbol, Any}(kwargs))
 
-function (l::Linear)(le::Entry)
+function (l::LinearAnalysis)(le::Entry)
     return splitapply(le) do entry
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
         x, y = mappings.positional
@@ -22,4 +22,4 @@ function (l::Linear)(le::Entry)
     end
 end
 
-linear(; kwargs...) = Layer((Linear(; kwargs...),))
+linear(; kwargs...) = Layer((LinearAnalysis(; kwargs...),))

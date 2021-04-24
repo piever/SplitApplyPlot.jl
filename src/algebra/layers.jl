@@ -29,11 +29,12 @@ mergesummaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
 mergelabels(a, b) = a
 
 function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
+    layers::Layers = s
     summaries = arguments()
     labels = arguments()
     entries = Entry[]
-    for labeledentry in process_transformations(s)
-        for le in splitapply(labeledentry)
+    for labeledentries in process_transformations(layers)
+        for le in labeledentries
             entry = Entry(le.plottype, map(getvalue, le.mappings), le.attributes)
             push!(entries, entry)
             mergewith!(mergesummaries!, summaries, map(summary, entry.mappings))

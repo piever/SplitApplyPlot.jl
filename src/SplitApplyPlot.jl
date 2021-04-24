@@ -12,14 +12,15 @@ import AbstractPlotting.MakieLayout: hidexdecorations!,
                                      linkxaxes!,
                                      linkyaxes!
 using PooledArrays: PooledArray
-using KernelDensity: kde
+using KernelDensity: kde, pdf
+using StatsBase: fit, histrange, Histogram, normalize, weights, AbstractWeights, sturges
 using DataAPI: refarray
 import FileIO
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
 export renamer, nonnumeric
-export density, linear, visual, data, dims, mapping
+export density, histogram, linear, visual, data, dims, mapping
 export draw, draw!
 export facet!
 
@@ -36,5 +37,6 @@ include("transformations/grouping.jl")
 include("transformations/visual.jl")
 include("transformations/linear.jl")
 include("transformations/density.jl")
+include("transformations/histogram.jl")
 
 end
