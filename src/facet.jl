@@ -2,7 +2,7 @@
 
 function facet_wrap!(fig, aes::AbstractMatrix{AxisEntries})
     scale = get(aes[1].scales, :layout, nothing)
-    isnothing(scale) && return aes
+    isnothing(scale) && return
     linkaxes!(aes...)
     for ae in aes
         ax = Axis(ae)
@@ -19,18 +19,19 @@ function facet_wrap!(fig, aes::AbstractMatrix{AxisEntries})
             ax.title[] = string(first(v))
         end
     end
-    return nothing
+    return
 end
 
 # F. Greimel implementation from AlgebraOfGraphics
 
-# TODO: add configuration options here
+# TODO: add configuration options here (esp. to determine when / how to link)
 function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
     M, N = size(aes)
     row_scale, col_scale = map(sym -> get(aes[1].scales, sym, nothing), (:row, :col))
-    all(isnothing, (row_scale, col_scale)) || hideinnerdecorations!(aes)
+    all(isnothing, (row_scale, col_scale)) && return
+    hideinnerdecorations!(aes)
+    linkaxes!(aes...)
     if !isnothing(row_scale)
-        linkxaxes!(aes...)
         for ae in aes
             Axis(ae).ylabelvisible[] = false
         end
@@ -50,7 +51,6 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
         Label(fig[:, 1, Left()], Axis(aes[1]).ylabel; rotation=π/2, padding)
     end
     if !isnothing(col_scale)
-        linkyaxes!(aes...)
         for ae in aes
             Axis(ae).xlabelvisible[] = false
         end
@@ -68,13 +68,13 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
         end
         Label(fig[M, :, Bottom()], Axis(aes[1]).xlabel; padding)
     end
-    return nothing
+    return
 end
 
 function facet!(fig, aes::AbstractMatrix{AxisEntries})
     facet_wrap!(fig, aes)
     facet_grid!(fig, aes)
-    return nothing
+    return
 end
 
 function facet!(fg::FigureGrid)

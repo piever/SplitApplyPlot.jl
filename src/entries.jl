@@ -45,7 +45,9 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
     end
 
     axes_grid = map(CartesianIndices(grid_size)) do c
-        ax = Axis(fig[Tuple(c)...]; axis...)
+        type = get(axis, :type, Axis)
+        options = Base.structdiff(axis, (; type))
+        ax = type(fig[Tuple(c)...]; options...)
         return AxisEntries(ax, Entry[], e.scales, e.labels)
     end
 
@@ -90,7 +92,7 @@ Each scale can be either a `CategoricalScale` (for discrete collections), such a
 such as `log10`. Other scales may be supported in the future.
 """
 struct AxisEntries
-    axis::Axis
+    axis::Union{Axis, Axis3}
     entries::Vector{Entry}
     scales::Arguments
     labels::Arguments
