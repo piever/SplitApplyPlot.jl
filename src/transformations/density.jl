@@ -33,4 +33,9 @@ function (d::DensityAnalysis)(le::Entry)
     end
 end
 
+"""
+    density(; extrema, npoints, kernel, bandwidth)
+
+Fit a kernel density estimation of `data`.
+"""
 density(; kwargs...) = Layer((DensityAnalysis(; kwargs...),))

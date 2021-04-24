@@ -14,17 +14,21 @@ Determine whether `v` should be treated as a continuous or categorical vector.
 iscontinuous(::AbstractArray) = false
 iscontinuous(::AbstractArray{<:Number}) = true
 
+isaxis2d(::Axis) = true
+isaxis2d(::Any) = false
+isaxis2d(ae::AxisEntries) = isaxis2d(Axis(ae))
+
 for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
     @eval function $sym(ae::AxisEntries; kwargs...)
         axis = Axis(ae)
-        isnothing(axis) || $sym(axis; kwargs...)
+        isaxis2d(axis) && $sym(axis; kwargs...)
     end
 end
 
 for sym in [:linkxaxes!, :linkyaxes!, :linkaxes!]
     @eval function $sym(ae::AxisEntries, aes::AxisEntries...)
-        axs = filter(!isnothing, map(Axis, (ae, aes...)))
-        $sym(axs...)
+        axs = filter(isaxis2d, map(Axis, (ae, aes...)))
+        isempty(axs) || $sym(axs...)
     end
 end
 
@@ -35,13 +39,9 @@ function hideinnerdecorations!(aes::Matrix{AxisEntries})
 end
 
 function deleteemptyaxes!(aes::Matrix{AxisEntries})
-    for (i, ae) in enumerate(aes)
+    for ae in aes
         if isempty(ae.entries)
-            axis = Axis(ae)
-            if !isnothing(axis)
-                delete!(axis)
-                aes[i] = AxisEntries(nothing, ae.entries, ae.labels, ae.scales)
-            end
+            delete!(Axis(ae))
         end
     end
 end

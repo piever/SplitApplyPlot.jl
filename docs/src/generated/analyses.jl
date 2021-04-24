@@ -1,6 +1,10 @@
 # # Analyses
 #
 # ## Histogram
+#
+# ```@docs
+# histogram
+# ```
 
 using SplitApplyPlot, CairoMakie
 
@@ -17,24 +21,35 @@ AbstractPlotting.save("hist2D.svg", AbstractPlotting.current_scene()); nothing #
 
 # ![](hist2D.svg)
 #
-
 # ## Density
+#
+# ```@docs
+# SplitApplyPlot.density
+# ```
 
 using SplitApplyPlot, CairoMakie
 
-df = (x=randn(1000), y=randn(1000), z=rand(["a", "b", "c"], 1000))
+df = (x=randn(5000), y=randn(5000), z=rand(["a", "b", "c", "d"], 5000))
 data(df) * mapping(:x, layout=:z) * SplitApplyPlot.density() |> draw
 AbstractPlotting.save("density.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](density.svg)
 #
 
-data(df) * mapping(:x, :y, layout=:z) * SplitApplyPlot.density(npoints=20) |> draw
+data(df) * mapping(:x, :y, layout=:z) * SplitApplyPlot.density(npoints=50) |> draw
 AbstractPlotting.save("density2D.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](density2D.svg)
 #
 
+specs = data(df) * mapping(:x, :y, layout=:z) *
+    visual(Surface, colormap=:cividis) *
+    SplitApplyPlot.density(npoints=50)
+draw(specs, axis=(type=Axis3, zticks=0:0.1:0.2, limits=(nothing, nothing, (0, 0.2))))
+AbstractPlotting.save("surfacedensity.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](surfacedensity.svg)
+#
 # ## Linear
 
 using SplitApplyPlot, CairoMakie
