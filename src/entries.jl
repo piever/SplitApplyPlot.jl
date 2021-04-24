@@ -119,7 +119,8 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale
-    for i in 1:2
+    ndims = isaxis2d(ae) ? 2 : 3
+    for i in 1:ndims
         label, scale = get(labels, i, nothing), get(scales, i, nothing)
         any(isnothing, (label, scale)) && continue
         axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))

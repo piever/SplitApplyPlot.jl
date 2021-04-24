@@ -16,10 +16,7 @@ iscontinuous(::AbstractArray{<:Number}) = true
 
 isaxis2d(::Axis) = true
 isaxis2d(::Any) = false
-
-isaxis(::Axis) = true
-isaxis(::Axis3) = true
-isaxis(::Any) = false
+isaxis2d(ae::AxisEntries) = isaxis2d(Axis(ae))
 
 for sym in [:hidexdecorations!, :hideydecorations!, :hidedecorations!]
     @eval function $sym(ae::AxisEntries; kwargs...)
