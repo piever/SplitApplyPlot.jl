@@ -52,8 +52,9 @@ end
 
 
 """
-    histogram(bins=automatic, wts=automatic, normalization=:none)
-Plot a histogram of `values`. `bins` can be an `Int` to create that
+    histogram(; bins=automatic, wts=automatic, normalization=:none)
+
+Compute a histogram. `bins` can be an `Int` to create that
 number of equal-width bins over the range of `values`.
 Alternatively, it can be a sorted iterable of bin edges. The histogram
 can be normalized by setting `normalization`. Possible values are:

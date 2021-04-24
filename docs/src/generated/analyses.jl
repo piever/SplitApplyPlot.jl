@@ -1,6 +1,10 @@
 # # Analyses
 #
 # ## Histogram
+#
+# ```@docs
+# histogram
+# ```
 
 using SplitApplyPlot, CairoMakie
 
@@ -17,8 +21,11 @@ AbstractPlotting.save("hist2D.svg", AbstractPlotting.current_scene()); nothing #
 
 # ![](hist2D.svg)
 #
-
 # ## Density
+#
+# ```@docs
+# SplitApplyPlot.density
+# ```
 
 using SplitApplyPlot, CairoMakie
 
@@ -43,7 +50,6 @@ AbstractPlotting.save("surfacedensity.svg", AbstractPlotting.current_scene()); n
 
 # ![](surfacedensity.svg)
 #
-
 # ## Linear
 
 using SplitApplyPlot, CairoMakie
