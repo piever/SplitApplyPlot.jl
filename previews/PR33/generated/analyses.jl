@@ -32,8 +32,6 @@ data(df) * mapping(:x, :y, layout=:z) * histogram(bins=15) |> draw
 # SplitApplyPlot.density
 # ```
 
-using SplitApplyPlot, CairoMakie
-
 df = (x=randn(5000), y=randn(5000), z=rand(["a", "b", "c", "d"], 5000))
 data(df) * mapping(:x, layout=:z) * SplitApplyPlot.density() |> draw
 
@@ -60,6 +58,11 @@ draw(specs)
 
 #
 
+specs = data(df) * mapping(:x, layout=:z, color=:y, dodge=:y) * frequency()
+draw(specs)
+
+#
+
 specs = data(df) * mapping(:x, :y, layout=:z) * frequency()
 draw(specs)
 
@@ -75,7 +78,7 @@ draw(specs)
 
 #
 
-specs = data(df) * mapping(:x, :z, layout=:c, color=:y, stack=:y) * expectation()
+specs = data(df) * mapping(:x, :z, layout=:c, color=:y, dodge=:y) * expectation()
 draw(specs)
 
 #
