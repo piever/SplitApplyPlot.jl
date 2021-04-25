@@ -8,6 +8,3 @@ mpg.IsAudi = mpg.Manufacturer .== "audi"
 data(mpg) *
     mapping(:Displ, :Hwy, col=:IsAudi => nonnumeric) *
     visual(QQPlot, qqline=:fit) |> draw
-AbstractPlotting.save("qqplot.svg", AbstractPlotting.current_scene()); nothing #hide
-
-# ![](qqplot.svg)
