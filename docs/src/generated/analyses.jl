@@ -9,14 +9,14 @@
 using SplitApplyPlot, CairoMakie
 
 df = (x=randn(1000), y=randn(1000), z=rand(["a", "b", "c"], 1000))
-specs = data(df) * mapping(:x, layout=:z) * histogram(bins=range(-2, 2, length=15)) * visual()
+specs = data(df) * mapping(:x, layout=:z) * histogram(bins=range(-2, 2, length=15))
 draw(specs)
 AbstractPlotting.save("hist.svg", AbstractPlotting.current_scene()); nothing #hide
 
 # ![](hist.svg)
 #
 
-specs = data(df) * mapping(:x, dodge=:z, color=:z) * histogram(bins=range(-2, 2, length=15)) * visual()
+specs = data(df) * mapping(:x, dodge=:z, color=:z) * histogram(bins=range(-2, 2, length=15))
 draw(specs)
 AbstractPlotting.save("hist_dodge.svg", AbstractPlotting.current_scene()); nothing #hide
 
