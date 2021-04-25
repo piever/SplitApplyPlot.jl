@@ -106,13 +106,53 @@ function prefix(i::Int, sym::Symbol)
     return Symbol(var, sym)
 end
 
+# Slightly complex machinery to recombine stacked barplots
+function mustbemerged(e::Entry)
+    isbarplot = e.plottype <: BarPlot
+    hasstack = :stack in keys(e.mappings.named) || :stack in keys(e.attributes)
+    return isbarplot && hasstack
+end
+
+# Combine both entries as a unique entry with longer data
+function stack!(e1::Entry, e2::Entry)
+    p1, p2 = e1.plottype, e2.plottype
+    m1, m2 = e1.mappings, e2.mappings
+    a1, a2 = e1.attributes, e2.attributes
+    l1, l2 = length(m1[1]), length(m2[1])
+    assert_equal(p1, p2)
+    for (k, v) in pairs(a1)
+        assert_equal(v, a2[k])
+    end
+    mergewith!(m1, m2) do v1, v2
+        long1 = size(v1) == () ? fill(v1[], l1) : v1
+        long2 = size(v2) == () ? fill(v2[], l2) : v2
+        return vcat(long1, long2)
+    end
+    return e1
+end
+
+function combine(entries::AbstractVector{Entry})
+    combinedentries = Entry[]
+    for entry in entries
+        idx = findfirst(mustbemerged, combinedentries)
+        if !isnothing(idx) && mustbemerged(entry)
+            stack!(combinedentries[idx], entry)
+        else
+            push!(combinedentries, entry)
+        end
+    end
+    return combinedentries
+end
+
 function AbstractPlotting.plot!(ae::AxisEntries)
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
-    for entry in entries
+    for entry in combine(entries)
         plottype, mappings, attributes = entry.plottype, entry.mappings, entry.attributes
         trace = map(unwrap∘rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
+        dodge = get(scales, :dodge, nothing)
+        isnothing(dodge) || (named[:n_dodge] = maximum(dodge.plot))
         for sym in [:col, :row, :layout]
             pop!(named, sym, nothing)
         end

@@ -28,6 +28,7 @@ makedocs(;
         "generated/gallery.md",
         "API.md",
     ],
+    strict = true,
 )
 
 deploydocs(;
