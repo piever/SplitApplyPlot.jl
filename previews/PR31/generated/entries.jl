@@ -39,7 +39,3 @@ ae = AxisEntries(
 )
 plot!(ae)
 display(fig)
-AbstractPlotting.save("axisentries.svg", AbstractPlotting.current_scene()); nothing #hide
-
-# ![](axisentries.svg)
-#
