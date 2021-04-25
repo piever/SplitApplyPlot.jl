@@ -63,24 +63,24 @@ draw(specs)
 specs = data(df) * mapping(:x, :y, layout=:z) * frequency()
 draw(specs)
 
-# ## Reducer (conditional expectation)
+# ## Expectation
 #
 # ```@docs
-# reducer
+# expectation
 # ```
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(["a", "b", "c"], 100), z=rand(100), c=rand(["a", "b", "c"], 100))
-specs = data(df) * mapping(:x, :z, layout=:c) * reducer()
+specs = data(df) * mapping(:x, :z, layout=:c) * expectation()
 draw(specs)
 
 #
 
-specs = data(df) * mapping(:x, :z, layout=:c, color=:y, stack=:y) * reducer()
+specs = data(df) * mapping(:x, :z, layout=:c, color=:y, stack=:y) * expectation()
 draw(specs)
 
 #
 
-specs = data(df) * mapping(:x, :y, :z, layout=:c) * reducer()
+specs = data(df) * mapping(:x, :y, :z, layout=:c) * expectation()
 draw(specs)
 
 # ## Linear
