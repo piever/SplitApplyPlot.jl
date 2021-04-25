@@ -19,6 +19,11 @@ draw(specs)
 
 #
 
+specs = data(df) * mapping(:x, stack=:z, color=:z) * histogram(bins=range(-2, 2, length=15))
+draw(specs)
+
+#
+
 data(df) * mapping(:x, :y, layout=:z) * histogram(bins=15) |> draw
 
 # ## Density
