@@ -1,4 +1,13 @@
-struct FrequencyAnalysis end
+const Counter = let
+    init() = 0
+    op(n, _) = n + 1
+    value(n) = n
+    (; init, op, value)
+end
+
+struct FrequencyAnalysis
+    options::Dict{Symbol, Any}
+end
 
 function (f::FrequencyAnalysis)(entry::Entry)
     plottype = entry.plottype
@@ -6,8 +15,7 @@ function (f::FrequencyAnalysis)(entry::Entry)
     N = length(getvalue(mappings[1]))
     push!(mappings.positional, Labeled("count", fill(nothing, N)))
     attributes = entry.attributes
-    transformation = ReducerAnalysis(Dict{Symbol, Any}(:agg => Counter))
-    return transformation(Entry(plottype, mappings, attributes))
+    return groupreduce(Counter, Entry(plottype, mappings, attributes))
 end
 
 """
@@ -15,4 +23,4 @@ end
 
 Compute a frequency table of the arguments.
 """
-frequency() = Layer((FrequencyAnalysis(),))
+frequency() = Layer((FrequencyAnalysis(Dict{Symbol, Any}()),))
