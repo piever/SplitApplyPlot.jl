@@ -48,6 +48,12 @@ specs = data(df) * mapping(:x, :y, layout=:z) *
     SplitApplyPlot.density(npoints=50)
 draw(specs, axis=(type=Axis3, zticks=0:0.1:0.2, limits=(nothing, nothing, (0, 0.2))))
 
+# ## Frequency
+
+df = (x=rand(["a", "b", "c"], 100), y=rand(["a", "b", "c"], 100), z=rand(["a", "b", "c"], 100))
+specs = data(df) * mapping(:x, :y, layout=:z) * SplitApplyPlot.frequency()
+draw(specs)
+
 # ## Linear
 
 using SplitApplyPlot, CairoMakie

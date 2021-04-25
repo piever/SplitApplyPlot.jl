@@ -1,5 +1,6 @@
 module SplitApplyPlot
 
+using Base: front, tail
 using Tables: rows, columns, getcolumn, columnnames
 using StructArrays: components, GroupPerm, StructArray
 using Colors: RGB
@@ -38,5 +39,7 @@ include("transformations/visual.jl")
 include("transformations/linear.jl")
 include("transformations/density.jl")
 include("transformations/histogram.jl")
+include("transformations/reducer.jl")
+include("transformations/frequency.jl")
 
 end

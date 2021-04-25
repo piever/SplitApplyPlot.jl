@@ -21,13 +21,13 @@ function (d::DensityAnalysis)(le::Entry)
     options = merge(d.options, pairs((; extrema)))
     return splitapply(le) do entry
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
-        res = _density(mappings.positional...; mappings.named..., options...)
-        labeled_res = map(Labeled, vcat(labels.positional, "pdf"), collect(res))
+        result = _density(mappings.positional...; mappings.named..., options...)
+        labeled_result = map(Labeled, vcat(labels.positional, "pdf"), collect(result))
         plottypes = [Lines, Heatmap, Volume]
         default_plottype = plottypes[length(mappings.positional)]
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
-            Arguments(labeled_res),
+            Arguments(labeled_result),
             entry.attributes
         )
     end

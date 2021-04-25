@@ -1,3 +1,5 @@
+const categoricalplottypes = [BarPlot, Heatmap, Volume]
+
 to_weights(v) = weights(v)
 to_weights(v::AbstractWeights) = v
 
@@ -33,18 +35,17 @@ function (h::HistogramAnalysis)(le::Entry)
         hist = _histogram(mappings.positional...; mappings.named..., options...)
         normalization = get(options, :normalization, :none)
         newlabel = normalization == :none ? "count" : string(normalization)
-        plottypes = [BarPlot, Heatmap, Volume]
         N = length(mappings.positional)
-        default_plottype = plottypes[N]
+        default_plottype = categoricalplottypes[N]
         kwargs = N == 1 ? (width=step(hist.edges[1]), x_gap=0, dodge_gap=0) : (;)
-        labeled_res = map(
+        labeled_result = map(
             Labeled,
             vcat(labels.positional, newlabel),
             (map(f, hist.edges)..., hist.weights)
         )
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
-            Arguments(labeled_res),
+            Arguments(labeled_result),
             merge(entry.attributes, pairs(kwargs))
         )
     end
