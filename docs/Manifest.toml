@@ -8,7 +8,9 @@ version = "1.0.1"
 
 [[AbstractPlotting]]
 deps = ["Animations", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Distributions", "DocStringExtensions", "FFMPEG", "FileIO", "FixedPointNumbers", "Formatting", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "IntervalSets", "Isoband", "KernelDensity", "LinearAlgebra", "Markdown", "Match", "Observables", "Packing", "PlotUtils", "PolygonOps", "Printf", "Random", "Serialization", "Showoff", "SignedDistanceFields", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "UnicodeFun"]
-git-tree-sha1 = "0ad0244f2e200ec2423d66b2b615d91535e73ea4"
+git-tree-sha1 = "0da16aec471cb435b3a20d9fdedd6befb27fa0cc"
+repo-rev = "pv/dodgegap"
+repo-url = "https://github.com/JuliaPlots/AbstractPlotting.jl.git"
 uuid = "537997a7-5e4e-5d89-9595-2241ea00577e"
 version = "0.17.4"
 

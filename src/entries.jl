@@ -106,6 +106,9 @@ function prefix(i::Int, sym::Symbol)
     return Symbol(var, sym)
 end
 
+mustbecombined(::PlotFunc; options...) = false
+mustbecombined(::BarPlot; options...) = :stack in keys(options)
+
 function AbstractPlotting.plot!(ae::AxisEntries)
     axis, entries, labels, scales = ae.axis, ae.entries, ae.labels, ae.scales
     for entry in entries
@@ -113,6 +116,8 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         trace = map(unwrap∘rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
+        dodge = get(scales, :dodge, nothing)
+        isnothing(dodge) || (named[:n_dodge] = maximum(dodge.plot))
         for sym in [:col, :row, :layout]
             pop!(named, sym, nothing)
         end

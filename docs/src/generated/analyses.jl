@@ -16,6 +16,13 @@ AbstractPlotting.save("hist.svg", AbstractPlotting.current_scene()); nothing #hi
 # ![](hist.svg)
 #
 
+specs = data(df) * mapping(:x, dodge=:z, color=:z) * histogram(bins=range(-2, 2, length=15)) * visual()
+draw(specs)
+AbstractPlotting.save("hist_dodge.svg", AbstractPlotting.current_scene()); nothing #hide
+
+# ![](hist_dodge.svg)
+#
+
 data(df) * mapping(:x, :y, layout=:z) * histogram(bins=15) |> draw
 AbstractPlotting.save("hist2D.svg", AbstractPlotting.current_scene()); nothing #hide
 
