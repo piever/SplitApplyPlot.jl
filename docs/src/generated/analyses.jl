@@ -58,7 +58,7 @@ draw(specs)
 
 #
 
-specs = data(df) * mapping(:x, layout=:z, color=:y, dodge=:y) * frequency()
+specs = data(df) * mapping(:x, layout=:z, color=:y, stack=:y) * frequency()
 draw(specs)
 
 #
