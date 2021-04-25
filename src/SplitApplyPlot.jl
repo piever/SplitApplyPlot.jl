@@ -49,4 +49,6 @@ include("transformations/groupreduce.jl")
 include("transformations/frequency.jl")
 include("transformations/expectation.jl")
 
+include("legend/elements.jl")
+
 end
