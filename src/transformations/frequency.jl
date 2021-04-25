@@ -6,7 +6,8 @@ function (f::FrequencyAnalysis)(entry::Entry)
     N = length(getvalue(mappings[1]))
     push!(mappings.positional, Labeled("count", fill(nothing, N)))
     attributes = entry.attributes
-    return reducer(agg=Counter)(Entry(plottype, mappings, attributes))
+    transformation = ReducerAnalysis(Dict{Symbol, Any}(:agg => Counter))
+    return transformation(Entry(plottype, mappings, attributes))
 end
 
 """

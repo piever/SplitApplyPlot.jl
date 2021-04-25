@@ -49,9 +49,38 @@ specs = data(df) * mapping(:x, :y, layout=:z) *
 draw(specs, axis=(type=Axis3, zticks=0:0.1:0.2, limits=(nothing, nothing, (0, 0.2))))
 
 # ## Frequency
+#
+# ```@docs
+# frequency
+# ```
 
 df = (x=rand(["a", "b", "c"], 100), y=rand(["a", "b", "c"], 100), z=rand(["a", "b", "c"], 100))
-specs = data(df) * mapping(:x, :y, layout=:z) * SplitApplyPlot.frequency()
+specs = data(df) * mapping(:x, layout=:z) * frequency()
+draw(specs)
+
+#
+
+specs = data(df) * mapping(:x, :y, layout=:z) * frequency()
+draw(specs)
+
+# ## Reducer (conditional expectation)
+#
+# ```@docs
+# reducer
+# ```
+
+df = (x=rand(["a", "b", "c"], 100), y=rand(["a", "b", "c"], 100), z=rand(100), c=rand(["a", "b", "c"], 100))
+specs = data(df) * mapping(:x, :z, layout=:c) * reducer()
+draw(specs)
+
+#
+
+specs = data(df) * mapping(:x, :z, layout=:c, color=:y, stack=:y) * reducer()
+draw(specs)
+
+#
+
+specs = data(df) * mapping(:x, :y, :z, layout=:c) * reducer()
 draw(specs)
 
 # ## Linear

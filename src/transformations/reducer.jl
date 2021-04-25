@@ -16,7 +16,7 @@ end
 function _reducer(agg, sorted_summaries::Tuple, values...)
     init, op, value = agg.init, agg.op, agg.value
     results = map(_ -> init(), CartesianIndices(map(length, sorted_summaries)))
-    keys, data = head(values), last(values)
+    keys, data = front(values), last(values)
     sa = StructArray(map(fast_hashed, keys))
     perm = sortperm(sa)
     for idxs in GroupPerm(sa, perm)
@@ -27,9 +27,9 @@ function _reducer(agg, sorted_summaries::Tuple, values...)
             acc = op(acc, val)
         end
         I = map(searchsortedfirst, sorted_summaries, key)
-        results[I...] = value(acc)
+        results[I...] = acc
     end
-    return results
+    return map(value, results)
 end
 
 struct ReducerAnalysis
@@ -43,9 +43,9 @@ function (r::ReducerAnalysis)(le::Entry)
         mappings = entry.mappings
         labels, values = map(getlabel, mappings.positional), map(getvalue, mappings.positional)
         results = _reducer(r.options[:agg], sorted_summaries, values...)
-        result = (values..., results)
+        result = (sorted_summaries..., results)
         labeled_result = map(Labeled, labels, result)
-        default_plottype = categoricalplottypes[length(labels)]
+        default_plottype = categoricalplottypes[length(summaries)]
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
             arguments(labeled_result...),
@@ -59,4 +59,4 @@ end
 
 Compute the expected value of the last argument conditioned on the preceding ones.
 """
-reducer(; agg=Mean) = Layer((ReducerAnalysis(; agg),))
+reducer(; agg=Mean) = Layer((ReducerAnalysis(Dict{Symbol, Any}(:agg => agg)),))

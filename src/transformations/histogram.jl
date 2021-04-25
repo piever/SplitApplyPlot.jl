@@ -68,5 +68,10 @@ can be normalized by setting `normalization`. Possible values are:
    norm 1.
 *  `:none`: Do not normalize.
 Weighted data is supported via the keyword `wts`.
+
+!!! note
+
+    Normalizations are computed withing groups. For example, in the case of
+    `normalization=:pdf`, sum of weights *within each group* will be equal to `1`.
 """
 histogram(; options...) = Layer((HistogramAnalysis(Dict{Symbol, Any}(options)),))

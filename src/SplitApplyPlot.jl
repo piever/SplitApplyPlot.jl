@@ -21,7 +21,8 @@ import FileIO
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
 export renamer, nonnumeric
-export density, histogram, linear, visual, data, dims, mapping
+export density, histogram, linear, reducer, frequency
+export visual, data, dims, mapping
 export draw, draw!
 export facet!
 
