@@ -235,7 +235,7 @@ geoms = linear() + visual(Scatter)
 facet!(plot(m * geoms))
 
 # ### New columns on the fly
-#
+
 df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
 m = data(df) * mapping(:x, (:x, :y, :z) => (+) => "x + y + z", layout=:c)
 geoms = linear() + visual(Scatter) * mapping(color=:z)
