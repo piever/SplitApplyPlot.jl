@@ -16,13 +16,13 @@ using PooledArrays: PooledArray
 using KernelDensity: kde, pdf
 using StatsBase: fit, histrange, Histogram, normalize, weights, AbstractWeights, sturges
 using DataAPI: refarray
-import GLM
+import GLM, Loess
 import FileIO
 
 export hideinnerdecorations!, deleteemptyaxes!
 export arguments, Entry, Entries, AxisEntries
 export renamer, nonnumeric
-export density, histogram, linear, expectation, frequency
+export density, histogram, linear, smooth, expectation, frequency
 export visual, data, dims, mapping
 export draw, draw!
 export facet!

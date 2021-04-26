@@ -16,7 +16,8 @@ function (l::SmoothAnalysis)(le::Entry)
         x̂ = collect(range(min, max, length=npoints))
         ŷ = Loess.predict(model, x̂)
         labeled_result = map(Labeled, labels.positional, [x̂, ŷ])
-        default_plottype = [Lines, Surface]
+        plottypes = [Lines, Surface]
+        default_plottype = plottypes[1]
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
             Arguments(labeled_result),
