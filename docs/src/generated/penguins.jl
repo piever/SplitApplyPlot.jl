@@ -140,7 +140,7 @@ draw(plt)
 # contour lines. We can lighten the markers by using a white stroke and make the contour
 # lines a bit thicker.
 
-ans = visual(Contour, linewidth=1.5) * density() + linear() + visual(strokecolor=:white)
+ans = visual(Contour, linewidth = 1.5) * density() + linear() + visual(strokecolor = :white)
 plt = specs * ans * mapping(color = :species)
 draw(plt)
 
@@ -155,7 +155,6 @@ specs * ans * mapping(marker = :species) |> draw
 
 # Naturally, heavier penguins have bigger bills. We could also try and see the interplay
 # of these three variables in a 3D plot.
-#' (FIXME: implement linear in 3D)
 
 specs3D = specs * mapping(:body_mass_g => (t -> t / 1000) => "body mass (Kg)")
 plt = specs3D * mapping(color = :species) * visual(Scatter) # FIXME: add default to Makie
