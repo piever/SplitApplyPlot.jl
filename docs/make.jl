@@ -1,6 +1,9 @@
 using SplitApplyPlot
 using Documenter
 using Literate, Glob
+using CairoMakie
+
+CairoMakie.activate!(type="png")
 
 # generate examples
 GENERATED = joinpath(@__DIR__, "src", "generated")
@@ -21,7 +24,7 @@ makedocs(;
     ),
     pages=Any[
         "index.md",
-        "generated/tutorial.md",
+        "generated/penguins.md",
         "generated/analyses.md",
         "generated/statistical_plots.md",
         "generated/entries.md",

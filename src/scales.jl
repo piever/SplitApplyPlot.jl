@@ -15,7 +15,7 @@ const default_colors = [
 function default_palettes()
     return arguments(
         color=default_colors,
-        marker=[:circle, :xcross, :utriangle, :diamond, :dtriangle, :star8, :pentagon, :rect],
+        marker=[:circle, :utriangle, :diamond, :dtriangle, :star8, :pentagon, :rect],
         linestyle=[:solid, :dash, :dot, :dashdot, :dashdotdot],
         side=[:left, :right],
         layout=wrap,
