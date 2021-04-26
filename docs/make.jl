@@ -1,6 +1,9 @@
 using SplitApplyPlot
 using Documenter
 using Literate, Glob
+using CairoMakie
+
+CairoMakie.activate!(type="png")
 
 # generate examples
 GENERATED = joinpath(@__DIR__, "src", "generated")

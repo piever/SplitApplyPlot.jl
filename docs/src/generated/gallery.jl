@@ -73,7 +73,7 @@ facet!(subfig, ag)
 for ae in ag
     Axis(ae).xticklabelrotation[] = π/2
 end
-display(fig)
+fig
 
 # ### Adding traces to only some subplots
 
