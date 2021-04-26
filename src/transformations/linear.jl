@@ -41,4 +41,12 @@ function (l::LinearAnalysis)(le::Entry)
     end
 end
 
+"""
+    linear(; interval)
+
+Compute a linear fit of `y ~ 1 + x`. An optional named mapping `wts` determines the weights.
+Use `interval` to specify what type of interval the shaded band should represent.
+Valid values of interval are `:confidence` delimiting the uncertainty of the predicted
+relationship, and `:prediction` delimiting estimated bounds for new data points.
+"""
 linear(; kwargs...) = Layer((LinearAnalysis(; kwargs...),))
