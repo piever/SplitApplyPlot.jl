@@ -42,13 +42,6 @@ m = data(df) * mapping(:x, :y)
 geoms = linear() + visual(Scatter) * mapping(color=:z)
 plot(m * geoms)
 
-# ### Overload default geometry
-
-df = (x=rand(100), y=rand(100), z=rand(100))
-m = data(df) * mapping(:x, :y)
-geoms = visual(Scatter) * linear() + visual(Scatter) * mapping(color=:z)
-plot(m * geoms)
-
 # ## Faceting
 #
 # The "facet style" is only applied with an explicit call to `facet!`.
