@@ -61,9 +61,8 @@ function default_scale(summary, palette)
         f = palette isa Function ? palette : identity
         ContinuousScale(f, summary)
     else
-        data = sort!(collect(summary))
-        plot = apply_palette(palette, data)
-        return CategoricalScale(data, plot)
+        plot = apply_palette(palette, summary)
+        return CategoricalScale(summary, plot)
     end
 end
 

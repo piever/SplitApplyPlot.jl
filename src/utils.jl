@@ -48,6 +48,27 @@ end
 
 extend_extrema((l1, u1), (l2, u2)) = min(l1, l2), max(u1, u2)
 
+push_different!(v, val) = !isempty(v) && isequal(last(v), val) || push!(v, val) 
+
+function mergesorted(v1, v2)
+    issorted(v1) && issorted(v2) || throw(ArgumentError("arguments must be sorted"))
+    T = promote_type(eltype(v1), eltype(v2))
+    v = sizehint!(T[], length(v1) + length(v2))
+    i1, i2 = 1, 1
+    while i2 ≤ length(v2)
+        while i1 ≤ length(v1) && isless(v1[i1], v2[i2])
+            push_different!(v, v1[i1])
+            i1 += 1
+        end
+        push_different!(v, v2[i2])
+        i2 += 1
+    end
+    for i in i1:length(v1)
+        push_different!(v, v1[i])
+    end
+    return v
+end
+
 function assert_equal(a, b)
     @assert a == b
     return a
