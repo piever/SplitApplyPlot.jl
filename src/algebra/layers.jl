@@ -22,9 +22,9 @@ function Base.:*(s1::OneOrMoreLayers, s2::OneOrMoreLayers)
     return Layers([el1 * el2 for el1 in l1 for el2 in l2])
 end
 
-summary(v) = iscontinuous(v) ? extrema(v) : Set{Any}(v)
-mergesummaries!(s1::Set, s2::Set) = union!(s1, s2)
-mergesummaries!(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
+summary(v) = iscontinuous(v) ? extrema(v) : collect(uniquesorted(vec(v)))
+mergesummaries(s1::AbstractVector, s2::AbstractVector) = mergesorted(s1, s2)
+mergesummaries(s1::Tuple, s2::Tuple) = extend_extrema(s1, s2)
 
 mergelabels(a, b) = a
 
@@ -37,7 +37,7 @@ function Entries(s::OneOrMoreLayers, palettes=NamedTuple())
         for le in labeledentries
             entry = Entry(le.plottype, map(getvalue, le.mappings), le.attributes)
             push!(entries, entry)
-            mergewith!(mergesummaries!, summaries, map(summary, entry.mappings))
+            mergewith!(mergesummaries, summaries, map(summary, entry.mappings))
             mergewith!(mergelabels, labels, map(getlabel, le.mappings))
         end
     end
