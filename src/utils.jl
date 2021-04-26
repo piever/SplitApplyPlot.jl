@@ -63,8 +63,9 @@ function mergesorted(v1, v2)
         push_different!(v, v2[i2])
         i2 += 1
     end
-    for i in i1:length(v1)
-        push_different!(v, v1[i])
+    while i1 ≤ length(v1)
+        push_different!(v, v1[i1])
+        i1 += 1
     end
     return v
 end
