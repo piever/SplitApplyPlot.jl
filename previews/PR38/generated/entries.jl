@@ -38,4 +38,4 @@ ae = AxisEntries(
     arguments("x", "y", color="identity", marker="function"), #labels
 )
 plot!(ae)
-display(fig)
+fig
