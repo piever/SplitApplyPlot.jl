@@ -87,14 +87,29 @@ specs = data(df) * mapping(:x, :y, :z, layout=:c) * expectation()
 draw(specs)
 
 # ## Linear
+#
+# ```@docs
+# linear
+# ```
 
 using SplitApplyPlot, CairoMakie
 
-df = (x=randn(30), y=randn(30), z=rand(["a", "b", "c"], 30))
-specs = data(df) * mapping(:x, :y, color=:z) * (linear() + visual(Scatter))
-draw(specs, axis=(; limits=(-2, 2, -2, 2)))
+x = 1:0.1:10
+a = rand(1:3, length(x))
+y = 1.2 .* x .+ a .+ 0.5 .* randn.()
+df = (; x, y, a)
+specs = data(df) * mapping(:x, :y, color=:a => nonnumeric) * (linear() + visual(Scatter))
+draw(specs)
 
 # ## Smoothing
+#
+# ```@docs
+# smooth
+# ```
 
-specs = data(df) * mapping(:x, :y, color=:z) * (smooth() + visual(Scatter))
-draw(specs, axis=(; limits=(-2, 2, -2, 2)))
+x = 1:0.1:10
+a = rand(1:3, length(x))
+y = sin.(x) .+ a .+ 0.1 .* randn.()
+df = (; x, y, a)
+specs = data(df) * mapping(:x, :y, color=:a => nonnumeric) * (smooth() + visual(Scatter))
+draw(specs)
