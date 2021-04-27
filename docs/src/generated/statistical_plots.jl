@@ -15,12 +15,7 @@ draw(plt, axis=(limits=((0.5, 3.5), nothing),))
 
 #
 
-data(penguins) * visual(BoxPlot) *
-    mapping(:species, :bill_depth_mm, color=:sex, dodge=:sex) |> draw
-
-#
-
-data(penguins) * visual(CrossBar) *
+data(penguins) * visual(BoxPlot, show_notch=true) *
     mapping(:species, :bill_depth_mm, color=:sex, dodge=:sex) |> draw
 
 #
