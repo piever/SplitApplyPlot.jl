@@ -498,9 +498,9 @@ fig |> typeof |> fieldnames
 let
 	aog = data(tbl2) * 
 	mapping(:x, :y) * #mapping(col = :grp) *
-	mapping(linestyle = :grp1, group = :grp2, color = :zz) * #, row = :grp1) *
+	mapping(linestyle = :grp1, group = :grp2) * #, row = :grp1) *
 	(
-	visual(Lines, linewidth = 2) #* mapping(linestyle = :grp2)
+	visual(Lines, linewidth = 2) * mapping(color = :zz)
 	+ 
 	visual(Scatter) #* mapping(marker = :grp1)
 	)
