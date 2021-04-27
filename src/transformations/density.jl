@@ -23,7 +23,7 @@ function (d::DensityAnalysis)(le::Entry)
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
         result = _density(mappings.positional...; mappings.named..., options...)
         labeled_result = map(Labeled, vcat(labels.positional, "pdf"), collect(result))
-        plottypes = [LinesBand, Heatmap, Volume]
+        plottypes = [LinesFill, Heatmap, Volume]
         default_plottype = plottypes[length(mappings.positional)]
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),

@@ -26,7 +26,7 @@ function (l::LinearAnalysis)(le::Entry)
         pred = GLM.predict(lin_model, add_intercept_column(x̂); interval)
         if !isnothing(interval)
             ŷ, lower, upper = map(vec, pred) # GLM prediction returns matrices
-            default_plottype = LinesBand
+            default_plottype = LinesFill
             labeled_result = map(Labeled, vcat(labels.positional, ["", ""]), [x̂, ŷ, lower, upper])
         else
             ŷ = vec(pred) # GLM prediction returns matrix
