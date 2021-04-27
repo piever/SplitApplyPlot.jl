@@ -1,11 +1,12 @@
 """
-    linesband(xs, ys, lower, upper; kwargs...)
+    linesfill(xs, ys, lower, upper; kwargs...)
 
-Line plot with a shaded ribbon around it.
+Line plot with a shaded area between `lower` and `upper`. If `lower` and `upper`
+are not given, shaded area is between `0` and `ys`.
 ## Attributes
 $(ATTRIBUTES)
 """
-@recipe(LinesBand) do scene
+@recipe(LinesFill) do scene
     l_theme = default_theme(scene, Lines)
     Attributes(
         color = l_theme.color,
@@ -17,7 +18,7 @@ $(ATTRIBUTES)
     )
 end
 
-function AbstractPlotting.plot!(p::LinesBand)
+function AbstractPlotting.plot!(p::LinesFill)
     lines!(p, p[1:2]...;
         color = p.color,
         linestyle = p.linestyle,
