@@ -21,29 +21,6 @@ end
 begin
 
 using SplitApplyPlot: ContinuousScale, CategoricalScale, legend_element
-
-function legend(P, attribute, scale::ContinuousScale, title)
-	extrema = scale.extrema
-	#@unpack f, extrema = scale
-	n_ticks = 4
-	
-	ticks = MakieLayout.locateticks(extrema..., n_ticks)
-
-	elements = LegendElement[legend_element(P; attribute => s) for s in ticks]
-	labels = string.(ticks)
-	
-	(; elements, labels, title)
-end	
-
-function legend(P, attribute, scale::CategoricalScale, title)
-	
-	labels = string.(scale.data)
-	attributes = scale.plot
-	
-	elements = LegendElement[legend_element(P; attribute => att) for att in attributes]
-	
-	(; elements, labels, title)
-end	
 	
 end
 
@@ -83,7 +60,7 @@ aog2 = let
 	mapping(:x, :y) * #mapping(col = :grp) *
 	mapping(color = :grp1) *
 	(
-	visual(Lines, linewidth = 2) * mapping(linestyle = :grp2)
+	visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
 	+ 
 	visual(Scatter) * mapping(marker = :grp1, markersize = :z)
 	)
@@ -124,6 +101,7 @@ md"""
 function filter_scales(scales, S)
 	named_scales = [scales.named...]
 	
+	filter!(x -> !in(first(x), [:col, :row, :layout, :stack, :dodge, :group]) , named_scales)
 	scales = last.(named_scales)
 	
 	inds = findall(s -> s isa S, scales)
@@ -159,6 +137,7 @@ function filter_entries(entries, S)
 	named_scales = filter_scales(entries.scales, S)
 	
 	named_labels = entries.labels.named
+		
 	named_labels = filter(x -> first(x) in keys(named_scales), named_labels)
 	inv_labels = invert_pairs(named_labels)
 	
