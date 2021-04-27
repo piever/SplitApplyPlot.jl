@@ -7,11 +7,9 @@
 #
 # [^1]: Gorman KB, Williams TD, Fraser WR (2014) Ecological Sexual Dimorphism and Environmental Variability within a Community of Antarctic Penguins (Genus Pygoscelis). PLoS ONE 9(3): e90081. [DOI](https://doi.org/10.1371/journal.pone.0090081)
 
-using CSV, DataFrames, HTTP
+using PalmerPenguins, DataFrames
 
-url = "https://cdn.jsdelivr.net/gh/allisonhorst/palmerpenguins@433439c8b013eff3d36c847bb7a27fa0d7e353d8/inst/extdata/penguins.csv"
-
-penguins = dropmissing(CSV.read(HTTP.get(url).body, DataFrame, missingstring="NA"))
+penguins = dropmissing(DataFrame(PalmerPenguins.load()))
 first(penguins, 6)
 
 # ## Frequency plots

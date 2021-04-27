@@ -5,6 +5,8 @@ using CairoMakie
 
 CairoMakie.activate!(type="png")
 
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true
+
 # generate examples
 GENERATED = joinpath(@__DIR__, "src", "generated")
 SOURCE_FILES = Glob.glob("*.jl", GENERATED)
