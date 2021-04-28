@@ -21,18 +21,19 @@ function default_palettes()
 end
 
 # Batlow colormap
-# Crameri, Fabio. "Scientific colour-maps." Zenodo. doi 10 (2018).
-# https://www.fabiocrameri.ch/colourmaps/
+# Crameri, Fabio, Grace E. Shephard, and Philip J. Heron. "The misuse of colour in science communication." Nature communications 11.1 (2020): 1-10.
+# https://www.nature.com/articles/s41467-020-19160-7?source=techstories.org
 
 function opinionated_defaults()
     return (
-        strokecolor=RGBA(0, 0, 0, 0),
-        mediancolor=:white,
-        outlierstrokecolor=RGBA(0, 0, 0, 0),
         color=:gray15,
+        strokecolor=RGBA(0, 0, 0, 0),
+        outlierstrokecolor=RGBA(0, 0, 0, 0),
+        mediancolor=:white,
         marker=:circle,
         markersize=15,
         linewidth=1.5,
+        medianlinewidth=1.5,
         colormap=:batlow,
     )
 end
