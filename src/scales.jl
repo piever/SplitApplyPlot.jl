@@ -23,13 +23,14 @@ end
 
 function opinionated_defaults()
     return (
-        strokecolor=:lightgray,
-        outlierstrokecolor=:lightgray,
+        strokecolor=RGBA(0, 0, 0, 0),
+        mediancolor=:white,
+        outlierstrokecolor=RGBA(0, 0, 0, 0),
         color=:gray15,
         marker=:circle,
         markersize=15,
         linewidth=1.5,
-        colormap=:cividis,
+        colormap=Reverse(:BrBG_4),
     )
 end
 
