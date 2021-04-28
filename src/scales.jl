@@ -1,7 +1,6 @@
-# Conservative 7-color palette from Points of view: Color blindness, Bang Wong - Nature Methods
+# Conservative 7-color palette
+# Wong, Bang. "Points of view: Color blindness." (2011): 441.
 # https://www.nature.com/articles/nmeth.1618?WT.ec_id=NMETH-201106
-
-using AbstractPlotting: RGB
 
 function default_palettes()
     return arguments(
@@ -21,6 +20,10 @@ function default_palettes()
     )
 end
 
+# Batlow colormap
+# Crameri, Fabio. "Scientific colour-maps." Zenodo. doi 10 (2018).
+# https://www.fabiocrameri.ch/colourmaps/
+
 function opinionated_defaults()
     return (
         strokecolor=RGBA(0, 0, 0, 0),
@@ -30,7 +33,7 @@ function opinionated_defaults()
         marker=:circle,
         markersize=15,
         linewidth=1.5,
-        colormap=Reverse(:BrBG_4),
+        colormap=:batlow,
     )
 end
 
