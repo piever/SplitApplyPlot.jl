@@ -1,9 +1,11 @@
 module SplitApplyPlot
 
 using Base: front, tail
+using Dates
 using Tables: rows, columns, getcolumn, columnnames
 using StructArrays: components, uniquesorted, GroupPerm, StructArray
 using Colors: RGB, RGBA, red, green, blue, Color
+using PlotUtils: optimize_ticks
 using AbstractPlotting
 using AbstractPlotting: automatic, Automatic, PlotFunc, ATTRIBUTES
 import AbstractPlotting.MakieLayout: hidexdecorations!,

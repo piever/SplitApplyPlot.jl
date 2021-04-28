@@ -222,6 +222,26 @@ m = data(df) * mapping(
 geoms = linear() + visual(Scatter)
 facet!(plot(m * geoms))
 
+#
+
+using Dates
+
+x = today() - Year(1) : Day(1) : today()
+y = cumsum(randn(length(x)))
+z = cumsum(randn(length(x)))
+df = (; x, y, z)
+plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
+draw(plt, axis=(xticklabelrotation=π,)) # FIXME: open issue on AbstractPlotting
+
+#
+
+x = now() - Hour(6) : Minute(15) : now()
+y = cumsum(randn(length(x)))
+z = cumsum(randn(length(x)))
+df = (; x, y, z)
+plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
+draw(plt, axis=(xticklabelrotation=π,)) # FIXME: open issue on AbstractPlotting
+
 # ### New columns on the fly
 
 df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))

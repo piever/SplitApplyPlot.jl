@@ -179,11 +179,8 @@ function AbstractPlotting.plot!(ae::AxisEntries)
     for i in 1:ndims
         label, scale = get(labels, i, nothing), get(scales, i, nothing)
         any(isnothing, (label, scale)) && continue
-        axislabel, ticks, axisscale = prefix.(i, (:label, :ticks, :scale))
-        if scale isa CategoricalScale
-            u = map(string, scale.data)
-            getproperty(axis, ticks)[] = (axes(u, 1), u)
-        end
+        axislabel, axisticks, axisscale = prefix.(i, (:label, :ticks, :scale))
+        getproperty(axis, axisticks)[] = ticks(scale)
         getproperty(axis, axislabel)[] = string(label)
     end
     return axis

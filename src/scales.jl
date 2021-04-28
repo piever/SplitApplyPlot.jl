@@ -57,7 +57,12 @@ struct ContinuousScale{T, F}
     extrema::Tuple{T, T}
 end
 
-rescale(values, c::ContinuousScale) = values # Is this ideal?
+rescale(values::AbstractVector{<:Number}, c::ContinuousScale) = values # Is this ideal?
+function rescale(values::AbstractVector{<:Union{Date, DateTime}}, c::ContinuousScale)
+    @assert c.f === identity
+    min = minimum(values)
+    return @. convert(Millisecond, DateTime(values) - DateTime(min)) / Millisecond(1)
+end
 
 struct CategoricalScale{S, T}
     data::S
@@ -86,4 +91,22 @@ end
 function default_scales(summaries, palettes)
     palettes = merge!(map(_ -> automatic, summaries), palettes)
     return map(default_scale, summaries, palettes)
+end
+
+# Logic to create ticks from a scale
+function ticks(scale::CategoricalScale)
+    u = map(string, scale.data)
+    return (axes(u, 1), u)
+end
+
+function ticks(scale::ContinuousScale)
+    return continuousticks(scale.extrema...)
+end
+
+continuousticks(min, max) = automatic
+
+function continuousticks(min::T, max::T) where T<:Union{Date, DateTime}
+    @show dates, _, _ = optimize_ticks(min, max)
+    xvalues = rescale(dates, ContinuousScale(identity, (min, max)))
+    return (xvalues, string.(T.(dates)))
 end
