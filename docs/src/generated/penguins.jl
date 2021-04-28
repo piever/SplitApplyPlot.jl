@@ -143,14 +143,14 @@ draw(plt)
 # with the weight of the penguins. For that, it may be better to use a continuous color
 # on a gradient to denote weight, and a marker shape to denote species.
 
-ans = linear() + mapping(color = :body_mass_g) # FIXME: colorranges do not match!!
+ans = linear() + mapping(color = :body_mass_g)
 specs * ans * mapping(marker = :species) |> draw
 
 # Naturally, heavier penguins have bigger bills. We could also try and see the interplay
 # of these three variables in a 3D plot.
 
 specs3D = specs * mapping(:body_mass_g => (t -> t / 1000) => "body mass (Kg)")
-plt = specs3D * mapping(color = :species) * visual(Scatter) # FIXME: add default to Makie
+plt = specs3D * mapping(color = :species) * visual(Scatter)
 draw(plt, axis = (type = Axis3,))
 
 #
