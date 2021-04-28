@@ -222,7 +222,7 @@ m = data(df) * mapping(
 geoms = linear() + visual(Scatter)
 facet!(plot(m * geoms))
 
-# ### Wide data for time series
+#
 
 using Dates
 
