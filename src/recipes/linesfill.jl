@@ -14,7 +14,7 @@ $(ATTRIBUTES)
         colorrange = get(l_theme.attributes, :colorrange, automatic),
         linestyle = l_theme.linestyle,
         linewidth = l_theme.linewidth,
-        alphamultiplier = 0.5,
+        fillalpha = 0.2,
     )
 end
 
@@ -31,10 +31,10 @@ function AbstractPlotting.plot!(p::LinesFill)
     else
         lower, upper = p[3], p[4]
     end
-    meshcolor = lift(p.color, p.alphamultiplier) do color, alphamultiplier
+    meshcolor = lift(p.color, p.fillalpha) do color, fillalpha
         rgba = to_color(color)
-        r, g, b, α = red(rgba), green(rgba), blue(rgba), alpha(rgba)
-        return RGBA(r, g, b, α * alphamultiplier)
+        r, g, b = red(rgba), green(rgba), blue(rgba)
+        return RGBA(r, g, b, fillalpha)
     end
     band!(p, p[1], lower, upper; color = meshcolor)
 end
