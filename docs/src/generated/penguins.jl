@@ -133,15 +133,6 @@ ans = visual(Contour) * density() + linear() + mapping()
 plt = specs * ans * mapping(color = :species)
 draw(plt)
 
-# In the case of many layers (contour, density and scatter) it is important to think
-# about balance. In the above plot, the markers are quite heavy compared to the thin
-# contour lines. We can lighten the markers by using a white stroke and make the contour
-# lines a bit thicker.
-
-ans = visual(Contour, linewidth = 1.5) * density() + linear() + visual(strokecolor = :white)
-plt = specs * ans * mapping(color = :species)
-draw(plt)
-
 # ## Correlating three variables
 #
 # We are now mostly up-to-speed with `bill` size, but we could consider how it interacts
