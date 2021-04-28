@@ -109,6 +109,10 @@ using SplitApplyPlot: density
 an = density()
 specs * an * mapping(col = :species) |> draw
 
+# The default colormap is multi-hue, but it is possible to pass single-hue colormaps as well:
+
+specs * visual(colormap = :grays) * an * mapping(col = :species) |> draw
+
 # A `Heatmap` (the default visualization for a 2D density) is a bit unfortunate if
 # we want to mark species by color. In that case, one can use `visual` to change
 # the default visualization and, optionally, fine tune some arguments.
@@ -130,15 +134,6 @@ draw(plt)
 # The data and the linear fit can also be added back to the plot:
 
 ans = visual(Contour) * density() + linear() + mapping()
-plt = specs * ans * mapping(color = :species)
-draw(plt)
-
-# In the case of many layers (contour, density and scatter) it is important to think
-# about balance. In the above plot, the markers are quite heavy compared to the thin
-# contour lines. We can lighten the markers by using a white stroke and make the contour
-# lines a bit thicker.
-
-ans = visual(Contour, linewidth = 1.5) * density() + linear() + visual(strokecolor = :white)
 plt = specs * ans * mapping(color = :species)
 draw(plt)
 

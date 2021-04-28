@@ -156,6 +156,9 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         for sym in [:col, :row, :layout]
             pop!(named, sym, nothing)
         end
+        for (key, val) in pairs(opinionated_defaults())
+            get!(named, key, val)
+        end
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale

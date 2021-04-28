@@ -90,11 +90,6 @@ m * geoms |> plot |> facet!
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
 data(df) * mapping(:x, color=:c) * SplitApplyPlot.density(bandwidth=0.5) |> plot
 
-# Using the recipe from AbstractPlotting also works (let us try to figure out whether we need an analysis or not).
-
-df = (x=randn(1000), c=rand(["a", "b"], 1000))
-data(df) * mapping(:x, col=:c) * visual(AbstractPlotting.Density) |> plot |> facet!
-
 #
 
 df = (x=randn(1000), c=rand(["a", "b"], 1000))
