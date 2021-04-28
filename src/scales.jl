@@ -22,7 +22,15 @@ function default_palettes()
 end
 
 function opinionated_defaults()
-    return (strokecolor=:white, color=:gray15, marker=:circle, markersize=15, linewidth=1.5)
+    return (
+        strokecolor=:lightgray,
+        outlierstrokecolor=:lightgray,
+        color=:gray15,
+        marker=:circle,
+        markersize=15,
+        linewidth=1.5,
+        colormap=:cividis,
+    )
 end
 
 apply_palette(p::AbstractVector, uv) = [cycle(p, idx) for idx in eachindex(uv)]
