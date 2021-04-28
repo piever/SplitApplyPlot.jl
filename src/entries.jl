@@ -152,16 +152,26 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
 
-        dodge, colorrange = get(scales, :dodge, nothing), get(scales, :color, nothing)
-        isa(dodge, CategoricalScale) && (named[:n_dodge] = maximum(dodge.plot))
-        isa(colorrange, ContinuousScale) && (named[:colorrange] = colorrange.extrema)
-
+        # Remove layout info
         for sym in [:col, :row, :layout]
             pop!(named, sym, nothing)
         end
+
+        # Implement defaults
         for (key, val) in pairs(opinionated_defaults())
             get!(named, key, val)
         end
+
+        # Set dodging and colorrange information
+        dodge, colorscale = get(scales, :dodge, nothing), get(scales, :color, nothing)
+        isa(dodge, CategoricalScale) && (named[:n_dodge] = maximum(dodge.plot))
+        isa(colorscale, ContinuousScale) && (named[:colorrange] = colorscale.extrema)
+
+        # Implement alpha transparency
+        alpha = pop!(named, :alpha, nothing)
+        color = get(named, :color, nothing)
+        color isa Color && alpha isa Number && (named[:color] = (color, alpha))
+
         plot!(plottype, axis, positional...; named...)
     end
     # TODO: support log colorscale
