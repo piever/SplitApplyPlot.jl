@@ -151,8 +151,11 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         trace = map(unwrap∘rescale, mappings, scales)
         positional, named = trace.positional, trace.named
         merge!(named, attributes)
-        dodge = get(scales, :dodge, nothing)
-        isnothing(dodge) || (named[:n_dodge] = maximum(dodge.plot))
+
+        dodge, colorrange = get(scales, :dodge, nothing), get(scales, :color, nothing)
+        isa(dodge, CategoricalScale) && (named[:n_dodge] = maximum(dodge.plot))
+        isa(colorrange, ContinuousScale) && (named[:colorrange] = colorrange.extrema)
+
         for sym in [:col, :row, :layout]
             pop!(named, sym, nothing)
         end
