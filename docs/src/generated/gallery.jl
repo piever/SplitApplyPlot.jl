@@ -231,16 +231,16 @@ y = cumsum(randn(length(x)))
 z = cumsum(randn(length(x)))
 df = (; x, y, z)
 plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
-draw(plt, axis=(xticklabelrotation=π,)) # FIXME: open issue on AbstractPlotting
+draw(plt)
 
 #
 
-x = now() - Hour(6) : Minute(15) : now()
+x = now() - Hour(6) : Minute(1) : now()
 y = cumsum(randn(length(x)))
 z = cumsum(randn(length(x)))
 df = (; x, y, z)
 plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
-draw(plt, axis=(xticklabelrotation=π,)) # FIXME: open issue on AbstractPlotting
+draw(plt)
 
 # ### New columns on the fly
 
