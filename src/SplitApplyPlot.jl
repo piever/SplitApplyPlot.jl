@@ -29,6 +29,8 @@ export visual, data, dims, mapping
 export draw, draw!
 export facet!
 
+export legend
+
 include("arguments.jl")
 include("scales.jl")
 include("entries.jl")
@@ -49,6 +51,6 @@ include("transformations/groupreduce.jl")
 include("transformations/frequency.jl")
 include("transformations/expectation.jl")
 
-include("legend/elements.jl")
+include("guides/legend.jl")
 
 end
