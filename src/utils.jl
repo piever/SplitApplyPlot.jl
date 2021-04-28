@@ -13,6 +13,7 @@ Determine whether `v` should be treated as a continuous or categorical vector.
 """
 iscontinuous(::AbstractArray) = false
 iscontinuous(::AbstractArray{<:Number}) = true
+iscontinuous(::AbstractArray{<:Union{Date, DateTime}}) = true
 
 isaxis2d(::Axis) = true
 isaxis2d(::Any) = false
