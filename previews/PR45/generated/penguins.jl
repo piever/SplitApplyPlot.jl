@@ -150,10 +150,10 @@ specs * ans * mapping(marker = :species) |> draw
 # of these three variables in a 3D plot.
 
 specs3D = specs * mapping(:body_mass_g => (t -> t / 1000) => "body mass (Kg)")
-plt = specs3D * mapping(color = :species) * visual(Scatter)
+plt = specs3D * mapping(color = :species)
 draw(plt, axis = (type = Axis3,))
 
 #
 
-plt = specs3D * mapping(color = :species, layout = :sex) * visual(Scatter)
+plt = specs3D * mapping(color = :species, layout = :sex)
 draw(plt, axis = (type = Axis3,), figure = (resolution = (1200, 400),))
