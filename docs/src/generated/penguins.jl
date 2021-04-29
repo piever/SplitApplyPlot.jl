@@ -102,8 +102,8 @@ specs * ans * mapping(color = :species) |> draw
 
 # ## Smooth density plots
 #
-# An alternative approach to understanding the joint distribution is to consider the
-# joint probability density distribution (pdf) of the two variables.
+# An alternative approach to understanding how two variables interact is to consider
+# their joint probability density distribution (pdf).
 
 using SplitApplyPlot: density
 an = density()
@@ -117,7 +117,7 @@ specs * visual(colormap = :grayC) * an * mapping(col = :species) |> draw
 # we want to mark species by color. In that case, one can use `visual` to change
 # the default visualization and, optionally, fine tune some arguments.
 # In this case, a `Wireframe` with thin lines looks quite nice. (Note that, for the
-# moment, we must specify explicitly that we require a 3D axis.)
+# time being, we must specify explicitly that we require a 3D axis.)
 
 using SplitApplyPlot: density
 an = visual(Wireframe, linewidth=0.1) * density()
@@ -148,17 +148,20 @@ draw(plt)
 
 # ## Correlating three variables
 #
-# We are now mostly up-to-speed with `bill` size, but we could consider how it interacts
-# with the weight of the penguins. For that, it may be better to use a continuous color
-# on a gradient to denote weight, and a marker shape to denote species.
+# We are now mostly up to speed with `bill` size, but we have not consider how
+# it relates to other penguin features, such as their weight.
+# For that, a possible approach is to use a continuous color
+# on a gradient to denote weight and different marker shapes to denote species.
 
-ans = linear() + mapping(color = :body_mass_g)
+body_mass = :body_mass_g => (t -> t / 1000) => "body mass (kg)"
+ans = linear() + mapping(color = body_mass)
 specs * ans * mapping(marker = :species) |> draw
 
-# Naturally, heavier penguins have bigger bills. We could also try and see the interplay
-# of these three variables in a 3D plot.
+# Naturally, within each species, heavier penguins have bigger bills, but perhaps
+# counter-intuitively the species with the shallowest bills features the heaviest penguins.
+# We could also try and see the interplay of these three variables in a 3D plot.
 
-specs3D = specs * mapping(:body_mass_g => (t -> t / 1000) => "body mass (Kg)")
+specs3D = specs * mapping(body_mass)
 plt = specs3D * mapping(color = :species)
 draw(plt, axis = (type = Axis3,))
 
