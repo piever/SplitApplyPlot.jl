@@ -182,6 +182,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         axislabel, axisticks, axisscale = prefix.(i, (:label, :ticks, :scale))
         getproperty(axis, axisticks)[] = ticks(scale)
         getproperty(axis, axislabel)[] = string(label)
+        getproperty(axis, prefix(i, :ticklabelfont))[] = "DejaVu Sans Light"
     end
     return axis
 end
