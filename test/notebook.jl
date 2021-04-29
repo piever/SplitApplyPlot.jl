@@ -565,12 +565,19 @@ struct KW
 end
 
 # ╔═╡ 18873a6a-fce4-4565-862d-081df6dffb40
-struct L
-	label::Union{String,Number}
+begin
+	struct L
+		label::Union{String,Number}
+	end
+
+	L(l::L) = l
 end
 
 # ╔═╡ 5458b591-c4d2-4fe7-bd3d-96f7f6e32df6
 Base.string(l::L) = string(l.label)
+
+# ╔═╡ 745ce6f1-eb1f-43dc-93bc-136f63639fc3
+
 
 # ╔═╡ 4c047669-f5e5-48cd-97c9-dcecf4770625
 Base.get(l::L) = l.label
@@ -586,7 +593,7 @@ function _legend2(P, attribute, scale::ContinuousScale, title)
 	
 	ticks = MakieLayout.locateticks(extrema..., n_ticks)
 
-	label_kw = [(label = string(tick), kw = KW(attribute, tick)) for tick in ticks]
+	label_kw = [(label = L(tick), kw = KW(attribute, tick)) for tick in ticks]
 	
 	(; title, P, label_kw)
 end	
@@ -597,7 +604,7 @@ function _legend2(P, attribute, scale::CategoricalScale, title)
 	labels = string.(scale.data)
 	attributes = scale.plot
 	
-	label_kw = [(label = l, kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
+	label_kw = [(label = L(l), kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
 		
 	(; title, P, label_kw)
 end	
@@ -616,17 +623,17 @@ end
 function consolidate_kws(P, label_kw)
 	label_kw = StructArray(vcat(label_kw...))
 	
-	grps = StructArrays.finduniquesorted(label_kw.label)
+	grps = StructArrays.finduniquesorted(get.(label_kw.label))
 
 	map(grps) do (label, inds)
 		kws = label_kw[inds].kw .|> pair |> Array{Pair{Symbol,Any}}
-		(; P, label, kws = kws)
+		(; P, label = L(label), kws = kws)
 	end
 end
 
 # ╔═╡ 158284cf-3897-4ab4-ab82-bf5c5c436715
 function consolidate_plots(tmp)
-	grps = 	StructArrays.finduniquesorted(tmp.label)
+	grps = 	StructArrays.finduniquesorted(get.(tmp.label))
 	
 	out = map(grps) do (label, inds)
 		elements = map(tmp[inds]) do (P, _, kws)
@@ -699,9 +706,6 @@ function Legend2(figpos, entries)
 	MakieLayout.Legend(figpos, out.elements, out.label, out.title)
 end
 
-# ╔═╡ cc71b9d6-8075-4018-9bae-9954654b3403
-
-
 # ╔═╡ b112711d-5e41-462b-a137-5a6d4bbe840c
 let
 	fig = Figure()
@@ -772,6 +776,7 @@ TableOfContents()
 # ╠═bbffd9ac-70e8-49bd-83ed-7d79cf836596
 # ╠═18873a6a-fce4-4565-862d-081df6dffb40
 # ╠═5458b591-c4d2-4fe7-bd3d-96f7f6e32df6
+# ╠═745ce6f1-eb1f-43dc-93bc-136f63639fc3
 # ╠═4c047669-f5e5-48cd-97c9-dcecf4770625
 # ╠═21900bae-5b42-430c-af87-9f703cce035c
 # ╠═2bcbfb12-47e5-471a-b78f-4dfedaae3a0d
@@ -780,7 +785,6 @@ TableOfContents()
 # ╠═455fdcb0-07f2-4843-81e4-dfca90b0935f
 # ╠═74be7730-99a9-4352-8853-f6e4333238a6
 # ╠═158284cf-3897-4ab4-ab82-bf5c5c436715
-# ╠═cc71b9d6-8075-4018-9bae-9954654b3403
 # ╠═b112711d-5e41-462b-a137-5a6d4bbe840c
 # ╠═ba09b46f-8f52-4f60-bf5f-704bc8568210
 # ╟─5c4d951f-47b2-4f30-aaeb-fe9ec84ae1a7
