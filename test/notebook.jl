@@ -586,7 +586,7 @@ function _legend2(P, attribute, scale::ContinuousScale, title)
 	
 	ticks = MakieLayout.locateticks(extrema..., n_ticks)
 
-	label_kw = [(label = L(tick), kw = KW(attribute, tick)) for tick in ticks]
+	label_kw = [(label = string(tick), kw = KW(attribute, tick)) for tick in ticks]
 	
 	(; title, P, label_kw)
 end	
@@ -597,7 +597,7 @@ function _legend2(P, attribute, scale::CategoricalScale, title)
 	labels = string.(scale.data)
 	attributes = scale.plot
 	
-	label_kw = [(label = L(l), kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
+	label_kw = [(label = l, kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
 		
 	(; title, P, label_kw)
 end	
@@ -616,12 +616,26 @@ end
 function consolidate_kws(P, label_kw)
 	label_kw = StructArray(vcat(label_kw...))
 	
-	grps = StructArrays.finduniquesorted(get.(label_kw.label))
+	grps = StructArrays.finduniquesorted(label_kw.label)
 
 	map(grps) do (label, inds)
 		kws = label_kw[inds].kw .|> pair |> Array{Pair{Symbol,Any}}
 		(; P, label, kws = kws)
 	end
+end
+
+# ╔═╡ 158284cf-3897-4ab4-ab82-bf5c5c436715
+function consolidate_plots(tmp)
+	grps = 	StructArrays.finduniquesorted(tmp.label)
+	
+	out = map(grps) do (label, inds)
+		elements = map(tmp[inds]) do (P, _, kws)
+			legend_element(P; kws...)
+		end
+		(; label = string.(label), elements = Vector{LegendElement}(elements))	
+	end |> StructArray
+	
+	(; out.label, out.elements)
 end
 
 # ╔═╡ 455fdcb0-07f2-4843-81e4-dfca90b0935f
@@ -639,21 +653,20 @@ function consolidate_legends(out)
 		kws = consolidate_kws(P, label_kw)
 	
 		(; title, kws)
-	end
+	end |> StructArray
 
-	return out1
 	## Step 2: Combine PlotTypes per variable and label
 	## e.g. (:variable1, "grp a", [(Scatter, [color => :red, marker => :circle])
     ##							   (Lines,   [color = :red, linestyle => :dash])]
-	#grps2 = StructArrays.finduniquesorted(out1.title)
+	grps2 = StructArrays.finduniquesorted(out1.title)
 	
-	#out2 = map(grps2) do (title, inds)
-	#	tmp = vcat(out1[inds].kws...) |> StructArray |> consolidate_plots
+	out2 = map(grps2) do (title, inds)
+		tmp = vcat(out1[inds].kws...) |> StructArray |> consolidate_plots
 	
-	#	(; title, tmp...)
-	#end |> StructArray
+		(; title, tmp...)
+	end |> StructArray
 	
-	#(; out2.elements, out2.label, out2.title)
+	(; out2.elements, out2.label, out2.title)
 end
 
 # ╔═╡ b3b5a971-d752-4be9-a33c-38264c4256ec
@@ -683,21 +696,7 @@ function Legend2(figpos, entries)
 	
 	out = _Legend_(entries)
 	
-	#MakieLayout.Legend(figpos, out.elements, out.label, out.title)
-end
-
-# ╔═╡ 158284cf-3897-4ab4-ab82-bf5c5c436715
-function consolidate_plots(tmp)
-	grps = 	StructArrays.finduniquesorted(get.(tmp.label))
-	
-	out = map(grps) do (label, inds)
-		elements = map(tmp[inds]) do (P, _, kws)
-			legend_element(P; kws...)
-		end
-		(; label = string.(label), elements = Vector{LegendElement}(elements))	
-	end |> StructArray
-	
-	(; out.label, out.elements)
+	MakieLayout.Legend(figpos, out.elements, out.label, out.title)
 end
 
 # ╔═╡ cc71b9d6-8075-4018-9bae-9954654b3403
