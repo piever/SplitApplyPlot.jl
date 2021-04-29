@@ -111,7 +111,7 @@ specs * an * mapping(col = :species) |> draw
 
 # The default colormap is multi-hue, but it is possible to pass single-hue colormaps as well:
 
-specs * visual(colormap = :grays) * an * mapping(col = :species) |> draw
+specs * visual(colormap = :grayC) * an * mapping(col = :species) |> draw
 
 # A `Heatmap` (the default visualization for a 2D density) is a bit unfortunate if
 # we want to mark species by color. In that case, one can use `visual` to change
