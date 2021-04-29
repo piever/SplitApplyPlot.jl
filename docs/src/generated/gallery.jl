@@ -250,4 +250,35 @@ geoms = linear() + visual(Scatter) * mapping(color=:z)
 fg = plot(m * geoms)
 facet!(fg)
 
+# ### Legends
+
+N = 20
+
+tbl2 = (x = [1:N; 1:N; 1:N; 1:N],
+		zz = [fill(2, N); fill(-2, N); fill(2.5, N); fill(0, N)],
+		y = [2 .+ cumsum(randn(N)); -2 .+ cumsum(randn(N)); 2.5 .+ cumsum(randn(N)); cumsum(randn(N))],
+	    grp1 = [fill("a", 2N); fill("b", 2N)],
+		grp2 = [fill("c", N); fill("d", N); fill("c", N); fill("d", N)],
+		z = 20 .* rand(4N)
+	
+    )
+    
+aog2 = let
+    aog = data(tbl2) * 
+    mapping(:x, :y) *
+    mapping(color = :grp1) *
+    (
+    visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
+    + 
+    visual(Scatter) * mapping(marker = :grp1, markersize = :z)
+    )
+end
+
+let
+	fig = aog2 |> draw
+	Legend(fig, Entries(aog2))
+	
+	fig
+end
+
 #
