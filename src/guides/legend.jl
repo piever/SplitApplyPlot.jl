@@ -27,14 +27,20 @@ end
 # -------------------- Legend --------------------
 # ------------------------------------------------
 
-MakieLayout.Legend(figpos, aog::Layer) = 
+MakieLayout.Legend(figpos, aog::Union{Layer,Layers}) = 
 	Legend(figpos, Entries(aog))
 	
 function MakieLayout.Legend(figpos, entries::Entries)
 	out = _Legend_(entries)
 	
+	if figpos isa FigureGrid
+		figpos_new = figpos.figure[:,end+1]
+	else
+		figpos_new = figpos
+	end
+
 	if !isnothing(out)
-		MakieLayout.Legend(figpos, out.elements, out.label, out.title)
+		MakieLayout.Legend(figpos_new, out.elements, out.label, out.title)
 	end
 end
 
