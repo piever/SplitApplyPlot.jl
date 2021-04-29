@@ -149,6 +149,21 @@ md"""
 ## Legend
 """
 
+# ╔═╡ 31e97f45-57b9-45c9-aebb-c20d9a68db42
+function legend_(entries)
+	# (; elements, labels, title)	
+	nothing
+end
+
+# ╔═╡ dae54dc4-3380-4c35-ac77-83d2fa4cfcab
+function Legend_(figpos, entries::Entries)
+	content = legend_(entries)
+	
+	if !isnothing(content)
+		MakieLayout.Legend(figpos, content.elements, content.labels, content.title)
+	end
+end
+
 # ╔═╡ 6de1d586-f399-4d92-93f7-f9883829c0a6
 md"""
 ## Continuous legend
@@ -242,16 +257,6 @@ function filter_scales(scales, S; keep_only = nothing, drop = nothing)
 	Dict(named_scales[inds]...)
 end
 
-# ╔═╡ c4f0d4ea-f2df-44ec-93cf-2694e96541d4
-function Base.pairs(scale::SplitApplyPlot.CategoricalScale)
-	(d => p for (d, p) in zip(scale.data, scale.plot))
-end
-
-# ╔═╡ 677ed91e-204d-435b-a98b-0afb6be1d289
-function dict(scale::SplitApplyPlot.CategoricalScale)
-	Dict(pairs(scale)...)
-end
-
 # ╔═╡ ed5b90cf-e918-4846-a57e-19bf13051574
 function invert_pairs(pairs) 
 	pairs = pairs |> collect
@@ -327,142 +332,6 @@ function Colorbar_(cbpos, entries::Entries;
 	end
 	
 	
-end
-
-# ╔═╡ 8d4105bf-2a8b-4476-8ad7-7245c9e84377
-md"""
-## New legend helpers
-"""
-
-# ╔═╡ c5f98651-b0e8-4eda-a501-e942d619cc82
-function scale_to_P(entries)
-	mapreduce(∪, entries) do entry
-		P = entry.plottype
-		attrs = entry.mappings.named |> keys |> collect
-		[attr => P for attr in attrs]
-	end
-end
-
-# ╔═╡ 3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
-function scale_to_Ps(entries)
-	all_scales = scale_to_P(entries)
-	scales = unique(first.(all_scales))
-	map(scales) do s
-		Ps = filter(x -> first(x) == s, all_scales) .|> last
-		s => Ps
-	end
-end
-
-# ╔═╡ 9bc38473-7719-4fd1-8fb2-4314afcb5c6a
-function continuous_legend(entries)
-	scale2Ps = Dict(scale_to_Ps(entries.entries)...)
-	
-	titles, keys, scales = filter_entries(entries, ContinuousScale, drop = [:color])
-	
-	if length(scales) == 0
-		return nothing
-	end
-	
-	title_dict = Dict(only(k) => t for (k, t) in zip(keys, titles))
-	
-	elements = map([scales...]) do (key, scale)
-		
-		P = scale2Ps[key] |> only
-		ticks = MakieLayout.locateticks(scale.extrema..., 4)
-		elements = [legend_element(P; key => t) for t in ticks]
-		(; title = title_dict[key], labels = string.(ticks), elements)
-	end |> StructArray
-	
-end	
-
-# ╔═╡ 6e62f9b1-1bf4-477b-8eed-270ca5cf4077
-function P_to_scales(entries)
-	invert_pairs(scale_to_P(entries))
-end
-
-# ╔═╡ b7cbf70f-1db5-4837-9c93-d3708b35c909
-function categorical_legend0(entries)
-	
-	P2scales = P_to_scales(entries.entries)
-	
-	titles, keys, scales = filter_entries(entries, CategoricalScale)
-				
-	if length(scales) == 0
-		return nothing
-	end
-	
-	map(zip(titles, keys)) do (t, kk)
-	
-		labels = mapreduce(∪, kk) do k
-			scales[k].data
-		end
-
-		out = map(labels) do l
-			P_kws = map(P2scales) do (P, kkk)
-				filter!(in(∪(keys...)), kkk)
-				kws = (;)
-				for k in kkk
-					ii = findall(l .== scales[k].data)
-					if length(ii) > 0
-						i = only(ii)
-						kws = (; kws..., k => scales[k].plot[i])
-					end
-				end
-				P => kws
-			end
-			filter!(x-> !isempty(last(x)), P_kws)
-			
-			l => P_kws
-		end
-
-		t => out
-
-	end
-end
-
-# ╔═╡ fa0a9b43-639b-4523-bde5-05dff5c324a5
-function categorical_legend1(entries)
-	out2 = categorical_legend0(entries)
-	
-	if isnothing(out2)
-		return nothing
-	end
-	
-	titles = first.(out2)
-	rests = last.(out2)
-	
-	legends = map(zip(titles, rests)) do (title, rest)
-	
-		labels = first.(rest)
-		Ps_kwss = last.(rest)
-	
-		legend = map(zip(labels, Ps_kwss)) do (label, Ps_kws)
-			combined_element = map(Ps_kws) do (P, kws)
-				legend_element(P; kws...)
-			end
-			(; label, combined_element = Array{LegendElement}(combined_element))
-		end |> StructArray
-		(; title, labels = legend.label, elements = legend.combined_element)
-	end |> StructArray	
-end
-
-# ╔═╡ 31e97f45-57b9-45c9-aebb-c20d9a68db42
-function legend_(entries)
-		
-	cat_leg = categorical_legend1(entries)
-	cont_leg = continuous_legend(entries)
-	
-	if !isnothing(cont_leg) && !isnothing(cat_leg)
-		out = [cat_leg; cont_leg]
-	elseif !isnothing(cont_leg)
-		out = cont_leg
-	elseif !isnothing(cat_leg)
-		out = cat_leg
-	else
-		return nothing
-	end
-		
-	return out
 end
 
 # ╔═╡ fcf11d1b-b0e7-4d04-a170-88cd81186532
@@ -544,12 +413,27 @@ let
 	fig
 end
 
-# ╔═╡ dae54dc4-3380-4c35-ac77-83d2fa4cfcab
-function Legend_(figpos, entries::Entries)
-	content = legend_(entries)
-	
-	if !isnothing(content)
-		MakieLayout.Legend(figpos, content.elements, content.labels, content.title)
+# ╔═╡ 8d4105bf-2a8b-4476-8ad7-7245c9e84377
+md"""
+## New legend helpers
+"""
+
+# ╔═╡ c5f98651-b0e8-4eda-a501-e942d619cc82
+function scale_to_P(entries)
+	mapreduce(∪, entries) do entry
+		P = entry.plottype
+		attrs = entry.mappings.named |> keys |> collect
+		[attr => P for attr in attrs]
+	end
+end
+
+# ╔═╡ 3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
+function scale_to_Ps(entries)
+	all_scales = scale_to_P(entries)
+	scales = unique(first.(all_scales))
+	map(scales) do s
+		Ps = filter(x -> first(x) == s, all_scales) .|> last
+		s => Ps
 	end
 end
 
@@ -753,23 +637,18 @@ TableOfContents()
 # ╠═dae54dc4-3380-4c35-ac77-83d2fa4cfcab
 # ╠═31e97f45-57b9-45c9-aebb-c20d9a68db42
 # ╟─6de1d586-f399-4d92-93f7-f9883829c0a6
-# ╠═9bc38473-7719-4fd1-8fb2-4314afcb5c6a
 # ╟─0e08f486-acb1-4385-8c38-89fceffaffd2
-# ╠═b7cbf70f-1db5-4837-9c93-d3708b35c909
-# ╠═fa0a9b43-639b-4523-bde5-05dff5c324a5
 # ╟─95bac7d2-606d-43d8-b5d2-600b2420478b
 # ╠═b80f57b6-dd97-4f96-8b97-ac9afd153882
 # ╟─f946377c-39d0-4459-b787-45837009d7ae
 # ╠═30c0576c-ff55-4180-aa26-a6b4a4da4d50
 # ╠═9bb12bd8-5f18-4adc-8c8d-ea8d6a41096f
-# ╠═c4f0d4ea-f2df-44ec-93cf-2694e96541d4
-# ╠═677ed91e-204d-435b-a98b-0afb6be1d289
 # ╠═ed5b90cf-e918-4846-a57e-19bf13051574
 # ╟─8d4105bf-2a8b-4476-8ad7-7245c9e84377
 # ╠═c5f98651-b0e8-4eda-a501-e942d619cc82
 # ╠═3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
-# ╠═6e62f9b1-1bf4-477b-8eed-270ca5cf4077
 # ╠═9f27fe58-e7d6-4ef6-805e-d45bed3ac0c6
+# ╠═b112711d-5e41-462b-a137-5a6d4bbe840c
 # ╟─902bf55a-c2af-4410-a737-9091dc487088
 # ╠═b3ae6153-ca9a-48ca-b517-14ab85eb89aa
 # ╠═b3b5a971-d752-4be9-a33c-38264c4256ec
@@ -785,7 +664,6 @@ TableOfContents()
 # ╠═455fdcb0-07f2-4843-81e4-dfca90b0935f
 # ╠═74be7730-99a9-4352-8853-f6e4333238a6
 # ╠═158284cf-3897-4ab4-ab82-bf5c5c436715
-# ╠═b112711d-5e41-462b-a137-5a6d4bbe840c
 # ╠═ba09b46f-8f52-4f60-bf5f-704bc8568210
 # ╟─5c4d951f-47b2-4f30-aaeb-fe9ec84ae1a7
 # ╠═6c9811e0-998b-4f20-b5d7-61ca7c8340c0
