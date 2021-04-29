@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.3
+# v0.14.4
 
 using Markdown
 using InteractiveUtils
@@ -48,7 +48,12 @@ tbl2 = (x = [1:N; 1:N; 1:N; 1:N],
 	)
 
 # ╔═╡ f93e6381-f241-4e36-b625-cdca800e66da
-tbl1 = (x = rand(100), y = rand(100), z = 20 .* rand(100), grp1 = rand(["a", "b"], 100), grp2 = rand(["c", "d"], 100))
+tbl1 = let
+	N = 100
+	grp1 = rand(["a", "b"], N)
+	z1 = rand(N) .+ 0.75 .* (grp1 .== "a")
+	(; x = rand(N), y = rand(N), z = 20 .* rand(N), grp1, z1, grp2 = rand(["c", "d"], N))
+end
 
 # ╔═╡ 9355d98f-73a5-4c56-ae6e-76f24b797dae
 md"""
@@ -58,7 +63,7 @@ md"""
 # ╔═╡ ab61d343-d860-411d-9c11-80a24aa6b5f3
 aog2 = let
 	aog = data(tbl2) * 
-	mapping(:x, :y) * #mapping(col = :grp) *
+	mapping(:x, :y) *
 	mapping(color = :grp1) *
 	(
 	visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
@@ -70,9 +75,13 @@ aog2 = let
 end
 
 # ╔═╡ 30c4148c-8fe4-4307-afac-361bec54b6e2
-begin
+aog = let
 	cols = mapping(:x => "The X", :y => "The Y");
-	grp = mapping(color = :grp1, markersize = :z, col = :grp2);
+	grp = mapping(
+		color = :grp1 => "Group 1",
+		markersize = :z => "Group 2",
+		col = :grp2
+	)
 	scat = visual(Scatter)
 	pipeline = cols * scat * grp
 	aog = data(tbl1) * pipeline
@@ -81,11 +90,14 @@ end
 # ╔═╡ 59b7c174-7917-4a72-9598-4779fa14b304
 aog3 = let
 	cols = mapping(:x => "The X", :y => "The Y");
-	grp = mapping(marker = :grp1, color = :z, col = :grp2);
+	grp = mapping(marker = :grp2, color = :z1, col = :grp1);
 	scat = visual(Scatter)
 	pipeline = cols * scat * grp
 	aog3 = data(tbl1) * pipeline
 end
+
+# ╔═╡ 52b39db4-16c3-4519-beaf-10859e09c7d7
+Entries(aog3)
 
 # ╔═╡ a2d895c1-87fc-41a2-b3e3-c8024f2c3f74
 md"""
@@ -303,7 +315,7 @@ function Colorbar_(cbpos, entries::Entries;
 		cb_attr = colorbar_attributes(orientation)
 		# FIXME can we explicitly use the colormap?
 		# FIXME use transformation
-		MakieLayout.Colorbar(cbpos[1,1]; limits = content.colorrange, cb_attr...)
+		MakieLayout.Colorbar(cbpos[1,1]; colormap = :batlow, limits = content.colorrange, cb_attr...)
 	end
 
 
@@ -374,7 +386,7 @@ function categorical_legend0(entries)
 	P2scales = P_to_scales(entries.entries)
 	
 	titles, keys, scales = filter_entries(entries, CategoricalScale)
-	
+				
 	if length(scales) == 0
 		return nothing
 	end
@@ -411,6 +423,10 @@ end
 # ╔═╡ fa0a9b43-639b-4523-bde5-05dff5c324a5
 function categorical_legend1(entries)
 	out2 = categorical_legend0(entries)
+	
+	if isnothing(out2)
+		return nothing
+	end
 	
 	titles = first.(out2)
 	rests = last.(out2)
@@ -484,6 +500,22 @@ let
 	fig
 end
 
+# ╔═╡ 9ae7570c-61a8-4db2-9eaf-7daa21029f70
+let
+	cols = mapping(:x => "The X", :y => "The Y");
+	grp = mapping(
+		color = :z => "Fancy",
+		col = :grp2);
+	scat = visual(Scatter)
+	pipeline = cols * scat * grp
+	aog = data(tbl1) * pipeline
+	
+	fig = aog |> draw
+	guides(fig.figure[1,end + 1], Entries(aog))
+	fig
+	
+end
+
 # ╔═╡ 47e6bbb7-9a2c-47f6-ab33-7d6d33bbb4c7
 fig = let aog = aog3
 	fig = aog |> draw
@@ -497,16 +529,16 @@ fig |> typeof |> fieldnames
 # ╔═╡ 19a9249a-9288-4138-b328-77d3ff3df270
 let
 	aog = data(tbl2) * 
-	mapping(:x, :y) * #mapping(col = :grp) *
-	mapping(linestyle = :grp1, group = :grp2) * #, row = :grp1) *
+	mapping(:x, :y) *
+	mapping(group = :grp2) *
 	(
-	visual(Lines, linewidth = 2) * mapping(color = :zz)
+	visual(Lines, linewidth = 2) * mapping(linestyle = :grp1, color = :zz)
 	+ 
-	visual(Scatter) #* mapping(marker = :grp1)
+	visual(Scatter) * mapping(marker = :grp1, color = :zz)
 	)
 	
 	
-	fig = aog |> draw
+	fig = draw(aog)
 	guides(fig.figure[1,end+1], Entries(aog))
 	
 	fig
@@ -540,8 +572,10 @@ TableOfContents()
 # ╠═f89ca7fd-66e4-4bda-bb1e-4d1e256cd7aa
 # ╠═30c4148c-8fe4-4307-afac-361bec54b6e2
 # ╠═50e8ea1a-0565-4fc3-bff2-7b1240fa39fb
+# ╠═9ae7570c-61a8-4db2-9eaf-7daa21029f70
 # ╠═59b7c174-7917-4a72-9598-4779fa14b304
 # ╠═47e6bbb7-9a2c-47f6-ab33-7d6d33bbb4c7
+# ╠═52b39db4-16c3-4519-beaf-10859e09c7d7
 # ╠═987c0dcc-bf86-4994-b19e-861ab9d3f657
 # ╠═19a9249a-9288-4138-b328-77d3ff3df270
 # ╟─a2d895c1-87fc-41a2-b3e3-c8024f2c3f74
