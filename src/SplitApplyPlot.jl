@@ -3,7 +3,7 @@ module SplitApplyPlot
 using Base: front, tail
 using Dates
 using Tables: rows, columns, getcolumn, columnnames
-using StructArrays: components, uniquesorted, GroupPerm, StructArray
+using StructArrays: StructArrays, components, uniquesorted, GroupPerm, StructArray
 using Colors: RGB, RGBA, red, green, blue, Color
 using PlotUtils: optimize_datetime_ticks
 using AbstractPlotting
@@ -18,6 +18,8 @@ using PooledArrays: PooledArray
 using KernelDensity: kde, pdf
 using StatsBase: fit, histrange, Histogram, normalize, weights, AbstractWeights, sturges
 using DataAPI: refarray
+using UnPack: @unpack
+
 import GLM, Loess
 import FileIO
 
