@@ -22,7 +22,7 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://piever.github.io/SplitApplyPlot.jl",
-        assets=String[],
+        assets=["assets/favicon.ico"],
     ),
     pages=Any[
         "index.md",
