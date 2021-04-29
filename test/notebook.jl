@@ -114,6 +114,20 @@ md"""
 ## Colorbar
 """
 
+# ╔═╡ af0186a3-4bf1-453b-a131-bb32f005c163
+function colorbar_(entries::Entries)
+	titles, keys, scales = filter_entries(entries, ContinuousScale, keep_only = [:color])
+	
+	if length(scales) == 0
+		return nothing
+	end
+
+	scale = only(scales) |> last
+	colorrange = scale.extrema
+	
+	(title = only(titles), colorrange = scale.extrema)
+end
+
 # ╔═╡ ee2e13e6-874f-4f4f-a73d-79b0ab7bbae4
 function colorbar_titleposition(cbpos, titlepos, has_legend)
 	if titlepos == :top
@@ -148,21 +162,6 @@ end
 md"""
 ## Legend
 """
-
-# ╔═╡ 31e97f45-57b9-45c9-aebb-c20d9a68db42
-function legend_(entries)
-	# (; elements, labels, title)	
-	nothing
-end
-
-# ╔═╡ dae54dc4-3380-4c35-ac77-83d2fa4cfcab
-function Legend_(figpos, entries::Entries)
-	content = legend_(entries)
-	
-	if !isnothing(content)
-		MakieLayout.Legend(figpos, content.elements, content.labels, content.title)
-	end
-end
 
 # ╔═╡ 6de1d586-f399-4d92-93f7-f9883829c0a6
 md"""
@@ -232,73 +231,6 @@ default_nbanks(orientation, has_colorbar) = has_colorbar && (orientation == :hor
 default_titleposition(orientation) = orientation == :horizontal ? :left : :top
 end
 
-# ╔═╡ f946377c-39d0-4459-b787-45837009d7ae
-md"""
-## Helpers: Prepare Entries
-"""
-
-# ╔═╡ 9bb12bd8-5f18-4adc-8c8d-ea8d6a41096f
-function filter_scales(scales, S; keep_only = nothing, drop = nothing)
-	named_scales = [scales.named...]
-	
-	filter!(x -> !in(first(x), [:col, :row, :layout, :stack, :dodge, :group]) , named_scales)
-	if !isnothing(keep_only)
-		filter!(x -> in(first(x), keep_only), named_scales)
-	end
-	if !isnothing(drop)
-		filter!(x -> !in(first(x), drop), named_scales)
-	end
-
-	
-	scales = last.(named_scales)
-	
-	inds = findall(s -> s isa S, scales)
-	
-	Dict(named_scales[inds]...)
-end
-
-# ╔═╡ ed5b90cf-e918-4846-a57e-19bf13051574
-function invert_pairs(pairs) 
-	pairs = pairs |> collect
-	
-	attrs = first.(pairs)
-	vars = last.(pairs)
-	
-	map(unique(vars)) do var
-		inds = findall(==(var), vars)	
-		var => attrs[inds]
-	end
-end
-
-# ╔═╡ 30c0576c-ff55-4180-aa26-a6b4a4da4d50
-function filter_entries(entries, S; keep_only = nothing, drop = nothing)
-	named_scales = filter_scales(entries.scales, S; keep_only, drop)
-	
-	named_labels = entries.labels.named
-		
-	named_labels = filter(x -> first(x) in keys(named_scales), named_labels)
-	inv_labels = invert_pairs(named_labels)
-	
-	titles = first.(inv_labels)
-	keys_ = last.(inv_labels)
-	
-	(; titles, keys = keys_, scales = named_scales)
-end
-
-# ╔═╡ af0186a3-4bf1-453b-a131-bb32f005c163
-function colorbar_(entries::Entries)
-	titles, keys, scales = filter_entries(entries, ContinuousScale, keep_only = [:color])
-	
-	if length(scales) == 0
-		return nothing
-	end
-
-	scale = only(scales) |> last
-	colorrange = scale.extrema
-	
-	(title = only(titles), colorrange = scale.extrema)
-end
-
 # ╔═╡ 0050224d-14d0-4334-afe3-0ca497287950
 function Colorbar_(cbpos, entries::Entries;
 		orientation = :vertical,
@@ -334,10 +266,183 @@ function Colorbar_(cbpos, entries::Entries;
 	
 end
 
+# ╔═╡ f946377c-39d0-4459-b787-45837009d7ae
+md"""
+## Helpers: Prepare Entries
+"""
+
+# ╔═╡ 8d4105bf-2a8b-4476-8ad7-7245c9e84377
+md"""
+### Legend helpers
+"""
+
+# ╔═╡ c5f98651-b0e8-4eda-a501-e942d619cc82
+function scale_to_P(entries)
+	mapreduce(∪, entries) do entry
+		P = entry.plottype
+		attrs = entry.mappings.named |> keys |> collect
+		[attr => P for attr in attrs]
+	end
+end
+
+# ╔═╡ 3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
+function scale_to_Ps(entries)
+	all_scales = scale_to_P(entries)
+	scales = unique(first.(all_scales))
+	map(scales) do s
+		Ps = filter(x -> first(x) == s, all_scales) .|> last
+		s => Ps
+	end
+end
+
+# ╔═╡ 902bf55a-c2af-4410-a737-9091dc487088
+md"""
+## Legend
+"""
+
+# ╔═╡ bbffd9ac-70e8-49bd-83ed-7d79cf836596
+begin
+	struct KW
+		key::Symbol # e.g. :color | :linestyle | :markersize
+		attribute   # e.g.  :red  |   :dash    |    1.4
+	end
+	pair(kw::KW) = kw.key => kw.attribute
+end
+
+# ╔═╡ 18873a6a-fce4-4565-862d-081df6dffb40
+begin
+	struct L
+		label::Union{String,Number}
+	end
+
+	L(l::L) = l
+	
+	Base.get(l::L) = l.label
+	Base.string(l::L) = string(l.label)
+end
+
+# ╔═╡ 2bcbfb12-47e5-471a-b78f-4dfedaae3a0d
+function _legend(P, attribute, scale::ContinuousScale, title)
+	extrema = scale.extrema
+	#@unpack f, extrema = scale
+	n_ticks = 4
+	
+	ticks = MakieLayout.locateticks(extrema..., n_ticks)
+
+	label_kw = [(label = L(tick), kw = KW(attribute, tick)) for tick in ticks]
+	
+	(; title, P, label_kw)
+end	
+
+# ╔═╡ e57b567c-3138-4d17-9815-5010a810c77d
+function _legend(P, attribute, scale::CategoricalScale, title)
+	
+	labels = string.(scale.data)
+	attributes = scale.plot
+	
+	label_kw = [(label = L(l), kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
+		
+	(; title, P, label_kw)
+end	
+
+# ╔═╡ 58fac7b8-f045-43db-8e6f-b3ae7597f233
+md"""
+### Consolidate
+"""
+
+# ╔═╡ 74be7730-99a9-4352-8853-f6e4333238a6
+function consolidate_kws(P, label_kw)
+	label_kw = StructArray(vcat(label_kw...))
+	
+	grps = StructArrays.finduniquesorted(get.(label_kw.label))
+
+	map(grps) do (label, inds)
+		kws = label_kw[inds].kw .|> pair |> Array{Pair{Symbol,Any}}
+		(; P, label = L(label), kws = kws)
+	end
+end
+
+# ╔═╡ 158284cf-3897-4ab4-ab82-bf5c5c436715
+function consolidate_plots(tmp)
+	grps = 	StructArrays.finduniquesorted(get.(tmp.label))
+	
+	out = map(grps) do (label, inds)
+		elements = map(tmp[inds]) do (P, _, kws)
+			legend_element(P; kws...)
+		end
+		(; label = string.(label), elements = Vector{LegendElement}(elements))	
+	end |> StructArray
+	
+	(; out.label, out.elements)
+end
+
+# ╔═╡ 455fdcb0-07f2-4843-81e4-dfca90b0935f
+function consolidate_legends(out)
+	## Step 1: Combine multiple keywords per PlotType and variable
+	## e.g. (Scatter, "grp a", [color => :red, marker => :circle]
+	groupby1 = StructArray((; title = out.title, P_str = string.(Symbol.(out.P))))
+	grps1 = StructArrays.finduniquesorted(groupby1)
+
+	out1 = map(grps1) do (grp, inds)
+		@unpack label_kw = out[inds]
+		@unpack title = grp	
+		P = out[inds].P |> unique |> only
+		
+		kws = consolidate_kws(P, label_kw)
+	
+		(; title, kws)
+	end |> StructArray
+
+	## Step 2: Combine PlotTypes per variable and label
+	## e.g. (:variable1, "grp a", [(Scatter, [color => :red, marker => :circle])
+    ##							   (Lines,   [color = :red, linestyle => :dash])]
+	grps2 = StructArrays.finduniquesorted(out1.title)
+	
+	out2 = map(grps2) do (title, inds)
+		tmp = vcat(out1[inds].kws...) |> StructArray |> consolidate_plots
+	
+		(; title, tmp...)
+	end |> StructArray
+	
+	(; out2.elements, out2.label, out2.title)
+end
+
+# ╔═╡ b3b5a971-d752-4be9-a33c-38264c4256ec
+function _Legend_(entries::Entries)
+	named_scales = entries.scales.named
+	named_labels = entries.labels.named
+	
+	# remove keywords that don't support legends
+	attribute_keys = collect(keys(named_scales))
+	filter!(!in([:row, :col, :layout, :stack, :dodge, :group]), attribute_keys)
+	
+	if haskey(named_scales, :color) && named_scales[:color] isa ContinuousScale
+		filter!(!=(:color), attribute_keys)
+	end
+	
+	# if no legend-worthy keyword remains return nothing
+	if length(attribute_keys) == 0
+		return nothing
+	end
+	
+	key2Ps = scale_to_Ps(entries.entries) |> Dict
+	
+	out = mapreduce(vcat, attribute_keys) do key
+		title =	named_labels[key]
+		scale = named_scales[key]
+			
+		map(key2Ps[key]) do P
+			_legend(P, key, scale, title)
+		end
+	end |> StructArray
+	
+	consolidate_legends(out)
+end
+
 # ╔═╡ fcf11d1b-b0e7-4d04-a170-88cd81186532
 function guides(guides_pos, entries::Entries; orientation = :vertical)
-	leg_content = legend_(entries)
-	cb_content = colorbar_(entries)
+	leg_content = _Legend_(entries)
+	cb_content = nothing # colorbar_(entries)
 	
 	has_legend   = !isnothing(leg_content)
 	has_colorbar = !isnothing(cb_content)
@@ -345,7 +450,7 @@ function guides(guides_pos, entries::Entries; orientation = :vertical)
 	@unpack leg_pos, cb_pos = inner_legend_positions(has_legend, has_colorbar, orientation, guides_pos)
 
 	if has_legend
-		MakieLayout.Legend(leg_pos, leg_content.elements, leg_content.labels, leg_content.title)
+		MakieLayout.Legend(leg_pos, leg_content.elements, leg_content.label, leg_content.title)
 	end
 	
 	if has_colorbar
@@ -413,192 +518,22 @@ let
 	fig
 end
 
-# ╔═╡ 8d4105bf-2a8b-4476-8ad7-7245c9e84377
-md"""
-## New legend helpers
-"""
-
-# ╔═╡ c5f98651-b0e8-4eda-a501-e942d619cc82
-function scale_to_P(entries)
-	mapreduce(∪, entries) do entry
-		P = entry.plottype
-		attrs = entry.mappings.named |> keys |> collect
-		[attr => P for attr in attrs]
-	end
-end
-
-# ╔═╡ 3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
-function scale_to_Ps(entries)
-	all_scales = scale_to_P(entries)
-	scales = unique(first.(all_scales))
-	map(scales) do s
-		Ps = filter(x -> first(x) == s, all_scales) .|> last
-		s => Ps
-	end
-end
-
-# ╔═╡ 902bf55a-c2af-4410-a737-9091dc487088
-md"""
-## Alternative implementation
-"""
-
-# ╔═╡ bbffd9ac-70e8-49bd-83ed-7d79cf836596
-struct KW
-	key::Symbol # e.g. :color | :linestyle | :markersize
-	attribute   # e.g.  :red  |   :dash    |    1.4
-end
-
-# ╔═╡ 18873a6a-fce4-4565-862d-081df6dffb40
-begin
-	struct L
-		label::Union{String,Number}
-	end
-
-	L(l::L) = l
-end
-
-# ╔═╡ 5458b591-c4d2-4fe7-bd3d-96f7f6e32df6
-Base.string(l::L) = string(l.label)
-
-# ╔═╡ 745ce6f1-eb1f-43dc-93bc-136f63639fc3
-
-
-# ╔═╡ 4c047669-f5e5-48cd-97c9-dcecf4770625
-Base.get(l::L) = l.label
-
-# ╔═╡ 21900bae-5b42-430c-af87-9f703cce035c
-pair(kw::KW) = kw.key => kw.attribute
-
-# ╔═╡ 2bcbfb12-47e5-471a-b78f-4dfedaae3a0d
-function _legend2(P, attribute, scale::ContinuousScale, title)
-	extrema = scale.extrema
-	#@unpack f, extrema = scale
-	n_ticks = 4
-	
-	ticks = MakieLayout.locateticks(extrema..., n_ticks)
-
-	label_kw = [(label = L(tick), kw = KW(attribute, tick)) for tick in ticks]
-	
-	(; title, P, label_kw)
-end	
-
-# ╔═╡ e57b567c-3138-4d17-9815-5010a810c77d
-function _legend2(P, attribute, scale::CategoricalScale, title)
-	
-	labels = string.(scale.data)
-	attributes = scale.plot
-	
-	label_kw = [(label = L(l), kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
-		
-	(; title, P, label_kw)
-end	
-
-# ╔═╡ b00b2832-e371-4467-8512-6faeed99025c
-function _legend_(P, attribute, scale, title)
-	title, P, label_kw = _legend2(P, attribute, scale, title)
-	
-	fig = Figure()
-	
-	MakieLayout.Legend(fig[1,1], out2.elements, out2.label, out2.title)
-	fig
-end
-
-# ╔═╡ 74be7730-99a9-4352-8853-f6e4333238a6
-function consolidate_kws(P, label_kw)
-	label_kw = StructArray(vcat(label_kw...))
-	
-	grps = StructArrays.finduniquesorted(get.(label_kw.label))
-
-	map(grps) do (label, inds)
-		kws = label_kw[inds].kw .|> pair |> Array{Pair{Symbol,Any}}
-		(; P, label = L(label), kws = kws)
-	end
-end
-
-# ╔═╡ 158284cf-3897-4ab4-ab82-bf5c5c436715
-function consolidate_plots(tmp)
-	grps = 	StructArrays.finduniquesorted(get.(tmp.label))
-	
-	out = map(grps) do (label, inds)
-		elements = map(tmp[inds]) do (P, _, kws)
-			legend_element(P; kws...)
-		end
-		(; label = string.(label), elements = Vector{LegendElement}(elements))	
-	end |> StructArray
-	
-	(; out.label, out.elements)
-end
-
-# ╔═╡ 455fdcb0-07f2-4843-81e4-dfca90b0935f
-function consolidate_legends(out)
-	## Step 1: Combine multiple keywords per PlotType and variable
-	## e.g. (Scatter, "grp a", [color => :red, marker => :circle]
-	groupby1 = StructArray((; title = out.title, P_str = string.(Symbol.(out.P))))
-	grps1 = StructArrays.finduniquesorted(groupby1)
-
-	out1 = map(grps1) do (grp, inds)
-		@unpack label_kw = out[inds]
-		@unpack title = grp	
-		P = out[inds].P |> unique |> only
-		
-		kws = consolidate_kws(P, label_kw)
-	
-		(; title, kws)
-	end |> StructArray
-
-	## Step 2: Combine PlotTypes per variable and label
-	## e.g. (:variable1, "grp a", [(Scatter, [color => :red, marker => :circle])
-    ##							   (Lines,   [color = :red, linestyle => :dash])]
-	grps2 = StructArrays.finduniquesorted(out1.title)
-	
-	out2 = map(grps2) do (title, inds)
-		tmp = vcat(out1[inds].kws...) |> StructArray |> consolidate_plots
-	
-		(; title, tmp...)
-	end |> StructArray
-	
-	(; out2.elements, out2.label, out2.title)
-end
-
-# ╔═╡ b3b5a971-d752-4be9-a33c-38264c4256ec
-function _Legend_(entries::Entries)
-	named_scales = entries.scales.named
-	named_labels = entries.labels.named
-	
-	attribute_keys = collect(keys(named_scales))
-	filter!(!in([:row, :col, :layout, :stack, :dodge, :group]), attribute_keys)
-	
-	key2Ps = scale_to_Ps(entries.entries) |> Dict
-	
-	out = mapreduce(vcat, attribute_keys) do key
-		title =	named_labels[key]
-		scale = named_scales[key]
-	
-		map(key2Ps[key]) do P
-			_legend2(P, key, scale, title)
-		end
-	end |> StructArray
-
-	consolidate_legends(out)
-end
-
 # ╔═╡ b3ae6153-ca9a-48ca-b517-14ab85eb89aa
-function Legend2(figpos, entries)
+function Legend1(figpos, entries::Entries)
 	
 	out = _Legend_(entries)
 	
-	MakieLayout.Legend(figpos, out.elements, out.label, out.title)
+	if !isnothing(out)
+		MakieLayout.Legend(figpos, out.elements, out.label, out.title)
+	end
 end
 
 # ╔═╡ b112711d-5e41-462b-a137-5a6d4bbe840c
 let
 	fig = Figure()
-	Legend2(fig[1,1], Entries(aog2))
+	Legend1(fig[1,1], Entries(aog2))
 	fig
 end
-
-# ╔═╡ ba09b46f-8f52-4f60-bf5f-704bc8568210
-scale_to_Ps(Entries(aog2).entries) |> Dict
 
 # ╔═╡ 5c4d951f-47b2-4f30-aaeb-fe9ec84ae1a7
 md"""
@@ -634,37 +569,27 @@ TableOfContents()
 # ╠═ee2e13e6-874f-4f4f-a73d-79b0ab7bbae4
 # ╠═98cc4c63-59e8-4baa-9af4-febf3862bf28
 # ╟─fefe87f2-f0b8-4fcc-9292-965ae442f896
-# ╠═dae54dc4-3380-4c35-ac77-83d2fa4cfcab
-# ╠═31e97f45-57b9-45c9-aebb-c20d9a68db42
 # ╟─6de1d586-f399-4d92-93f7-f9883829c0a6
 # ╟─0e08f486-acb1-4385-8c38-89fceffaffd2
 # ╟─95bac7d2-606d-43d8-b5d2-600b2420478b
 # ╠═b80f57b6-dd97-4f96-8b97-ac9afd153882
 # ╟─f946377c-39d0-4459-b787-45837009d7ae
-# ╠═30c0576c-ff55-4180-aa26-a6b4a4da4d50
-# ╠═9bb12bd8-5f18-4adc-8c8d-ea8d6a41096f
-# ╠═ed5b90cf-e918-4846-a57e-19bf13051574
-# ╟─8d4105bf-2a8b-4476-8ad7-7245c9e84377
-# ╠═c5f98651-b0e8-4eda-a501-e942d619cc82
-# ╠═3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
-# ╠═9f27fe58-e7d6-4ef6-805e-d45bed3ac0c6
 # ╠═b112711d-5e41-462b-a137-5a6d4bbe840c
 # ╟─902bf55a-c2af-4410-a737-9091dc487088
 # ╠═b3ae6153-ca9a-48ca-b517-14ab85eb89aa
 # ╠═b3b5a971-d752-4be9-a33c-38264c4256ec
-# ╠═bbffd9ac-70e8-49bd-83ed-7d79cf836596
-# ╠═18873a6a-fce4-4565-862d-081df6dffb40
-# ╠═5458b591-c4d2-4fe7-bd3d-96f7f6e32df6
-# ╠═745ce6f1-eb1f-43dc-93bc-136f63639fc3
-# ╠═4c047669-f5e5-48cd-97c9-dcecf4770625
-# ╠═21900bae-5b42-430c-af87-9f703cce035c
 # ╠═2bcbfb12-47e5-471a-b78f-4dfedaae3a0d
 # ╠═e57b567c-3138-4d17-9815-5010a810c77d
-# ╠═b00b2832-e371-4467-8512-6faeed99025c
+# ╟─58fac7b8-f045-43db-8e6f-b3ae7597f233
 # ╠═455fdcb0-07f2-4843-81e4-dfca90b0935f
 # ╠═74be7730-99a9-4352-8853-f6e4333238a6
 # ╠═158284cf-3897-4ab4-ab82-bf5c5c436715
-# ╠═ba09b46f-8f52-4f60-bf5f-704bc8568210
+# ╟─8d4105bf-2a8b-4476-8ad7-7245c9e84377
+# ╠═c5f98651-b0e8-4eda-a501-e942d619cc82
+# ╠═3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
+# ╠═9f27fe58-e7d6-4ef6-805e-d45bed3ac0c6
+# ╠═bbffd9ac-70e8-49bd-83ed-7d79cf836596
+# ╠═18873a6a-fce4-4565-862d-081df6dffb40
 # ╟─5c4d951f-47b2-4f30-aaeb-fe9ec84ae1a7
 # ╠═6c9811e0-998b-4f20-b5d7-61ca7c8340c0
 # ╠═1755e5f6-18a3-48b6-afff-678417be8c8e
