@@ -142,7 +142,7 @@ draw(plt)
 # fit and the contour lines.
 # We can lighten the markers using alpha transparency.
 
-ans = visual(Contour, linewidth = 1.5) * density() + linear() + visual(alpha = 0.8)
+ans = visual(Contour, linewidth = 1.5) * density() + linear() + visual(alpha = 0.7)
 plt = specs * ans * mapping(color = :species)
 draw(plt)
 

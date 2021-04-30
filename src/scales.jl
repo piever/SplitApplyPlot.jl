@@ -26,7 +26,7 @@ end
 
 function opinionated_defaults()
     return (
-        color=:gray15,
+        color=:gray50,
         strokecolor=RGBA(0, 0, 0, 0),
         outlierstrokecolor=RGBA(0, 0, 0, 0),
         mediancolor=:white,
