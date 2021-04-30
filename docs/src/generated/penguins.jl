@@ -19,9 +19,7 @@ first(penguins, 6)
 using SplitApplyPlot, CairoMakie
 
 specs = data(penguins) * frequency() * mapping(:species)
-fig = draw(specs)
-Legend(fig, specs)
-fig
+draw(specs)
 
 # Next, let us see whether the distribution is the same across islands.
 
@@ -46,9 +44,7 @@ specs * mapping(color = :island, stack = :island) |> draw
 # start analyzing their features.
 
 specs = data(penguins) * mapping(:bill_length_mm, :bill_depth_mm)
-fig = draw(specs)
-Legend(fig, specs)
-fig
+draw(specs)
 
 # We would actually prefer to visualize these measures in centimeters, and to have
 # cleaner axes labels. As we want this setting to be preserved in all of our `bill`
@@ -58,9 +54,7 @@ specs = data(penguins) * mapping(
     :bill_length_mm => (t -> t / 10) => "bill length (cm)",
     :bill_depth_mm => (t -> t / 10) => "bill depth (cm)",
 )
-fig = draw(specs)
-Legend(fig, specs)
-fig
+draw(specs)
 
 # Much better! Note the parentheses around the function `t -> t / 10`. They are
 # necessary to specify that the function maps `t` to `t / 10`, and not to
