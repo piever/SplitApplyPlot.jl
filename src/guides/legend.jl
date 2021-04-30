@@ -188,8 +188,9 @@ poly_element(; color = from_default_theme(:color),
 legend_element(::Type{Scatter}; kwargs...) = marker_element(; kwargs...)
 
 legend_element(::Type{Lines}; kwargs...) = line_element(; kwargs...)
+legend_element(::Type{Contour}; kwargs...) = line_element(; kwargs...)
 
-legend_element(::Type{BarPlot}; linewidth = 0, strokecolor=:green, kwargs...) = poly_element(; linewidth, kwargs...)
+legend_element(::Any; linewidth = 0, strokecolor=:transparent, kwargs...) = poly_element(; linewidth, kwargs...)
 
 # ------------------------------------------------
 # --------------- Some helpers -------------------
