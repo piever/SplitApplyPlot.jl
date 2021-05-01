@@ -14,7 +14,7 @@ $(ATTRIBUTES)
         colorrange = get(l_theme.attributes, :colorrange, automatic),
         linestyle = l_theme.linestyle,
         linewidth = l_theme.linewidth,
-        fillalpha = 0.2,
+        fillalpha = 0.15,
     )
 end
 

@@ -44,7 +44,8 @@ jobs:
           version: '1'
       - run: |
           julia --project=docs -e '
-            using Pkg; Pkg.develop(PackageSpec(path=pwd())); 
+            using Pkg; Pkg.develop(PackageSpec(path=pwd()));
+            Pkg.add(url="https://github.com/JuliaDocs/Documenter.jl", rev="master");
             Pkg.instantiate()'
       - run: |
           julia --project=docs -e '

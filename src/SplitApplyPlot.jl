@@ -30,6 +30,7 @@ export draw, draw!
 export facet!
 
 include("arguments.jl")
+include("theme.jl")
 include("scales.jl")
 include("entries.jl")
 include("utils.jl")

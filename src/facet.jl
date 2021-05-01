@@ -31,42 +31,78 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
     all(isnothing, (row_scale, col_scale)) && return
     hideinnerdecorations!(aes)
     linkaxes!(aes...)
+
+    ax = Axis(aes[1])
+    titlegap = ax.titlegap
+    titlecolor = ax.titlecolor
+    titlefont = ax.titlefont
+    titlesize = ax.titlesize
+    facetlabelattributes = (
+        color=titlecolor,
+        font=titlefont,
+        textsize=titlesize,
+    )
+
     if !isnothing(row_scale)
         for ae in aes
             Axis(ae).ylabelvisible[] = false
         end
         row_dict = Dict(zip(row_scale.plot, row_scale.data))
+        facetlabelpadding = lift(titlegap) do gap
+            return (gap, 0f0, 0f0, 0f0)
+        end
         for m in 1:M
-            Box(fig[m, N, Right()], color=:gray85, strokevisible=true)
-            Label(fig[m, N, Right()], string(row_dict[m]); rotation=-π/2)
+            Label(fig[m, N, Right()], string(row_dict[m]);
+                rotation=-π/2, padding=facetlabelpadding,
+                facetlabelattributes...)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.left, xs),
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[:, 1])...
         )
         # TODO: here and below, set in such a way that one can change padding after the fact?
-        padding = lift(protrusion, Axis(aes[1]).ylabelpadding) do val, p
+        ylabelpadding = lift(protrusion, ax.ylabelpadding) do val, p
             return (0f0, val + p, 0f0, 0f0)
         end
-        Label(fig[:, 1, Left()], Axis(aes[1]).ylabel; rotation=π/2, padding)
+        ylabelcolor = ax.ylabelcolor
+        ylabelfont = ax.ylabelfont
+        ylabelsize = ax.ylabelsize
+        ylabelattributes = (
+            color=ylabelcolor,
+            font=ylabelfont,
+            textsize=ylabelsize,
+        )
+        Label(fig[:, 1, Left()], ax.ylabel;
+            rotation=π/2, padding=ylabelpadding, ylabelattributes...)
     end
     if !isnothing(col_scale)
         for ae in aes
             Axis(ae).xlabelvisible[] = false
         end
         col_dict = Dict(zip(col_scale.plot, col_scale.data))
+        labelpadding = lift(titlegap) do gap
+            return (0f0, 0f0, gap, 0f0)
+        end
         for n in 1:N
-            Box(fig[1, n, Top()], color=:gray85, strokevisible=true)
-            Label(fig[1, n, Top()], string(col_dict[n]))
+            Label(fig[1, n, Top()], string(col_dict[n]); padding=labelpadding, facetlabelattributes...)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.bottom, xs),
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[M, :])...
         )
-        padding = lift(protrusion, Axis(aes[1]).xlabelpadding) do val, p
+        xlabelpadding = lift(protrusion, ax.xlabelpadding) do val, p
             return (0f0, 0f0, 0f0, val + p)
         end
-        Label(fig[M, :, Bottom()], Axis(aes[1]).xlabel; padding)
+        xlabelcolor = ax.xlabelcolor
+        xlabelfont = ax.xlabelfont
+        xlabelsize = ax.xlabelsize
+        xlabelattributes = (
+            color=xlabelcolor,
+            font=xlabelfont,
+            textsize=xlabelsize,
+        )
+        Label(fig[M, :, Bottom()], ax.xlabel;
+            padding=xlabelpadding, xlabelattributes...)
     end
     return
 end
