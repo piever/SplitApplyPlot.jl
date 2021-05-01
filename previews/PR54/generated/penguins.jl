@@ -107,7 +107,7 @@ draw(plt; figure)
 # This plot is getting a little bit crowded. We could instead analyze female and
 # male penguins in separate subplots. Let us set a wider figure for that.
 
-figure = (resolution = (500, 300),)
+figure = (resolution = (600, 300),)
 ans = linear() + mapping(col = :sex)
 plt = specs * ans * mapping(color = :species)
 draw(plt; figure)
