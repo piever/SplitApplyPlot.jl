@@ -94,8 +94,8 @@ draw(specs)
 
 using SplitApplyPlot, CairoMakie
 
-x = 1:0.1:10
-a = rand(1:3, length(x))
+x = 1:0.05:10
+a = rand(1:7, length(x))
 y = 1.2 .* x .+ a .+ 0.5 .* randn.()
 df = (; x, y, a)
 specs = data(df) * mapping(:x, :y, color=:a => nonnumeric) * (linear() + visual(Scatter))
@@ -107,8 +107,8 @@ draw(specs)
 # smooth
 # ```
 
-x = 1:0.1:10
-a = rand(1:3, length(x))
+x = 1:0.05:10
+a = rand(1:7, length(x))
 y = sin.(x) .+ a .+ 0.1 .* randn.()
 df = (; x, y, a)
 specs = data(df) * mapping(:x, :y, color=:a => nonnumeric) * (smooth() + visual(Scatter))
