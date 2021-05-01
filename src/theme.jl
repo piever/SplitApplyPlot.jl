@@ -31,7 +31,7 @@ function default_styles()
         outlierstrokecolor=RGBA(0, 0, 0, 0),
         mediancolor=:white,
         marker=:circle,
-        markersize=10,
+        markersize=9,
         linewidth=1.5,
         medianlinewidth=1.5,
         colormap=:batlow,
