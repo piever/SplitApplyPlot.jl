@@ -116,7 +116,7 @@ draw(plt)
 # their joint probability density distribution (pdf).
 
 using SplitApplyPlot: density
-an = density()
+an = density(npoints=50)
 plt = specs * an * mapping(col = :species)
 draw(plt)
 
