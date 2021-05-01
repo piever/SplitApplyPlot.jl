@@ -187,7 +187,7 @@ plot(m * geoms, axis=(aspect=1,))
 df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
 m = data(df) * mapping(:x, :y, layout=:c)
 geoms = linear() + visual(Scatter) * mapping(color=:z)
-fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(1200, 600),))
+fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(800, 400),))
 facet!(fg)
 
 # ## Multiple selection

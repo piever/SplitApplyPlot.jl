@@ -169,3 +169,6 @@ draw(plt, axis = (type = Axis3,))
 
 plt = specs3D * mapping(color = :species, layout = :sex)
 draw(plt, axis = (type = Axis3,), figure = (resolution = (1200, 400),))
+
+# Note that static 3D plot can be misleading, as they only show one projection
+# of 3D data. They are mostly useful when shown interactively.
