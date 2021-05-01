@@ -50,8 +50,8 @@ function default_axis(::Type{Axis})
         leftspinecolor=:darkgray,
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
-        xticklabelfont="DejaVu Sans ExtraLight",
-        yticklabelfont="DejaVu Sans ExtraLight",
+        xticklabelfont="Noto Sans Light",
+        yticklabelfont="Noto Sans Light",
     )
 end
 
@@ -66,8 +66,16 @@ function default_axis(::Type{Axis3})
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
         ztickcolor=:darkgray,
-        xticklabelfont="DejaVu Sans ExtraLight",
-        yticklabelfont="DejaVu Sans ExtraLight",
-        zticklabelfont="DejaVu Sans ExtraLight",
+        xticklabelfont="Noto Sans Light",
+        yticklabelfont="Noto Sans Light",
+        zticklabelfont="Noto Sans Light",
+    )
+end
+
+# default figure (may be better to only change on the axes.)
+
+function default_figure()
+    return (
+        font = "Noto Sans",
     )
 end

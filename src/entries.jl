@@ -75,7 +75,7 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 end
 
 function AbstractPlotting.plot(entries::Entries; axis=NamedTuple(), figure=NamedTuple())
-    fig = Figure(; figure...)
+    fig = Figure(; merge(default_figure(), figure)...)
     grid = plot!(fig, entries; axis)
     return FigureGrid(fig, grid)
 end
