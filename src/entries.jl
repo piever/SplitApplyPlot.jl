@@ -46,7 +46,10 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 
     axes_grid = map(CartesianIndices(grid_size)) do c
         type = get(axis, :type, Axis)
-        options = Base.structdiff(axis, (; type))
+        options = merge(
+            default_axis(type),
+            Base.structdiff(axis, (; type)),
+        )
         ax = type(fig[Tuple(c)...]; options...)
         return AxisEntries(ax, Entry[], e.scales, e.labels)
     end
@@ -158,7 +161,7 @@ function AbstractPlotting.plot!(ae::AxisEntries)
         end
 
         # Implement defaults
-        for (key, val) in pairs(opinionated_defaults())
+        for (key, val) in pairs(default_styles())
             get!(named, key, val)
         end
 
