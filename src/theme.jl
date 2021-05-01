@@ -43,6 +43,7 @@ end
 const font_folder = joinpath(dirname(@__DIR__), "assets", "fonts")
 
 notosans(weight) = joinpath(font_folder, "NotoSans-$(weight).ttf")
+opensans(weight) = joinpath(font_folder, "OpenSans-$(weight).ttf")
 
 function default_axis(::Type{Axis})
     return (
@@ -54,11 +55,11 @@ function default_axis(::Type{Axis})
         leftspinecolor=:darkgray,
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
-        xticklabelfont=notosans("Light"),
-        yticklabelfont=notosans("Light"),
-        xlabelfont=notosans("SemiBold"),
-        ylabelfont=notosans("SemiBold"),
-        titlefont=notosans("SemiBold"),
+        xticklabelfont=opensans("Light"),
+        yticklabelfont=opensans("Light"),
+        xlabelfont=opensans("SemiBold"),
+        ylabelfont=opensans("SemiBold"),
+        titlefont=opensans("SemiBold"),
     )
 end
 
@@ -73,12 +74,12 @@ function default_axis(::Type{Axis3})
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
         ztickcolor=:darkgray,
-        xticklabelfont=notosans("Light"),
-        yticklabelfont=notosans("Light"),
-        zticklabelfont=notosans("Light"),
-        xlabelfont=notosans("SemiBold"),
-        ylabelfont=notosans("SemiBold"),
-        zlabelfont=notosans("SemiBold"),
-        titlefont=notosans("SemiBold"),
+        xticklabelfont=opensans("Light"),
+        yticklabelfont=opensans("Light"),
+        zticklabelfont=opensans("Light"),
+        xlabelfont=opensans("SemiBold"),
+        ylabelfont=opensans("SemiBold"),
+        zlabelfont=opensans("SemiBold"),
+        titlefont=opensans("SemiBold"),
     )
 end

@@ -37,12 +37,10 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
     titlecolor = ax.titlecolor
     titlefont = ax.titlefont
     titlesize = ax.titlesize
-    titlevisible = ax.titlevisible
     facetlabelattributes = (
         color=titlecolor,
         font=titlefont,
         textsize=titlesize,
-        visible=titlevisible,
     )
 
     if !isnothing(row_scale)
@@ -63,20 +61,18 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[:, 1])...
         )
         # TODO: here and below, set in such a way that one can change padding after the fact?
-        ylabelpadding = lift(protrusion, Axis(aes[1]).ylabelpadding) do val, p
+        ylabelpadding = lift(protrusion, ax.ylabelpadding) do val, p
             return (0f0, val + p, 0f0, 0f0)
         end
         ylabelcolor = ax.ylabelcolor
         ylabelfont = ax.ylabelfont
         ylabelsize = ax.ylabelsize
-        ylabelvisible = ax.ylabelvisible
         ylabelattributes = (
             color=ylabelcolor,
             font=ylabelfont,
             textsize=ylabelsize,
-            visible=ylabelvisible,
         )
-        Label(fig[:, 1, Left()], Axis(aes[1]).ylabel;
+        Label(fig[:, 1, Left()], ax.ylabel;
             rotation=π/2, padding=ylabelpadding, ylabelattributes...)
     end
     if !isnothing(col_scale)
@@ -94,20 +90,18 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
             (xs...) -> maximum(x -> x.bottom, xs),
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[M, :])...
         )
-        xlabelpadding = lift(protrusion, Axis(aes[1]).xlabelpadding) do val, p
+        xlabelpadding = lift(protrusion, ax.xlabelpadding) do val, p
             return (0f0, 0f0, 0f0, val + p)
         end
         xlabelcolor = ax.xlabelcolor
         xlabelfont = ax.xlabelfont
         xlabelsize = ax.xlabelsize
-        xlabelvisible = ax.xlabelvisible
         xlabelattributes = (
             color=xlabelcolor,
             font=xlabelfont,
             textsize=xlabelsize,
-            visible=xlabelvisible,
         )
-        Label(fig[M, :, Bottom()], Axis(aes[1]).xlabel;
+        Label(fig[M, :, Bottom()], ax.xlabel;
             padding=xlabelpadding, xlabelattributes...)
     end
     return
