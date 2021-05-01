@@ -26,7 +26,7 @@ end
 
 function default_styles()
     return (
-        color=:dimgray,
+        color=:gray25,
         strokecolor=RGBA(0, 0, 0, 0),
         outlierstrokecolor=RGBA(0, 0, 0, 0),
         mediancolor=:white,
@@ -46,6 +46,12 @@ function default_axis(::Type{Axis})
         ygridvisible=false,
         topspinevisible=false,
         rightspinevisible=false,
+        bottomspinecolor=:darkgray,
+        leftspinecolor=:darkgray,
+        xtickcolor=:darkgray,
+        ytickcolor=:darkgray,
+        xticklabelfont="DejaVu Sans ExtraLight",
+        yticklabelfont="DejaVu Sans ExtraLight",
     )
 end
 
@@ -54,5 +60,14 @@ function default_axis(::Type{Axis3})
         xgridvisible=false,
         ygridvisible=false,
         zgridvisible=false,
+        xspinecolor=:darkgray,
+        yspinecolor=:darkgray,
+        zspinecolor=:darkgray,
+        xtickcolor=:darkgray,
+        ytickcolor=:darkgray,
+        ztickcolor=:darkgray,
+        xticklabelfont="DejaVu Sans ExtraLight",
+        yticklabelfont="DejaVu Sans ExtraLight",
+        zticklabelfont="DejaVu Sans ExtraLight",
     )
 end
