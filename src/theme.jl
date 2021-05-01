@@ -42,6 +42,8 @@ end
 
 const font_folder = joinpath(dirname(@__DIR__), "assets", "fonts")
 
+notosans(weight) = joinpath(font_folder, "NotoSans-$(weight).ttf")
+
 function default_axis(::Type{Axis})
     return (
         xgridvisible=false,
@@ -52,8 +54,11 @@ function default_axis(::Type{Axis})
         leftspinecolor=:darkgray,
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
-        xticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
-        yticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
+        xticklabelfont=notosans("Light"),
+        yticklabelfont=notosans("Light"),
+        xlabelfont=notosans("SemiBold"),
+        ylabelfont=notosans("SemiBold"),
+        titlefont=notosans("SemiBold"),
     )
 end
 
@@ -68,8 +73,12 @@ function default_axis(::Type{Axis3})
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
         ztickcolor=:darkgray,
-        xticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
-        yticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
-        zticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
+        xticklabelfont=notosans("Light"),
+        yticklabelfont=notosans("Light"),
+        zticklabelfont=notosans("Light"),
+        xlabelfont=notosans("SemiBold"),
+        ylabelfont=notosans("SemiBold"),
+        zlabelfont=notosans("SemiBold"),
+        titlefont=notosans("SemiBold"),
     )
 end

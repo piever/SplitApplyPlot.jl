@@ -31,28 +31,53 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
     all(isnothing, (row_scale, col_scale)) && return
     hideinnerdecorations!(aes)
     linkaxes!(aes...)
-    titlegap = Axis(aes[1]).titlegap
+
+    ax = Axis(aes[1])
+    titlegap = ax.titlegap
+    titlecolor = ax.titlecolor
+    titlefont = ax.titlefont
+    titlesize = ax.titlesize
+    titlevisible = ax.titlevisible
+    facetlabelattributes = (
+        color=titlecolor,
+        font=titlefont,
+        textsize=titlesize,
+        visible=titlevisible,
+    )
+
     if !isnothing(row_scale)
         for ae in aes
             Axis(ae).ylabelvisible[] = false
         end
         row_dict = Dict(zip(row_scale.plot, row_scale.data))
-        labelpadding = lift(titlegap) do gap
+        facetlabelpadding = lift(titlegap) do gap
             return (gap, 0f0, 0f0, 0f0)
         end
         for m in 1:M
             Label(fig[m, N, Right()], string(row_dict[m]);
-                rotation=-π/2, padding=labelpadding)
+                rotation=-π/2, padding=facetlabelpadding,
+                facetlabelattributes...)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.left, xs),
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[:, 1])...
         )
         # TODO: here and below, set in such a way that one can change padding after the fact?
-        padding = lift(protrusion, Axis(aes[1]).ylabelpadding) do val, p
+        ylabelpadding = lift(protrusion, Axis(aes[1]).ylabelpadding) do val, p
             return (0f0, val + p, 0f0, 0f0)
         end
-        Label(fig[:, 1, Left()], Axis(aes[1]).ylabel; rotation=π/2, padding)
+        ylabelcolor = ax.ylabelcolor
+        ylabelfont = ax.ylabelfont
+        ylabelsize = ax.ylabelsize
+        ylabelvisible = ax.ylabelvisible
+        ylabelattributes = (
+            color=ylabelcolor,
+            font=ylabelfont,
+            textsize=ylabelsize,
+            visible=ylabelvisible,
+        )
+        Label(fig[:, 1, Left()], Axis(aes[1]).ylabel;
+            rotation=π/2, padding=ylabelpadding, ylabelattributes...)
     end
     if !isnothing(col_scale)
         for ae in aes
@@ -63,16 +88,27 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
             return (0f0, 0f0, gap, 0f0)
         end
         for n in 1:N
-            Label(fig[1, n, Top()], string(col_dict[n]); padding=labelpadding)
+            Label(fig[1, n, Top()], string(col_dict[n]); padding=labelpadding, facetlabelattributes...)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.bottom, xs),
             (MakieLayout.protrusionsobservable(Axis(ae)) for ae in aes[M, :])...
         )
-        padding = lift(protrusion, Axis(aes[1]).xlabelpadding) do val, p
+        xlabelpadding = lift(protrusion, Axis(aes[1]).xlabelpadding) do val, p
             return (0f0, 0f0, 0f0, val + p)
         end
-        Label(fig[M, :, Bottom()], Axis(aes[1]).xlabel; padding)
+        xlabelcolor = ax.xlabelcolor
+        xlabelfont = ax.xlabelfont
+        xlabelsize = ax.xlabelsize
+        xlabelvisible = ax.xlabelvisible
+        xlabelattributes = (
+            color=xlabelcolor,
+            font=xlabelfont,
+            textsize=xlabelsize,
+            visible=xlabelvisible,
+        )
+        Label(fig[M, :, Bottom()], Axis(aes[1]).xlabel;
+            padding=xlabelpadding, xlabelattributes...)
     end
     return
 end
