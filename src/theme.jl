@@ -40,6 +40,8 @@ end
 
 # axis defaults
 
+const font_folder = joinpath(dirname(@__DIR__), "assets", "fonts")
+
 function default_axis(::Type{Axis})
     return (
         xgridvisible=false,
@@ -50,8 +52,8 @@ function default_axis(::Type{Axis})
         leftspinecolor=:darkgray,
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
-        xticklabelfont="Noto Sans Light",
-        yticklabelfont="Noto Sans Light",
+        xticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
+        yticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
     )
 end
 
@@ -66,16 +68,8 @@ function default_axis(::Type{Axis3})
         xtickcolor=:darkgray,
         ytickcolor=:darkgray,
         ztickcolor=:darkgray,
-        xticklabelfont="Noto Sans Light",
-        yticklabelfont="Noto Sans Light",
-        zticklabelfont="Noto Sans Light",
-    )
-end
-
-# default figure (may be better to only change on the axes.)
-
-function default_figure()
-    return (
-        font = "Noto Sans",
+        xticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
+        yticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
+        zticklabelfont=joinpath(font_folder, "NotoSans-Light.ttf"),
     )
 end
