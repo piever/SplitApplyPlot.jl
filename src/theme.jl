@@ -42,7 +42,6 @@ end
 
 const font_folder = joinpath(dirname(@__DIR__), "assets", "fonts")
 
-notosans(weight) = joinpath(font_folder, "NotoSans-$(weight).ttf")
 opensans(weight) = joinpath(font_folder, "OpenSans-$(weight).ttf")
 
 function default_axis(::Type{Axis})
