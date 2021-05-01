@@ -63,7 +63,7 @@ data(df) * mapping(:x, :y, layout=:l) |> plot |> facet!
 # For example
 
 df = (x=rand(100), y=rand(100), i=rand(["a", "b", "c"], 100), j=rand(["d", "e", "f"], 100))
-resolution = (1200, 600)
+resolution = (800, 400)
 fig = Figure(; resolution)
 ax = Axis(fig[1, 1], title="Some plot")
 layer = data(df) * mapping(:x, :y, col=:i, row=:j)

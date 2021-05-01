@@ -31,14 +31,18 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
     all(isnothing, (row_scale, col_scale)) && return
     hideinnerdecorations!(aes)
     linkaxes!(aes...)
+    titlegap = Axis(aes[1]).titlegap
     if !isnothing(row_scale)
         for ae in aes
             Axis(ae).ylabelvisible[] = false
         end
         row_dict = Dict(zip(row_scale.plot, row_scale.data))
+        labelpadding = lift(titlegap) do gap
+            return (gap, 0f0, 0f0, 0f0)
+        end
         for m in 1:M
-            Box(fig[m, N, Right()], color=:gray85, strokevisible=true)
-            Label(fig[m, N, Right()], string(row_dict[m]); rotation=-π/2)
+            Label(fig[m, N, Right()], string(row_dict[m]);
+                rotation=-π/2, padding=labelpadding)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.left, xs),
@@ -55,9 +59,11 @@ function facet_grid!(fig, aes::AbstractMatrix{AxisEntries})
             Axis(ae).xlabelvisible[] = false
         end
         col_dict = Dict(zip(col_scale.plot, col_scale.data))
+        labelpadding = lift(titlegap) do gap
+            return (0f0, 0f0, gap, 0f0)
+        end
         for n in 1:N
-            Box(fig[1, n, Top()], color=:gray85, strokevisible=true)
-            Label(fig[1, n, Top()], string(col_dict[n]))
+            Label(fig[1, n, Top()], string(col_dict[n]); padding=labelpadding)
         end
         protrusion = lift(
             (xs...) -> maximum(x -> x.bottom, xs),
