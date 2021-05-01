@@ -23,20 +23,23 @@ draw(specs)
 
 # Next, let us see whether the distribution is the same across islands.
 
-specs * mapping(color = :island) |> draw
+plt = specs * mapping(color = :island)
+draw(plt)
 
 # Ups! The bars are in the same spot and are hiding each other. We need to specify
 # how we want to fix this. Bars can either `dodge` each other, or be `stack`ed on top
 # of each other.
 
-specs * mapping(color = :island, dodge = :island) |> draw
+plt = specs * mapping(color = :island, dodge = :island)
+draw(plt)
 
 # This is our first finding. `Adelie` is the only species of penguins that can be
 # found on all three islands. To be able to see both which species is more numerous
 # and how different species are distributed across islands in a unique plot, 
 # we could have used `stack`.
 
-specs * mapping(color = :island, stack = :island) |> draw
+plt = specs * mapping(color = :island, stack = :island)
+draw(plt)
 
 # ## Correlating two variables
 #
@@ -63,42 +66,49 @@ draw(specs)
 # There does not seem to be a strong correlation between the two dimensions, which
 # is odd. Maybe dividing the data by species will help.
 
-specs * mapping(color = :species) |> draw
+plt = specs * mapping(color = :species)
+draw(plt)
 
 # Ha! Within each species, penguins with a longer bill also have a deeper bill.
 # We can confirm that with a linear regression
 
 an = linear()
-specs * an * mapping(color = :species) |> draw
+plt = specs * an * mapping(color = :species)
+draw(plt)
 
 # This unfortunately no longer shows our data!
 # We can use `+` to plot both things on top of each other:
 
-specs * an * mapping(color = :species) + specs * mapping(color = :species) |> draw
+plt = specs * an * mapping(color = :species) + specs * mapping(color = :species)
+draw(plt)
 
 # Note that the above expression seems a bit redundant, as we wrote the same thing twice.
 # We can "factor it out" as follows
 
-specs * (an + mapping()) * mapping(color = :species) |> draw
+plt = specs * (an + mapping()) * mapping(color = :species)
+draw(plt)
 
 # where `mapping()` is a neutral multiplicative element.
 # Of course, the above could be refactored as
 
 ans = linear() + mapping()
-specs * ans * mapping(color = :species) |> draw
+plt = specs * ans * mapping(color = :species)
+draw(plt)
 
 # We could actually take advantage of the spare `mapping()` and use it to pass some
 # extra info to the scatter, while still using all the species members to compute
 # the linear fit. 
 
 ans = linear() + mapping(marker = :sex)
-specs * ans * mapping(color = :species) |> draw
+plt = specs * ans * mapping(color = :species)
+draw(plt)
 
 # This plot is getting a little bit crowded. We could instead analyze female and
 # male penguins in separate subplots.
 
 ans = linear() + mapping(col = :sex)
-specs * ans * mapping(color = :species) |> draw
+plt = specs * ans * mapping(color = :species)
+draw(plt)
 
 # ## Smooth density plots
 #
@@ -107,11 +117,18 @@ specs * ans * mapping(color = :species) |> draw
 
 using SplitApplyPlot: density
 an = density()
-specs * an * mapping(col = :species) |> draw
+plt = specs * an * mapping(col = :species)
+draw(plt)
+
+# Note that for horizontal layouts (one row, three columns), it may be helpful
+# to use a wider resolution:
+
+figure = (resolution = (800, 400),)
+draw(plt; figure)
 
 # The default colormap is multi-hue, but it is possible to pass single-hue colormaps as well:
 
-specs * visual(colormap = :grayC) * an * mapping(col = :species) |> draw
+draw(visual(colormap = :grayC) * plt; figure)
 
 # A `Heatmap` (the default visualization for a 2D density) is a bit unfortunate if
 # we want to mark species by color. In that case, one can use `visual` to change
@@ -122,7 +139,8 @@ specs * visual(colormap = :grayC) * an * mapping(col = :species) |> draw
 using SplitApplyPlot: density
 an = visual(Wireframe, linewidth=0.1) * density()
 plt = specs * an * mapping(color = :species)
-draw(plt, axis = (type = Axis3,))
+axis = (type = Axis3,)
+draw(plt; axis)
 
 # Of course, a more traditional approach would be to use a `Contour` plot instead:
 
@@ -155,7 +173,8 @@ draw(plt)
 
 body_mass = :body_mass_g => (t -> t / 1000) => "body mass (kg)"
 ans = linear() + mapping(color = body_mass)
-specs * ans * mapping(marker = :species) |> draw
+plt = specs * ans * mapping(marker = :species)
+draw(plt)
 
 # Naturally, within each species, heavier penguins have bigger bills, but perhaps
 # counter-intuitively the species with the shallowest bills features the heaviest penguins.
@@ -163,12 +182,14 @@ specs * ans * mapping(marker = :species) |> draw
 
 specs3D = specs * mapping(body_mass)
 plt = specs3D * mapping(color = :species)
-draw(plt, axis = (type = Axis3,))
+axis = (type = Axis3,)
+draw(plt; axis)
 
 #
 
 plt = specs3D * mapping(color = :species, layout = :sex)
-draw(plt, axis = (type = Axis3,), figure = (resolution = (1200, 400),))
+figure = (resolution = (1200, 400),)
+draw(plt; axis, figure)
 
 # Note that static 3D plot can be misleading, as they only show one projection
 # of 3D data. They are mostly useful when shown interactively.
