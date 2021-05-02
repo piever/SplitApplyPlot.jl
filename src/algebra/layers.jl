@@ -60,8 +60,9 @@ end
 function draw(s::OneOrMoreLayers;
               axis = NamedTuple(), figure=NamedTuple(), palettes=NamedTuple())
     fg = plot(s; axis, figure, palettes)
-    resizetocontent!(fg.figure)
-    return facet!(fg)
+    facet!(fg)
+    resizetocontent!(fg)
+    return fg
 end
 
 function draw!(fig, s::OneOrMoreLayers;

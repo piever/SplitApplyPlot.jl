@@ -64,6 +64,7 @@ end
 
 function default_axis(::Type{Axis3})
     return (
+        protrusions=75, # to include label on z axis
         xgridvisible=false,
         ygridvisible=false,
         zgridvisible=false,

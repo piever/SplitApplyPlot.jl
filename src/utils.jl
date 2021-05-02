@@ -104,3 +104,8 @@ function resizetocontent!(fig::Figure)
     sz == figsize || resize!(fig.scene, sz)
     return fig
 end
+
+function resizetocontent!(fg::FigureGrid)
+    resizetocontent!(fg.figure)
+    return fg
+end

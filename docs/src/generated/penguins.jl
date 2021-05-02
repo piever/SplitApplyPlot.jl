@@ -18,7 +18,7 @@ first(penguins, 6)
 
 using SplitApplyPlot, CairoMakie
 
-axis = (width = 200, height = 200)
+axis = (width = 225, height = 225)
 specs = data(penguins) * frequency() * mapping(:species)
 draw(specs; axis)
 
@@ -132,7 +132,6 @@ draw(visual(colormap = :grayC) * plt; axis)
 # time being, we must specify explicitly that we require a 3D axis.)
 
 using SplitApplyPlot: density
-figure = (resolution = (600, 400),)
 axis = (type = Axis3, width = 300, height = 300)
 an = visual(Wireframe, linewidth=0.1) * density()
 plt = specs * an * mapping(color = :species)
@@ -141,7 +140,7 @@ draw(plt; axis)
 # Of course, a more traditional approach would be to use a `Contour` plot instead:
 
 using SplitApplyPlot: density
-axis = (width = 200, height = 200)
+axis = (width = 225, height = 225)
 an = visual(Contour) * density()
 plt = specs * an * mapping(color = :species)
 draw(plt; axis)
