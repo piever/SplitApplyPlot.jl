@@ -64,7 +64,7 @@ end
 
 function default_axis(::Type{Axis3})
     return (
-        protrusions=75, # to include label on z axis
+        protrusions=55, # to include label on z axis, should be fixed in AbstractPlotting
         xgridvisible=false,
         ygridvisible=false,
         zgridvisible=false,
