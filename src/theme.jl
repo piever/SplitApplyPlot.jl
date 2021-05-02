@@ -31,7 +31,7 @@ function default_styles()
         outlierstrokecolor=RGBA(0, 0, 0, 0),
         mediancolor=:white,
         marker=:circle,
-        markersize=12,
+        markersize=9,
         linewidth=1.5,
         medianlinewidth=1.5,
         colormap=:batlow,
@@ -64,6 +64,7 @@ end
 
 function default_axis(::Type{Axis3})
     return (
+        protrusions=55, # to include label on z axis, should be fixed in AbstractPlotting
         xgridvisible=false,
         ygridvisible=false,
         zgridvisible=false,
