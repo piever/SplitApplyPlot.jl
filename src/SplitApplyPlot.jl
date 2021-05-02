@@ -14,6 +14,7 @@ import AbstractPlotting.MakieLayout: hidexdecorations!,
                                      linkaxes!,
                                      linkxaxes!,
                                      linkyaxes!
+using GridLayoutBase: determinedirsize, Col, Row
 using PooledArrays: PooledArray
 using KernelDensity: kde, pdf
 using StatsBase: fit, histrange, Histogram, normalize, weights, AbstractWeights, sturges

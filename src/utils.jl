@@ -94,3 +94,13 @@ maybewrap(x) = fill(x)
 
 unwrap(x) = x
 unwrap(x::AbstractArray{<:Any, 0}) = x[]
+
+function resizetocontent!(fig::Figure)
+    figsize = size(fig.scene)
+    sz = map((Col(), Row()), figsize) do dir, currentsize
+        inferredsize = determinedirsize(fig.layout, dir)
+        return ceil(Int, something(inferredsize, currentsize))
+    end
+    sz == figsize || resize!(fig.scene, sz)
+    return fig
+end
