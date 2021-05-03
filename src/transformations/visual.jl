@@ -5,7 +5,7 @@ end
 Visual(plottype=Any; kwargs...) = Visual(plottype, Dict{Symbol, Any}(kwargs))
 
 function (v::Visual)(e::Entry)
-    plottype = AbstractPlotting.plottype(e.plottype, v.plottype)
+    plottype = AbstractPlotting.plottype(v.plottype, e.plottype)
     mappings = e.mappings
     attributes = merge(e.attributes, v.attributes)
     return Entry(plottype, mappings, attributes)
