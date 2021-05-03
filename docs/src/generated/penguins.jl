@@ -123,7 +123,7 @@ draw(plt; axis)
 
 # The default colormap is multi-hue, but it is possible to pass single-hue colormaps as well:
 
-draw(visual(colormap = :grayC) * plt; axis)
+draw(plt * visual(colormap = :grayC); axis)
 
 # A `Heatmap` (the default visualization for a 2D density) is a bit unfortunate if
 # we want to mark species by color. In that case, one can use `visual` to change
@@ -133,7 +133,7 @@ draw(visual(colormap = :grayC) * plt; axis)
 
 using SplitApplyPlot: density
 axis = (type = Axis3, width = 300, height = 300)
-an = visual(Wireframe, linewidth=0.1) * density()
+an = density() * visual(Wireframe, linewidth=0.05)
 plt = specs * an * mapping(color = :species)
 draw(plt; axis)
 
@@ -141,13 +141,13 @@ draw(plt; axis)
 
 using SplitApplyPlot: density
 axis = (width = 225, height = 225)
-an = visual(Contour) * density()
+an = density() * visual(Contour)
 plt = specs * an * mapping(color = :species)
 draw(plt; axis)
 
 # The data and the linear fit can also be added back to the plot:
 
-ans = visual(Contour) * density() + linear() + mapping()
+ans = density() * visual(Contour) + linear() + mapping()
 plt = specs * ans * mapping(color = :species)
 draw(plt; axis)
 
@@ -156,7 +156,7 @@ draw(plt; axis)
 # fit and the contour lines.
 # We can lighten the markers using alpha transparency.
 
-ans = visual(Contour, linewidth = 1.5) * density() + linear() + visual(alpha = 0.5)
+ans = density() * visual(Contour, linewidth = 1.5) + linear() + visual(alpha = 0.5)
 plt = specs * ans * mapping(color = :species)
 draw(plt; axis)
 
