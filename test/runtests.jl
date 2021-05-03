@@ -12,4 +12,8 @@ using Test
     e1 = (-3, 11)
     e2 = (-5, 10)
     @test SplitApplyPlot.extend_extrema(e1, e2) == (-5, 11)
+
+    rg = 1:10
+    @test SplitApplyPlot.edges(rg) == 0.5:1:10.5
+    @test SplitApplyPlot.centers(SplitApplyPlot.edges(rg)) == rg
 end

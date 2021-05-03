@@ -29,7 +29,6 @@ function (h::HistogramAnalysis)(le::Entry)
     extrema = get(h.options, :extrema, Tuple(summaries))
     options = merge(h.options, pairs((; extrema)))
 
-    f(edges) = edges[1:end-1] .+ diff(edges)./2
     return splitapply(le) do entry
         labels, mappings = map(getlabel, entry.mappings), map(getvalue, entry.mappings)
         hist = _histogram(mappings.positional...; mappings.named..., options...)
@@ -41,7 +40,7 @@ function (h::HistogramAnalysis)(le::Entry)
         labeled_result = map(
             Labeled,
             vcat(labels.positional, newlabel),
-            (map(f, hist.edges)..., hist.weights)
+            (map(centers, hist.edges)..., hist.weights)
         )
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
