@@ -10,10 +10,9 @@ function compute_edges(data, extrema, bins::Tuple{Vararg{Integer}}, closed)
 end
 compute_edges(data, extrema, bins::Tuple{Vararg{AbstractArray}}, closed) = bins
 
-function centers(edges::AbstractRange)
-    s = step(edges)
-    min, max = extrema(edges)
-    return range(min + s / 2, step=s, length=length(edges) - 1)
+function midpoints(edges::AbstractRange)
+    min, s, l = minimum(edges), step(edges), length(edges)
+    return range(min + s / 2, step=s, length=l - 1)
 end
 
 function _histogram(data...; bins=sturges(length(data[1])), wts=automatic,
@@ -46,7 +45,7 @@ function (h::HistogramAnalysis)(le::Entry)
         labeled_result = map(
             Labeled,
             vcat(labels.positional, newlabel),
-            (map(centers, hist.edges)..., hist.weights)
+            (map(midpoints, hist.edges)..., hist.weights)
         )
         return Entry(
             AbstractPlotting.plottype(entry.plottype, default_plottype),
