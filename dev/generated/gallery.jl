@@ -179,14 +179,14 @@ plot(layer; palettes=(arrowcolor=colors, arrowhead=heads))
 
 df = (x=rand(100), y=rand(100), z=rand(100))
 m = data(df) * mapping(:x, :y)
-geoms = linear() + visual(Scatter) * mapping(color=:z)
+geoms = linear() + mapping(color=:z)
 plot(m * geoms, axis=(aspect=1,))
 
 # ### Figure tweaking
 
 df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
 m = data(df) * mapping(:x, :y, layout=:c)
-geoms = linear() + visual(Scatter) * mapping(color=:z)
+geoms = linear() + mapping(color=:z)
 fg = plot(m * geoms, axis=(aspect=1,), figure=(resolution=(800, 400),))
 facet!(fg)
 
@@ -246,7 +246,7 @@ draw(plt)
 
 df = (x=rand(100), y=rand(100), z=rand(100), c=rand(["a", "b"], 100))
 m = data(df) * mapping(:x, (:x, :y, :z) => (+) => "x + y + z", layout=:c)
-geoms = linear() + visual(Scatter) * mapping(color=:z)
+geoms = linear() + mapping(color=:z)
 fg = plot(m * geoms)
 facet!(fg)
 

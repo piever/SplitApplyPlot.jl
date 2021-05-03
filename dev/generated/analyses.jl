@@ -42,8 +42,8 @@ data(df) * mapping(:x, :y, layout=:z) * SplitApplyPlot.density(npoints=50) |> dr
 #
 
 specs = data(df) * mapping(:x, :y, layout=:z) *
-    visual(Surface) *
-    SplitApplyPlot.density(npoints=50)
+    SplitApplyPlot.density(npoints=50) * visual(Surface)
+    
 draw(specs, axis=(type=Axis3, zticks=0:0.1:0.2, limits=(nothing, nothing, (0, 0.2))))
 
 # ## Frequency
