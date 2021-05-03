@@ -10,6 +10,12 @@ function compute_edges(data, extrema, bins::Tuple{Vararg{Integer}}, closed)
 end
 compute_edges(data, extrema, bins::Tuple{Vararg{AbstractArray}}, closed) = bins
 
+function centers(edges::AbstractRange)
+    s = step(edges)
+    min, max = extrema(edges)
+    return range(min + s / 2, step=s, length=length(edges) - 1)
+end
+
 function _histogram(data...; bins=sturges(length(data[1])), wts=automatic,
     normalization=:none, extrema, closed=:left)
 
