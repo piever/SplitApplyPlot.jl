@@ -12,4 +12,6 @@ using Test
     e1 = (-3, 11)
     e2 = (-5, 10)
     @test SplitApplyPlot.extend_extrema(e1, e2) == (-5, 11)
+
+    @test SplitApplyPlot.midpoints(1:10) == 1.5:9.5
 end
