@@ -27,6 +27,7 @@ makedocs(;
     pages=Any[
         "index.md",
         "generated/penguins.md",
+        "layers.md",
         "generated/analyses.md",
         "generated/statistical_plots.md",
         "generated/entries.md",
