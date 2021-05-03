@@ -133,7 +133,7 @@ draw(plt * visual(colormap = :grayC); axis)
 
 using SplitApplyPlot: density
 axis = (type = Axis3, width = 300, height = 300)
-an = density() * visual(Wireframe, linewidth=0.1)
+an = density() * visual(Wireframe, linewidth=0.05)
 plt = specs * an * mapping(color = :species)
 draw(plt; axis)
 
