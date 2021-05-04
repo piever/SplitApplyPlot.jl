@@ -1,4 +1,7 @@
-# # Statistical plots
+# # Visual Transformations
+
+# The function `visual` can be used to give data-independent visual information about the plot
+# (plotting function or attributes).
 
 using SplitApplyPlot, CairoMakie, PalmerPenguins, DataFrames
 

@@ -30,9 +30,9 @@ ae = AxisEntries(
         ),
     ],
     arguments(
-        ContinuousScale(identity, (0, 1)),
-        ContinuousScale(identity, (0, 1)),
-        color=ContinuousScale(identity, (0, 1)),
+        ContinuousScale(identity, (0, 4)),
+        ContinuousScale(identity, (0, 4)),
+        color=ContinuousScale(identity, (1, N)),
         marker=CategoricalScale(["a", "b", "c"], [:circle, :utriangle, :dtriangle]), #scales
     ),
     arguments("x", "y", color="identity", marker="function"), #labels

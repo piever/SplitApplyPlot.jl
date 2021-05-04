@@ -26,11 +26,24 @@ makedocs(;
     ),
     pages=Any[
         "index.md",
-        "generated/penguins.md",
-        "generated/analyses.md",
-        "generated/statistical_plots.md",
-        "generated/entries.md",
-        "generated/gallery.md",
+        "Getting Started" => [
+            "generated/penguins.md",
+            "generated/gallery.md",
+        ],
+        "Algebra of Layers" => [
+            "layers/introduction.md",
+            "layers/data.md",
+            "layers/mappings.md",
+            "Transformations" => [
+                "generated/visualtransformations.md",
+                "generated/datatransformations.md",
+            ],
+            "layers/operations.md",
+            "layers/draw.md",
+        ],
+        "Internals" => [
+            "generated/entries.md",
+        ],
         "API.md",
     ],
     strict = true,
