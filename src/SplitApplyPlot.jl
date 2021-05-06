@@ -3,7 +3,7 @@ module SplitApplyPlot
 using Base: front, tail
 using Dates
 using Tables: rows, columns, getcolumn, columnnames
-using StructArrays: components, uniquesorted, GroupPerm, StructArray
+using StructArrays: StructArrays, components, uniquesorted, GroupPerm, StructArray
 using Colors: RGB, RGBA, red, green, blue, Color
 using PlotUtils: optimize_datetime_ticks
 using AbstractPlotting
@@ -19,6 +19,8 @@ using PooledArrays: PooledArray
 using KernelDensity: kde, pdf
 using StatsBase: fit, histrange, Histogram, normalize, weights, AbstractWeights, sturges
 using DataAPI: refarray
+using UnPack: @unpack
+
 import GLM, Loess
 import FileIO
 
@@ -29,6 +31,8 @@ export density, histogram, linear, smooth, expectation, frequency
 export visual, data, dims, mapping
 export draw, draw!
 export facet!
+
+export legend
 
 include("arguments.jl")
 include("theme.jl")
@@ -50,5 +54,7 @@ include("transformations/histogram.jl")
 include("transformations/groupreduce.jl")
 include("transformations/frequency.jl")
 include("transformations/expectation.jl")
+
+include("guides/legend.jl")
 
 end
