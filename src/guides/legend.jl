@@ -2,26 +2,20 @@
 # -------------- Some helpful types --------------
 # ------------------------------------------------
 
-# ╔═╡ bbffd9ac-70e8-49bd-83ed-7d79cf836596
-begin
-	struct KW
-		key::Symbol # e.g. :color | :linestyle | :markersize
-		attribute   # e.g.  :red  |   :dash    |    1.4
-	end
-	pair(kw::KW) = kw.key => kw.attribute
+struct KW
+	key::Symbol # e.g. :color | :linestyle | :markersize
+	attribute   # e.g.  :red  |   :dash    |    1.4
+end
+pair(kw::KW) = kw.key => kw.attribute
+
+struct L
+	label::Union{String,Number}
 end
 
-# ╔═╡ 18873a6a-fce4-4565-862d-081df6dffb40
-begin
-	struct L
-		label::Union{String,Number}
-	end
+L(l::L) = l
 
-	L(l::L) = l
-	
-	Base.get(l::L) = l.label
-	Base.string(l::L) = string(l.label)
-end
+Base.get(l::L) = l.label
+Base.string(l::L) = string(l.label)
 
 # ------------------------------------------------
 # -------------------- Legend --------------------
@@ -75,7 +69,6 @@ function _Legend_(entries)
 	consolidate_legends(out)
 end
 
-# ╔═╡ 2bcbfb12-47e5-471a-b78f-4dfedaae3a0d
 function _legend(P, attribute, scale::ContinuousScale, title)
 	extrema = scale.extrema
 	#@unpack f, extrema = scale
@@ -88,7 +81,6 @@ function _legend(P, attribute, scale::ContinuousScale, title)
 	(; title, P, label_kw)
 end	
 
-# ╔═╡ e57b567c-3138-4d17-9815-5010a810c77d
 function _legend(P, attribute, scale::CategoricalScale, title)
 	
 	labels = string.(scale.data)
@@ -103,7 +95,6 @@ end
 # ------------- Consolidate legends --------------
 # ------------------------------------------------
 
-# ╔═╡ 455fdcb0-07f2-4843-81e4-dfca90b0935f
 function consolidate_legends(out)
 	## Step 1: Combine multiple keywords per PlotType and variable
 	## e.g. (Scatter, "grp a", [color => :red, marker => :circle]
@@ -111,12 +102,12 @@ function consolidate_legends(out)
 	grps1 = StructArrays.finduniquesorted(groupby1)
 
 	out1 = map(grps1) do (grp, inds)
-		@unpack label_kw = out[inds]
-		@unpack title = grp	
+		label_kw = out[inds].label_kw
+		title = grp.title
 		P = out[inds].P |> unique |> only
-		
+
 		kws = consolidate_kws(P, label_kw)
-	
+
 		(; title, kws)
 	end |> StructArray
 
@@ -134,7 +125,6 @@ function consolidate_legends(out)
 	(; out2.elements, out2.label, out2.title)
 end
 
-# ╔═╡ 74be7730-99a9-4352-8853-f6e4333238a6
 function consolidate_kws(P, label_kw)
 	label_kw = StructArray(vcat(label_kw...))
 	
@@ -146,7 +136,6 @@ function consolidate_kws(P, label_kw)
 	end
 end
 
-# ╔═╡ 158284cf-3897-4ab4-ab82-bf5c5c436715
 function consolidate_plots(tmp)
 	grps = 	StructArrays.finduniquesorted(get.(tmp.label))
 	
@@ -196,7 +185,6 @@ legend_element(::Any; linewidth = 0, strokecolor=:transparent, kwargs...) = poly
 # --------------- Some helpers -------------------
 # ------------------------------------------------
 
-# ╔═╡ c5f98651-b0e8-4eda-a501-e942d619cc82
 function scale_to_P(entries)
 	mapreduce(∪, entries) do entry
 		P = entry.plottype
@@ -205,7 +193,6 @@ function scale_to_P(entries)
 	end
 end
 
-# ╔═╡ 3c3fd66f-9c80-4df6-8eb6-91bd086d31c6
 function scale_to_Ps(entries)
 	all_scales = scale_to_P(entries)
 	scales = unique(first.(all_scales))
