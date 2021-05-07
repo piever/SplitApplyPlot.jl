@@ -7,6 +7,7 @@
 # ### A simple scatter plot
 
 using SplitApplyPlot, CairoMakie
+set_aog_theme!()
 
 df = (x=rand(100), y=rand(100))
 data(df) * mapping(:x, :y) |> plot
@@ -230,7 +231,9 @@ x = today() - Year(1) : Day(1) : today()
 y = cumsum(randn(length(x)))
 z = cumsum(randn(length(x)))
 df = (; x, y, z)
-plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
+labels = ["series 1", "series 2", "series 3", "series 4", "series 5"]
+plt = data(df) * mapping(:x, [:y, :z], color=dims(1)=>(c -> labels[c])=>"series ") *
+    visual(Lines)
 draw(plt)
 
 #
@@ -239,7 +242,8 @@ x = now() - Hour(6) : Minute(1) : now()
 y = cumsum(randn(length(x)))
 z = cumsum(randn(length(x)))
 df = (; x, y, z)
-plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
+plt = data(df) * mapping(:x, [:y, :z], color=dims(1)=>(c -> labels[c])=>"series ") *
+    visual(Lines)
 draw(plt)
 
 # ### New columns on the fly
@@ -250,25 +254,20 @@ geoms = linear() + mapping(color=:z)
 fg = plot(m * geoms)
 facet!(fg)
 
-# ### Legends
+# ## Legend merging
 
 N = 20
 
-df = (x = [1:N; 1:N; 1:N; 1:N],
-		zz = [fill(2, N); fill(-2, N); fill(2.5, N); fill(0, N)],
-		y = [2 .+ cumsum(randn(N)); -2 .+ cumsum(randn(N)); 2.5 .+ cumsum(randn(N)); cumsum(randn(N))],
-	    grp1 = [fill("a", 2N); fill("b", 2N)],
-		grp2 = [fill("c", N); fill("d", N); fill("c", N); fill("d", N)],
-		z = 20 .* rand(4N)
-	
-    )
-    
-line = visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
-scat = visual(Scatter) * mapping(marker = :grp1, markersize = :z)
-specs = data(df) * mapping(:x, :y) * mapping(color = :grp1) * (line + scat)
+x = [1:N; 1:N; 1:N; 1:N]
+y = [2 .+ cumsum(randn(N)); -2 .+ cumsum(randn(N)); 2.5 .+ cumsum(randn(N)); cumsum(randn(N))]
+grp = [fill("a", 2N); fill("b", 2N)]
 
-fig = draw(specs)
-Legend(fig, Entries(specs))
-fig
+df = (; x, y, grp)
+    
+line = visual(Lines, linewidth = 2)
+scat = visual(Scatter) * mapping(marker = :grp)
+specs = data(df) * mapping(:x, :y) * mapping(color = :grp) * (line + scat)
+
+draw(specs)
 
 #
