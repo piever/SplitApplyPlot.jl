@@ -250,25 +250,24 @@ geoms = linear() + mapping(color=:z)
 fg = plot(m * geoms)
 facet!(fg)
 
-# ### Legends
+# ## Legends
 
 N = 20
 
-df = (x = [1:N; 1:N; 1:N; 1:N],
-		zz = [fill(2, N); fill(-2, N); fill(2.5, N); fill(0, N)],
-		y = [2 .+ cumsum(randn(N)); -2 .+ cumsum(randn(N)); 2.5 .+ cumsum(randn(N)); cumsum(randn(N))],
-	    grp1 = [fill("a", 2N); fill("b", 2N)],
-		grp2 = [fill("c", N); fill("d", N); fill("c", N); fill("d", N)],
-		z = 20 .* rand(4N)
-	
-    )
+x = [1:N; 1:N; 1:N; 1:N]
+y = [2 .+ cumsum(randn(N)); -2 .+ cumsum(randn(N)); 2.5 .+ cumsum(randn(N)); cumsum(randn(N))]
+grp1 = [fill("a", 2N); fill("b", 2N)]
+grp2 = [fill("c", N); fill("d", N); fill("c", N); fill("d", N)]
+z = 20 .* rand(4N)
+
+df = (; x, y, z, grp1, grp2)
     
 line = visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
 scat = visual(Scatter) * mapping(marker = :grp1, markersize = :z)
 specs = data(df) * mapping(:x, :y) * mapping(color = :grp1) * (line + scat)
 
-fig = draw(specs)
-Legend(fig, Entries(specs))
-fig
+fg = draw(specs)
+Legend(fg, Entries(specs))
+fg
 
 #

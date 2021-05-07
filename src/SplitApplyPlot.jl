@@ -30,6 +30,7 @@ export density, histogram, linear, smooth, expectation, frequency
 export visual, data, dims, mapping
 export draw, draw!
 export facet!
+export set_aog_theme!
 
 export legend
 

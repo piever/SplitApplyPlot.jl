@@ -17,6 +17,7 @@ first(penguins, 6)
 # Let us start by getting a rough idea of how the data is distributed
 
 using SplitApplyPlot, CairoMakie
+set_aog_theme!()
 
 axis = (width = 225, height = 225)
 specs = data(penguins) * frequency() * mapping(:species)
@@ -36,7 +37,6 @@ draw(plt; axis)
 
 #
 
-set_theme!(Legend=(framevisible=false, titlefont=SplitApplyPlot.opensans("SemiBold"), labelfont=SplitApplyPlot.opensans("Light")))
 plt = specs * mapping(color = :island, dodge = :island)
 fg = draw(plt; axis)
 Legend(fg.figure[1, 2], plt)
