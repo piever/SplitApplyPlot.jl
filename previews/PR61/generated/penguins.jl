@@ -167,10 +167,13 @@ draw(plt; axis)
 # it relates to other penguin features, such as their weight.
 # For that, a possible approach is to use a continuous color
 # on a gradient to denote weight and different marker shapes to denote species.
+# Here we use `group` to split the data for the linear regression without adding
+# any additional style.
 
 body_mass = :body_mass_g => (t -> t / 1000) => "body mass (kg)"
-ans = linear() + mapping(color = body_mass)
-plt = specs * ans * mapping(marker = :species)
+line = linear() * mapping(group = :species)
+scat = mapping(color = body_mass) * mapping(marker = :species)
+plt = specs * (line + scat)
 draw(plt; axis)
 
 # Naturally, within each species, heavier penguins have bigger bills, but perhaps

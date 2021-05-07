@@ -7,6 +7,7 @@
 # ### A simple scatter plot
 
 using SplitApplyPlot, CairoMakie
+set_aog_theme!()
 
 df = (x=rand(100), y=rand(100))
 data(df) * mapping(:x, :y) |> plot
@@ -259,15 +260,13 @@ N = 20
 
 x = [1:N; 1:N; 1:N; 1:N]
 y = [2 .+ cumsum(randn(N)); -2 .+ cumsum(randn(N)); 2.5 .+ cumsum(randn(N)); cumsum(randn(N))]
-grp1 = [fill("a", 2N); fill("b", 2N)]
-grp2 = [fill("c", N); fill("d", N); fill("c", N); fill("d", N)]
-z = 20 .* rand(4N)
+grp = [fill("a", 2N); fill("b", 2N)]
 
-df = (; x, y, z, grp1, grp2)
+df = (; x, y, grp)
     
-line = visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
-scat = visual(Scatter) * mapping(marker = :grp1, markersize = :z)
-specs = data(df) * mapping(:x, :y) * mapping(color = :grp1) * (line + scat)
+line = visual(Lines, linewidth = 2)
+scat = visual(Scatter) * mapping(marker = :grp)
+specs = data(df) * mapping(:x, :y) * mapping(color = :grp) * (line + scat)
 
 draw(specs)
 
