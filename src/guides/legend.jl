@@ -26,6 +26,7 @@ MakieLayout.Legend(figpos, aog::Union{Layer,Layers}) =
 	
 function MakieLayout.Legend(figpos, entries::Entries)
 	out = _Legend_(entries)
+	isnothing(out) && return
 	
 	if figpos isa FigureGrid
 		figpos_new = figpos.figure[:,end+1]
@@ -33,27 +34,24 @@ function MakieLayout.Legend(figpos, entries::Entries)
 		figpos_new = figpos
 	end
 
-	if !isnothing(out)
-		MakieLayout.Legend(figpos_new, out.elements, out.label, out.title)
-	end
+	MakieLayout.Legend(figpos_new, out.elements, out.label, out.title)
 end
 
 function _Legend_(entries)
 	named_scales = entries.scales.named
 	named_labels = entries.labels.named
+
+	continuous_color = get(named_scales, :color, nothing) isa ContinuousScale
 	
 	# remove keywords that don't support legends
 	attribute_keys = collect(keys(named_scales))
-	filter!(!in([:row, :col, :layout, :stack, :dodge, :group]), attribute_keys)
-	
-	if haskey(named_scales, :color) && named_scales[:color] isa ContinuousScale
-		filter!(!=(:color), attribute_keys)
+	filter!(attribute_keys) do key
+		continuous_color && key == :color && return false
+		return key ∉ [:row, :col, :layout, :stack, :dodge, :group]
 	end
 	
 	# if no legend-worthy keyword remains return nothing
-	if length(attribute_keys) == 0
-		return nothing
-	end
+	isempty(attribute_keys) && return nothing
 	
 	key2Ps = scale_to_Ps(entries.entries) |> Dict
 	
@@ -154,7 +152,12 @@ end
 # ----- LegendElements with more defaults --------
 # ------------------------------------------------
 
-from_default_theme(attr) = AbstractPlotting.current_default_theme()[attr]
+function from_default_theme(attr)
+	theme = default_styles()
+	return get(theme, attr) do
+		AbstractPlotting.current_default_theme()[attr]
+	end
+end
 
 line_element(; color     = :black, #default_theme(:color),
            linestyle = nothing,
