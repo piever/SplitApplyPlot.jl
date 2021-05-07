@@ -35,14 +35,6 @@ draw(plt; axis)
 plt = specs * mapping(color = :island, dodge = :island)
 draw(plt; axis)
 
-#
-
-plt = specs * mapping(color = :island, dodge = :island)
-fg = draw(plt; axis)
-Legend(fg.figure[1, 2], plt)
-SplitApplyPlot.resizetocontent!(fg)
-fg
-
 # This is our first finding. `Adelie` is the only species of penguins that can be
 # found on all three islands. To be able to see both which species is more numerous
 # and how different species are distributed across islands in a unique plot, 

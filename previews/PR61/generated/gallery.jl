@@ -230,7 +230,9 @@ x = today() - Year(1) : Day(1) : today()
 y = cumsum(randn(length(x)))
 z = cumsum(randn(length(x)))
 df = (; x, y, z)
-plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
+labels = ["series 1", "series 2", "series 3", "series 4", "series 5"]
+plt = data(df) * mapping(:x, [:y, :z], color=dims(1)=>(c -> labels[c])=>"series ") *
+    visual(Lines)
 draw(plt)
 
 #
@@ -239,7 +241,8 @@ x = now() - Hour(6) : Minute(1) : now()
 y = cumsum(randn(length(x)))
 z = cumsum(randn(length(x)))
 df = (; x, y, z)
-plt = data(df) * mapping(:x, [:y, :z], color=dims(1)) * visual(Lines)
+plt = data(df) * mapping(:x, [:y, :z], color=dims(1)=>(c -> labels[c])=>"series ") *
+    visual(Lines)
 draw(plt)
 
 # ### New columns on the fly
@@ -250,7 +253,7 @@ geoms = linear() + mapping(color=:z)
 fg = plot(m * geoms)
 facet!(fg)
 
-# ## Legends
+# ## Legend merging
 
 N = 20
 
@@ -266,8 +269,6 @@ line = visual(Lines, linewidth = 2) * mapping(linestyle = :grp2, group = :grp1)
 scat = visual(Scatter) * mapping(marker = :grp1, markersize = :z)
 specs = data(df) * mapping(:x, :y) * mapping(color = :grp1) * (line + scat)
 
-fg = draw(specs)
-Legend(fg, Entries(specs))
-fg
+draw(specs)
 
 #
