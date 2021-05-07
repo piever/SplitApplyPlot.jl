@@ -44,8 +44,8 @@ const font_folder = joinpath(dirname(@__DIR__), "assets", "fonts")
 
 opensans(weight) = joinpath(font_folder, "OpenSans-$(weight).ttf")
 
-function default_axis(::Type{Axis})
-    return (
+function aog_theme()
+    Axis = (
         xgridvisible=false,
         ygridvisible=false,
         topspinevisible=false,
@@ -60,10 +60,7 @@ function default_axis(::Type{Axis})
         ylabelfont=opensans("SemiBold"),
         titlefont=opensans("SemiBold"),
     )
-end
-
-function default_axis(::Type{Axis3})
-    return (
+    Axis3 = (
         protrusions=55, # to include label on z axis, should be fixed in AbstractPlotting
         xgridvisible=false,
         ygridvisible=false,
@@ -82,4 +79,16 @@ function default_axis(::Type{Axis3})
         zlabelfont=opensans("SemiBold"),
         titlefont=opensans("SemiBold"),
     )
+    Legend= (
+        framevisible=false,
+        labelfont=SplitApplyPlot.opensans("Light"),
+        titlefont=SplitApplyPlot.opensans("SemiBold"),
+        gridshalign=:left,
+    )
+    return (; Axis, Axis3, Legend)
+end
+
+function set_aog_theme!()
+    theme = aog_theme()
+    return set_theme!(; theme...)
 end

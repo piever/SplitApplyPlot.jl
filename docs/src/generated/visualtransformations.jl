@@ -4,6 +4,7 @@
 # (plotting function or attributes).
 
 using SplitApplyPlot, CairoMakie, PalmerPenguins, DataFrames
+set_aog_theme!()
 
 penguins = dropmissing(DataFrame(PalmerPenguins.load()))
 

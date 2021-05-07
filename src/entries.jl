@@ -46,10 +46,7 @@ function compute_axes_grid(fig, e::Entries; axis=NamedTuple())
 
     axes_grid = map(CartesianIndices(grid_size)) do c
         type = get(axis, :type, Axis)
-        options = merge(
-            default_axis(type),
-            Base.structdiff(axis, (; type)),
-        )
+        options = Base.structdiff(axis, (; type))
         ax = type(fig[Tuple(c)...]; options...)
         return AxisEntries(ax, Entry[], e.scales, e.labels)
     end
