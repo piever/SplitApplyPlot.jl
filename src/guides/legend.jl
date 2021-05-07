@@ -31,12 +31,12 @@ function _Legend_(entries)
 	end
 
     # if no legend-worthy keyword remains return nothing
-    isempty(named_scales) && return nothing
+    isempty(named_labels) && return nothing
 
 	attr_dict = mapreduce((a, b) -> mergewith!(union, a, b), entries.entries) do entry
         P = entry.plottype
 		attrs = keys(entry.mappings.named)
-		return Dict(P => [attr] for attr in attrs)
+		return Dict(P => collect(attrs))
     end
 
 	titles = unique!(collect(String, values(named_labels)))
@@ -52,7 +52,7 @@ function _Legend_(entries)
 		filter!(t -> !isempty(last(t)), plottypes)
 		legend_elements = map(eachindex(first_scale.data)) do idx
 			return map(plottypes) do (P, attrs)
-				options = [attr => named_scale[attr].data[i] for attr in attrs]
+				options = [attr => named_scales[attr].plot[idx] for attr in attrs]
 				return legend_element(P; options...)
 			end
 		end
