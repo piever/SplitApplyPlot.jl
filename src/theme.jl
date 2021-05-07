@@ -83,6 +83,7 @@ function aog_theme()
         framevisible=false,
         labelfont=SplitApplyPlot.opensans("Light"),
         titlefont=SplitApplyPlot.opensans("SemiBold"),
+        gridshalign=:left,
     )
     return (; Axis, Axis3, Legend)
 end
