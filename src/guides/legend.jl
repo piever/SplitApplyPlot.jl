@@ -1,18 +1,4 @@
 # ------------------------------------------------
-# -------------- Some helpful types --------------
-# ------------------------------------------------
-
-struct SubLegendEntry
-    label::String
-    visuals::Vector{Visual} # each plottype has its own attributes
-end
-
-struct SubLegend
-    title::String
-    entries::Vector{SubLegendEntry}
-end
-
-# ------------------------------------------------
 # -------------------- Legend --------------------
 # ------------------------------------------------
 
@@ -20,8 +6,8 @@ MakieLayout.Legend(figpos, aog::Union{Layer,Layers}) =
     Legend(figpos, Entries(aog))
     
 function MakieLayout.Legend(figpos, entries::Entries)
-    out = _Legend_(entries)
-    isnothing(out) && return
+    legend = _Legend_(entries)
+    isnothing(legend) && return
     
     if figpos isa FigureGrid
         figpos_new = figpos.figure[:,end + 1]
@@ -29,80 +15,51 @@ function MakieLayout.Legend(figpos, entries::Entries)
         figpos_new = figpos
     end
 
-    MakieLayout.Legend(figpos_new, out.elements, out.label, out.title)
+    Legend(figpos_new, legend...)
 end
-
-# Legend(f,
-#     [group_size, group_color],
-#     [string.(markersizes), string.(colors)],
-#     ["Size", "Color"])
 
 function _Legend_(entries)
     named_scales = entries.scales.named
-    named_labels = entries.labels.named
+    named_labels = copy(entries.labels.named)
 
-    continuous_color = get(named_scales, :color, nothing) isa ContinuousScale
-    
     # remove keywords that don't support legends
-    attribute_keys = collect(keys(named_scales))
-    filter!(attribute_keys) do key
-        continuous_color && key == :color && return false
-        return key ∉ [:row, :col, :layout, :stack, :dodge, :group]
-    end
-    
+	for key in [:row, :col, :layout, :stack, :dodge, :group]
+		pop!(named_labels, key, nothing)
+	end
+	for (key, val) in named_scales
+		val isa ContinuousScale && pop!(named_labels, key, nothing)
+	end
+
     # if no legend-worthy keyword remains return nothing
-    isempty(attribute_keys) && return nothing
+    isempty(named_scales) && return nothing
 
-	scales_dict = get_scales_dict(entries.entries)
+	attr_dict = mapreduce((a, b) -> mergewith!(union, a, b), entries.entries) do entry
+        P = entry.plottype
+		attrs = keys(entry.mappings.named)
+		return Dict(P => [attr] for attr in attrs)
+    end
 
+	titles = unique!(collect(String, values(named_labels)))
 
+	labels_list = Vector{String}[]
+	legend_elements_list = Vector{Vector{LegendElement}}[]
 
-	out = mapreduce(vcat, attribute_keys) do key
-		title =	named_labels[key]
-		scale = named_scales[key]
-			
-		map(key2Ps[key]) do P
-			_legend(P, key, scale, title)
+	for title in titles
+		label_attrs = [key for (key, val) in named_labels if val == title]
+		first_scale = named_scales[first(label_attrs)]
+		labels = map(string, first_scale.data)
+		plottypes = [P => attrs ∩ label_attrs for (P, attrs) in pairs(attr_dict)]
+		filter!(t -> !isempty(last(t)), plottypes)
+		legend_elements = map(eachindex(first_scale.data)) do idx
+			return map(plottypes) do (P, attrs)
+				options = [attr => named_scale[attr].data[i] for attr in attrs]
+				return legend_element(P; options...)
+			end
 		end
-	end |> StructArray
-	
-
-    sublegends = Dict{String,SubLegend}()
-
-    key2Ps = scale_to_Ps(entries.entries) |> Dict
-    
-    out = mapreduce(vcat, attribute_keys) do key
-        title =    named_labels[key]
-        scale = named_scales[key]
-            
-        map(key2Ps[key]) do P
-            _legend(P, key, scale, title)
-        end
-    end |> StructArray
-    
-    consolidate_legends(out)
-end
-
-function _legend(P, attribute, scale::ContinuousScale, title)
-    extrema = scale.extrema
-    # @unpack f, extrema = scale
-    n_ticks = 4
-    
-    ticks = MakieLayout.locateticks(extrema..., n_ticks)
-
-    label_kw = [(label = L(tick), kw = KW(attribute, tick)) for tick in ticks]
-    
-    (; title, P, label_kw)
-end    
-
-function _legend(P, attribute, scale::CategoricalScale, title)
-    
-    labels = string.(scale.data)
-    attributes = scale.plot
-    
-    label_kw = [(label = L(l), kw = KW(attribute, att)) for (l, att) in zip(labels, attributes)]
-        
-    (; title, P, label_kw)
+		push!(labels_list, labels)
+		push!(legend_elements_list, legend_elements)
+	end
+	return legend_elements_list, labels_list, titles
 end
 
 # ------------------------------------------------
@@ -144,14 +101,23 @@ legend_element(::Type{Contour}; kwargs...) = line_element(; kwargs...)
 
 legend_element(::Any; linewidth=0, strokecolor=:transparent, kwargs...) = poly_element(; linewidth, kwargs...)
 
-# ------------------------------------------------
-# --------------- Some helpers -------------------
-# ------------------------------------------------
+#Notes
 
-function get_scales_dict(entries)
-    return mapreduce((a, b) -> mergewith!(union, a, b), entries) do entry
-        P = entry.plottype
-		attrs = keys(entry.mappings.named)
-		return Dict(attr => [P] for attr in attrs)
-    end
-end
+# TODO: correctly handle composite plot types (now fall back to poly)
+# TODO: specifying the order of legend elements (should be poly then line then marker)
+# TODO: correctly handle the case when no plottype is given in visual (currently this errors)
+# TODO: check that all scales for the same label agree on the data
+
+# WIP colorbar implementation
+
+# function _legend(P, attribute, scale::ContinuousScale, title)
+#     extrema = scale.extrema
+#     # @unpack f, extrema = scale
+#     n_ticks = 4
+    
+#     ticks = MakieLayout.locateticks(extrema..., n_ticks)
+
+#     label_kw = [(label = L(tick), kw = KW(attribute, tick)) for tick in ticks]
+    
+#     (; title, P, label_kw)
+# end
