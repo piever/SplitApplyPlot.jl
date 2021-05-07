@@ -172,7 +172,7 @@ draw(plt; axis)
 
 body_mass = :body_mass_g => (t -> t / 1000) => "body mass (kg)"
 line = linear() * mapping(group = :species)
-scat = mapping(color = body_mass) * mapping(marker = :species)
+scat = mapping(color = body_mass, marker = :species)
 plt = specs * (line + scat)
 draw(plt; axis)
 
