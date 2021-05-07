@@ -7,6 +7,7 @@
 # ```
 
 using SplitApplyPlot, CairoMakie
+set_aog_theme!()
 
 df = (x=randn(1000), y=randn(1000), z=rand(["a", "b", "c"], 1000))
 specs = data(df) * mapping(:x, layout=:z) * histogram(bins=range(-2, 2, length=15))
