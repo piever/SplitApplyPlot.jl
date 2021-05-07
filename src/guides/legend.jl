@@ -42,6 +42,8 @@ function _Legend_(entries)
     end
 
 	titles = unique!(collect(String, values(named_labels)))
+	# empty strings create difficulties with the layout
+	nonemptytitles = map(t -> isempty(t) ? " " : t, titles)
 
 	labels_list = Vector{String}[]
 	elements_list = Vector{Vector{LegendElement}}[]
@@ -63,7 +65,7 @@ function _Legend_(entries)
 		push!(labels_list, labels)
 		push!(elements_list, elements)
 	end
-	return elements_list, labels_list, titles
+	return elements_list, labels_list, nonemptytitles
 end
 
 # ------------------------------------------------
@@ -116,6 +118,8 @@ legend_elements(::Any; linewidth=0, strokecolor=:transparent, kwargs...) =
 # TODO: specifying the order of legend elements (should be poly then line then marker)
 # TODO: check that all scales for the same label agree on the data
 # TODO: make legend updateable?
+# TODO: allow custom attributes in legend elements?
+# TODO: avoid recomputing `Entries`
 
 # WIP colorbar implementation
 
