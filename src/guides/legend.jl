@@ -35,8 +35,10 @@ function _Legend_(entries)
 
 	attr_dict = mapreduce((a, b) -> mergewith!(union, a, b), entries.entries) do entry
         P = entry.plottype
+		# FIXME: this should probably use the rescaled values
+		plottype = P === Any ? AbstractPlotting.plottype(entry.mappings.positional...) : P
 		attrs = keys(entry.mappings.named)
-		return Dict(P => collect(attrs))
+		return Dict{PlotFunc, Vector{Symbol}}(plottype => collect(attrs))
     end
 
 	titles = unique!(collect(String, values(named_labels)))
@@ -105,7 +107,6 @@ legend_element(::Any; linewidth=0, strokecolor=:transparent, kwargs...) = poly_e
 
 # TODO: correctly handle composite plot types (now fall back to poly)
 # TODO: specifying the order of legend elements (should be poly then line then marker)
-# TODO: correctly handle the case when no plottype is given in visual (currently this errors)
 # TODO: check that all scales for the same label agree on the data
 
 # WIP colorbar implementation
