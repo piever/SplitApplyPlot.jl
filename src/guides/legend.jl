@@ -44,7 +44,7 @@ function _Legend_(entries)
 	titles = unique!(collect(String, values(named_labels)))
 
 	labels_list = Vector{String}[]
-	legend_elements_list = Vector{Vector{LegendElement}}[]
+	elements_list = Vector{Vector{LegendElement}}[]
 
 	for title in titles
 		label_attrs = [key for (key, val) in named_labels if val == title]
@@ -52,16 +52,18 @@ function _Legend_(entries)
 		labels = map(string, first_scale.data)
 		plottypes = [P => attrs ∩ label_attrs for (P, attrs) in pairs(attr_dict)]
 		filter!(t -> !isempty(last(t)), plottypes)
-		legend_elements = map(eachindex(first_scale.data)) do idx
-			return map(plottypes) do (P, attrs)
+		elements = map(eachindex(first_scale.data)) do idx
+			local elements = LegendElement[]
+			for (P, attrs) in plottypes
 				options = [attr => named_scales[attr].plot[idx] for attr in attrs]
-				return legend_element(P; options...)
+				append!(elements, legend_elements(P; options...))
 			end
+			return elements
 		end
 		push!(labels_list, labels)
-		push!(legend_elements_list, legend_elements)
+		push!(elements_list, elements)
 	end
-	return legend_elements_list, labels_list, titles
+	return elements_list, labels_list, titles
 end
 
 # ------------------------------------------------
@@ -96,18 +98,24 @@ poly_element(;
              kwargs...) = 
     PolyElement(; color, strokecolor, kwargs...)
 
-legend_element(::Type{Scatter}; kwargs...) = marker_element(; kwargs...)
+legend_elements(::Type{Scatter}; kwargs...) = [marker_element(; kwargs...)]
+legend_elements(::Type{Lines}; kwargs...) = [line_element(; kwargs...)]
+legend_elements(::Type{Contour}; kwargs...) = [line_element(; kwargs...)]
 
-legend_element(::Type{Lines}; kwargs...) = line_element(; kwargs...)
-legend_element(::Type{Contour}; kwargs...) = line_element(; kwargs...)
+function legend_elements(::Type{LinesFill}; color=from_default_theme(:color), fillalpha=0.15, kwargs...)
+	meshcolor = to_color((color, fillalpha))
+	return [poly_element(; color=meshcolor, kwargs...), line_element(; color, kwargs...)]
+end
 
-legend_element(::Any; linewidth=0, strokecolor=:transparent, kwargs...) = poly_element(; linewidth, kwargs...)
+legend_elements(::Any; linewidth=0, strokecolor=:transparent, kwargs...) =
+	[poly_element(; linewidth, kwargs...)]
 
 #Notes
 
 # TODO: correctly handle composite plot types (now fall back to poly)
 # TODO: specifying the order of legend elements (should be poly then line then marker)
 # TODO: check that all scales for the same label agree on the data
+# TODO: make legend updateable?
 
 # WIP colorbar implementation
 

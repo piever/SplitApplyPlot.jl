@@ -31,10 +31,6 @@ function AbstractPlotting.plot!(p::LinesFill)
     else
         lower, upper = p[3], p[4]
     end
-    meshcolor = lift(p.color, p.fillalpha) do color, fillalpha
-        rgba = to_color(color)
-        r, g, b = red(rgba), green(rgba), blue(rgba)
-        return RGBA(r, g, b, fillalpha)
-    end
+    meshcolor = lift(to_color∘tuple, p.color, p.fillalpha)
     band!(p, p[1], lower, upper; color = meshcolor)
 end
