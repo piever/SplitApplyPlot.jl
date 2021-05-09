@@ -4,6 +4,8 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://piever.github.io/SplitApplyPlot.jl/dev)
 [![Build Status](https://github.com/piever/SplitApplyPlot.jl/workflows/CI/badge.svg)](https://github.com/piever/SplitApplyPlot.jl/actions)
 
+:warning: **SplitApplyPlot has been absorbed by AlgebraOfGraphics. Do not use install it, simply install AlgebraOfGraphics.**
+
 WIP rewrite of [AlgebraOfGraphics](https://github.com/JuliaPlots/AlgebraOfGraphics.jl), to simplify the codebase and decouple plot specification and rendering.
 
 ## Acknowledgements
